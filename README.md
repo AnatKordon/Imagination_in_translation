@@ -13,7 +13,7 @@ Our goal is to study the overlap between human semantic description and visual r
 
 ## Core Components
 - Local Stable Diffusion for image generation
-- Psyvhopy-based user interface
+- Psychopy-based user interface
 - VGG16-based visual similarity analysis
 - JSON logging of all sessions and iterations
 
