@@ -1,77 +1,145 @@
 import os
 import requests
-import time
-import uuid
 import json
 from dotenv import load_dotenv
 from PIL import Image
-from io import BytesIO
-import base64
 
-
-# Load Stability API key
+# ------- Load API key from .env -------
 load_dotenv()
-api_key = os.getenv("STABILITY_API_KEY")
-api_host = "https://api.stability.ai"
-engine_id = "stable-diffusion-v1-5"
+STABILITY_KEY = os.getenv("STABILITY_API_KEY")
 
-def generate_image_and_log(prompt, step_number, user_id, ground_truth_id):
+# ------- Function to send generation request -------
+def send_generation_request(host, params, user_id, iteration, true_image_path=None):
+    """
+    Generates an image using Stability AI API and handles image + metadata logging.
+
+    - Sends a POST request to the Stability AI endpoint with the given prompt and parameters.
+    - Saves the generated image locally under a user-specific folder, named by iteration.
+    - Optionally saves a true/reference image on the first iteration (if provided).
+    - Extracts key metadata (prompt, seed, model, etc.) and logs it into a per-user JSON file.
+    - Supports future flexibility for image-to-image workflows by managing optional 'image' and 'mask' fields.
+
+    Parameters:
+    - host: URL of the Stability API endpoint.
+    - params: Dictionary of generation settings (prompt, aspect_ratio, seed, etc.).
+    - user_id: Unique identifier to organize images and logs per user.
+    - iteration: Index of current generation to name and track image progress.
+    - true_image_path: Path to original image provided by user.
+
+    Returns:
+    - Path to the saved generated image of the current iteration.
+    """
+
+    # ------- Prepare headers for the request -------
     headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Accept": "application/json",
-        "Content-Type": "application/json",
+        "Accept": "image/*",
+        "Authorization": f"Bearer {STABILITY_KEY}"
     }
 
-    payload = {
-        "text_prompts": [{"text": prompt}],
-        "cfg_scale": 7.5,
-        "height": 512,
-        "width": 512,
-        "samples": 1,
-        "steps": 30
-    }
+    
+    # ------- Handle optional image and mask files -------
+    # This setup supports both text-to-image and image-based tasks (like inpainting).
+    # In our project, we're using only text-to-image, so 'image' and 'mask' are usually not provided.
+    # We keep this section for compatibility with the Stability AI example and future flexibility.
+    files = {}
+    image = params.pop("image", None)
+    mask = params.pop("mask", None)
+    if image:
+        files["image"] = open(image, 'rb')
+    if mask:
+        files["mask"] = open(mask, 'rb')
+    if not files:
+        files["none"] = ''
 
-    response = requests.post(
-        f"{api_host}/v1/generation/{engine_id}/text-to-image",
-        headers=headers,
-        json=payload,
-    )
+
+    # ------- Send request -------
+    print(f"Sending REST request to {host}...")
+    response = requests.post(host, headers=headers, files=files, data=params)
 
     if not response.ok:
-        raise Exception(f"API error {response.status_code}: {response.text}")
+        raise Exception(f"HTTP {response.status_code}: {response.text}")
+    
+    # ------- Get generated image bytes -------
+    # The response content is the generated image in binary format.
+    output_image = response.content
+    returned_seed = response.headers.get("seed")
+    finish_reason = response.headers.get("finish-reason")
 
-    result = response.json()
+    if finish_reason == 'CONTENT_FILTERED':
+        raise Warning("NSFW content filtered.")
 
-    image_base64 = result["artifacts"][0]["base64"]
-    seed = result["artifacts"][0]["seed"]
-    sampler = result["artifacts"][0].get("finish_reason", "unknown")
+    # Paths and filenames for saving the image
+    user_folder = f"images/user_{user_id}"
+    os.makedirs(user_folder, exist_ok=True)
+    gen_filename = f"gen_{iteration}.png"
+    gen_path = os.path.join(user_folder, gen_filename)
 
-    # Save image
-    image_id = str(uuid.uuid4())
-    image_data = base64.b64decode(image_base64)
-    image_path = f"images/{user_id}_{image_id}_step{step_number}.png"
+    # ------- Save generated image -------
+    with open(gen_path, "wb") as f:
+        f.write(output_image)
 
-    with open(image_path, "wb") as f:
-        f.write(image_data)
+    # Save true image if this is first time and provided
+    if iteration == 1 and true_image_path:
+        true_dest = os.path.join(user_folder, "true_image.png")
+        if not os.path.exists(true_dest):
+            from shutil import copyfile
+            copyfile(true_image_path, true_dest)
 
-    # Log metadata
+    # ------- Save log to JSON and update user log -------
     log_entry = {
-        "image_id": image_id,
-        "step_number": step_number,
-        "prompt_text": prompt,
-        "user_id": user_id,
-        "timestamp": int(time.time()),
-        "seed": seed,
-        "sampler": sampler,
-        "cfg_scale": payload["cfg_scale"],
-        "num_inference_steps": payload["steps"],
-        "image_path": image_path,
-        "ground_truth_id": ground_truth_id,
-        # Add CLIP similarity and embeddings later
+        "iteration": iteration,
+        "prompt": params["prompt"],
+        "seed": returned_seed,
+        "aspect_ratio": params["aspect_ratio"],
+        "output_format": params["output_format"],
+        "model": params["model"],
+        "image_path": gen_path,
     }
 
-    os.makedirs("logs", exist_ok=True)
-    with open("logs/generation_log.jsonl", "a") as log_file:
-        log_file.write(json.dumps(log_entry) + "\n")
+    log_path = f"logs/user_{user_id}.json"
+    update_user_log(log_path, log_entry)
 
-    return image_path, log_entry
+    return gen_path
+
+    
+# ------- Function to update user log -------
+def update_user_log(log_path, log_entry):
+    """
+    Appends a single JSON entry to the user's log file.
+
+    Ensures each generation attempt (with metadata) is stored as a separate
+    line in a JSONL file for easy tracking and later analysis.
+    """
+    # Load existing log if exists
+    if os.path.exists(log_path):
+        with open(log_path, "r") as f:
+            log_data = json.load(f)
+    else:
+        log_data = []
+
+    # Append new entry
+    log_data.append(log_entry)
+
+    # Save updated log
+    with open(log_path, "w") as f:
+        json.dump(log_data, f, indent=2)
+
+
+
+# === Main code ===
+params = {
+    "prompt": "a fox playing guitar in the forest",
+    "aspect_ratio": "1:1",
+    "seed": 1,
+    "output_format": "png",
+    "model": "sd3.5-large-turbo"
+}
+
+send_generation_request(
+    host="https://api.stability.ai/v2beta/stable-image/generate/sd3",
+    params=params,
+    user_id="123",
+    iteration=1,
+    true_image_path="path/to/true_image.png"  
+)
+
