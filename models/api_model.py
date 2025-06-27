@@ -3,6 +3,7 @@ import requests
 import json
 from dotenv import load_dotenv
 from PIL import Image
+from shutil import copyfile
 
 # ------- Load API key from .env -------
 load_dotenv()
@@ -35,26 +36,29 @@ def send_generation_request(host, params, user_id, iteration, true_image_path=No
         "Accept": "image/*",
         "Authorization": f"Bearer {STABILITY_KEY}"
     }
-
     
     # ------- Handle optional image and mask files -------
     # This setup supports both text-to-image and image-based tasks (like inpainting).
     # In our project, we're using only text-to-image, so 'image' and 'mask' are usually not provided.
     # We keep this section for compatibility with the Stability AI example and future flexibility.
-    files = {}
-    image = params.pop("image", None)
-    mask = params.pop("mask", None)
-    if image:
-        files["image"] = open(image, 'rb')
-    if mask:
-        files["mask"] = open(mask, 'rb')
-    if not files:
-        files["none"] = ''
+    files = {
+        "prompt": (None, params["prompt"]),
+        "aspect_ratio": (None, params["aspect_ratio"]),
+        "output_format": (None, params["output_format"]),
+        "model": (None, params["model"]),
+        "seed": (None, str(params["seed"]))
+    }
+
+    # Optional image or mask support (for future inpainting)
+    if "image" in params:
+        files["image"] = open(params["image"], "rb")
+    if "mask" in params:
+        files["mask"] = open(params["mask"], "rb")
 
 
     # ------- Send request -------
     print(f"Sending REST request to {host}...")
-    response = requests.post(host, headers=headers, files=files, data=params)
+    response = requests.post(host, headers=headers, files=files)
 
     if not response.ok:
         raise Exception(f"HTTP {response.status_code}: {response.text}")
@@ -97,6 +101,7 @@ def send_generation_request(host, params, user_id, iteration, true_image_path=No
     }
 
     log_path = f"logs/user_{user_id}.json"
+    os.makedirs(os.path.dirname(log_path), exist_ok=True)  # ensure logs folder exists
     update_user_log(log_path, log_entry)
 
     return gen_path
@@ -139,7 +144,8 @@ send_generation_request(
     host="https://api.stability.ai/v2beta/stable-image/generate/sd3",
     params=params,
     user_id="123",
-    iteration=1,
-    true_image_path="path/to/true_image.png"  
+    iteration=1
 )
+
+
 
