@@ -143,7 +143,7 @@ params = {
 send_generation_request(
     host="https://api.stability.ai/v2beta/stable-image/generate/sd3",
     params=params,
-    user_id="123",
+    user_id="124",
     iteration=1
 )
 
