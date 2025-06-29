@@ -10,7 +10,7 @@ EXAMPLE_IMAGE = r"C:\uni\Msc Brain\python_neuro\Imagination_in_translation\airpo
 # Settings
 
 NUM_ITER = 5
-IMAGE_SIZE = (512, 512)
+IMAGE_SIZE = 128
 
 ## UI settings
 
