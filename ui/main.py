@@ -6,20 +6,27 @@ from PIL import Image
 
 def main():
 
-
     image_path = config.EXAMPLE_IMAGE
     st.title("Imagination in Translation")
 
 
     if "show_image" not in st.session_state:
         st.session_state.show_image = True
+    
+    if "user_input" not in st.session_state:
+        st.session_state.user_input = ""
 
-    if st.button("End of remembering"):
-        st.session_state.show_image = not st.session_state.show_image
     # Load and display an image
-    image = Image.open(image_path)  
-    if st.session_state.show_image:
-        st.image(image, caption="Sample Image")
+     
+
+    image = Image.open(image_path) 
+    st.image(image, caption="Sample Image")
+
+    st.write("Please describe what you see.")
+    st.session_state.user_input = st.text_area("Your description:", value=st.session_state.user_input, height=200,key="Description")
+    if st.button("Submit"):
+            text = st.session_state.user_input
+
     
 if __name__ == "__main__":
     main()
