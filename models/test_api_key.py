@@ -1,9 +1,9 @@
 
-#before using it install:
-#pip install requests python-dotenv
-#pip install python-dotenv
-#and create a file ".env" with our api key in this format: STABILITY_API_KEY= (and then api key without quotes)
-#set your ".env" file under .gitignore so that you won't share the secret api key!!!
+# before using it install:
+# pip install requests python-dotenv
+# pip install python-dotenv
+# and create a file ".env" with our api key in this format: STABILITY_API_KEY= (and then api key without quotes)
+# set your ".env" file under .gitignore so that you won't share the secret api key!!!
 
 from dotenv import load_dotenv
 import os

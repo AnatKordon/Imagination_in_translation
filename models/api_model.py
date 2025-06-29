@@ -38,7 +38,7 @@ def send_generation_request(host, params, user_id, iteration, true_image_path=No
     }
     
     # ------- Handle optional image and mask files -------
-    # This setup supports both text-to-image and image-based tasks (like inpainting).
+    # This setup supports both text-to-image and image-based tasks (we will only use text to image)
     # In our project, we're using only text-to-image, so 'image' and 'mask' are usually not provided.
     # We keep this section for compatibility with the Stability AI example and future flexibility.
     files = {
