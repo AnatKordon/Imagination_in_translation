@@ -12,6 +12,10 @@ torchvision
 
 #UI packages
 streamlit
+Pillow
+# Data visualization
+matplotlib
+
 
 # API requests and environment variables
 requests
