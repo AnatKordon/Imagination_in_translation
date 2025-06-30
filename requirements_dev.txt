@@ -5,6 +5,7 @@ pytest==6.2.4
 #core packages for Data analysis
 numpy
 pandas
+scipy
 
 #ML and DL
 torch
@@ -21,6 +22,9 @@ matplotlib
 requests
 python-dotenv
 Pillow
+
+#path
+Pathlib
 
 #development tools
 #pip==19.2.3

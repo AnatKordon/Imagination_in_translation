@@ -133,7 +133,7 @@ def update_user_log(log_path, log_entry):
 
 # === Main code ===
 params = {
-    "prompt": "a team of babies in a hackathon cracking python code",
+    "prompt": "a playground with ",
     "aspect_ratio": "1:1",
     "seed": 1,
     "output_format": "png",
