@@ -1,5 +1,5 @@
 # It's a prototype of UI for the project. It doesn't actually send anything to the model or calculate image similarity yet.
-# To call the app, write: streamlit run ui_prototype.py --server.port 8501 in the codespace console (for this folder).
+# To call the app, write: streamlit run ui_prototype.py --server.port 8501 in the codespace console.
 # Note, that by default a user has to press ctrl+enter after filling in the text box to apply the text, count characters, send it to generation etc. 
 
 from pathlib import Path
