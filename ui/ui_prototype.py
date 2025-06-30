@@ -1,5 +1,5 @@
 # It's a prototype of UI for the project. It doesn't actually send anything to the model or calculate image similarity yet.
-# To call the app, write: cd UI streamlit run ui_prototype.py --server.port 8501 in the codespace terminal (but first, install the required libraries with a single command: pip install -r requirements.txt).
+# To call the app, write: cd UI streamlit run ui_prototype.py --server.port 8501 in the codespace terminal (in github or locally, then "cd UI" part is optional), but first, install the required libraries listed in the requirements.txt file with a single command: pip install -r requirements.txt.
 # Note, that by default a user has to press ctrl+enter after filling in the text box to apply the text, count characters, send it to generation etc. 
 
 from pathlib import Path
@@ -9,9 +9,9 @@ import random, csv, time
 import streamlit as st # Streamlit UI framework
 from PIL import Image, ImageOps # Pillow library to manipulate images
 
-# Directories
+# Directories (MIGHT NEED TO BE CHANGED)
 ROOT = Path(__file__).resolve().parent
-GT_DIR = ROOT / "data/wilma_ground_truth" # folder with target images
+GT_DIR = ROOT.parent / "data" / "wilma_ground_truth" # folder with target images
 GEN_DIR = ROOT / "generated" # folder for generated images
 LOG_DIR = ROOT / "data" / "logs" # folder with CSV log files per user/session
 FALLBACK = ROOT / "mona_lisa_2.jpg" # TO BE REMOVED: dummy placeholder picture that is used instead of a generated one
