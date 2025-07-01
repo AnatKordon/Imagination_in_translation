@@ -1,16 +1,13 @@
 import os
 from pathlib import Path
 
+# Directories (MIGHT NEED TO BE CHANGED)
+ROOT = Path(__file__).resolve().parent
+GT_DIR = ROOT.parent / "data" / "wilma_ground_truth" # folder with target images
+GEN_DIR = ROOT / "generated" # folder for generated images
+LOG_DIR = ROOT / "data" / "logs" # folder with CSV log files per user/session
+FALLBACK = ROOT / "mona_lisa_2.jpg" # TO BE REMOVED: dummy placeholder picture that is used instead of a generated one
 
-##IMAGES_DIR = 
-##LOGS_DIR = 
-EXAMPLE_IMAGE = r"C:\uni\Msc Brain\python_neuro\Imagination_in_translation\airport_terminal_h.jpg"
-##GENERATED_DIR =
-
-# Settings
-
-NUM_ITER = 5
-IMAGE_SIZE = 128
-
-## UI settings
+MAX_ATTEMPTS = 5 # Attempts to improve the description are limited to 5
+IMG_H = 260  # The height of images is limited to 260 px so the user doesn't need to scroll
 
