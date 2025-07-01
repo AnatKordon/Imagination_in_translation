@@ -5,6 +5,7 @@ pytest==6.2.4
 #core packages for Data analysis
 numpy
 pandas
+scipy
 
 #ML and DL
 torch
@@ -22,10 +23,16 @@ requests
 python-dotenv
 Pillow
 
+#path
+Pathlib
+
+#google drive authentication
+PyDrive
+
 #development tools
 #pip==19.2.3
 bump2version==0.5.11
-wheel==0.33.6
+#wheel==0.33.6
 tox==3.14.0
 coverage==4.5.4
 Sphinx==7.2.6

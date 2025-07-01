@@ -108,3 +108,9 @@ ENV/
 .vscode/
 .idea/
 
+#images
+.png
+.jpg
+.jpeg
+
+client_secrets.json
