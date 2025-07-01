@@ -83,6 +83,7 @@ class VGGEmbedder:
             Embedding as a numpy array.
         """
         self.embedding = None  # clear previous
+        img_path = Path(img_path)
         prep_img = self.preprocess_image(img_path)
         with torch.no_grad():
             _ = self.model(prep_img) #no need for the output
@@ -104,7 +105,14 @@ def compute_similarity_score(embedding1: np.ndarray, embedding2: np.ndarray) -> 
         similarity = 1 - cosine(embedding1, embedding2)  # ranges [-1,+1]
         scaled_similarity = int(((similarity + 1) / 2) * 100)  # maps to [0,100] for visibility, rounding for user rfeiendliness
         return scaled_similarity, cosine_distance  # maybe we should only log similarity
-
+def get_vgg_embedder():
+    """
+    Initializes and returns a VGGEmbedder instance with preloaded VGG16 model.
+    """
+    # Load the pre-trained VGG16 model with ImageNet weights
+    weights = VGG16_Weights.IMAGENET1K_V1
+    vgg_imagenet = vgg16(weights=weights)
+    return VGGEmbedder(model=vgg_imagenet, layer='Classifier_4')
 
 if __name__ == "__main__":
     # Load VGG model
@@ -125,7 +133,3 @@ if __name__ == "__main__":
     print(cosine_distance)
     # add logging for distance score (not the simialrity we show the user - UserID, SessionID, Iteration, cosine_distance)
 
-# ---------------------------------------------------------------------------------------------
-
-# if __name__ == "__main__":
-#    ObjectiveSimilarityScore = vgg_similarity_score(image1: Path, image2: Path, model, UserID, SessionID, Iteration)

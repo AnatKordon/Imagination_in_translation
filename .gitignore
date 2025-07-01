@@ -109,7 +109,7 @@ ENV/
 .idea/
 
 #images
-.png
+*.png
 .jpg
 .jpeg
 
