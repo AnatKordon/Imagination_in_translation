@@ -9,8 +9,12 @@ GEN_DIR = ROOT.parent / "images"  # folder with images for the UI (e.g. fallback
 
 MAX_ATTEMPTS = 5 # Attempts to improve the description are limited to 5
 IMG_H = 260  # The height of images is limited to 260 px so the user doesn't need to scroll
-
+MAX_LENGTH = 10000  # Maximum length of the prompt text
 ##  Params for image generation
+
+
+## for erroe handling
+websites = [".com", ".net", ".org", ".edu", ".gov", ".io", ".co", ".uk", ".de", ".fr", ".jp", ".ru","https", "http", "www."]
 
 params = {
     "prompt": "a playground with ",
