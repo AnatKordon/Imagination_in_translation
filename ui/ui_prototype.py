@@ -10,9 +10,11 @@ if str(project_root) not in sys.path:
                     
 from uuid import uuid4 # used to create session / user IDs
 from models import api_model # the model API wrapper
+
 from similarity import vgg_similarity # the similarity function (to be changed)
 import random, csv, time 
 import config
+import numpy as np 
 import streamlit as st # Streamlit UI framework
 from PIL import Image, ImageOps # Pillow library to manipulate images
 
@@ -36,13 +38,13 @@ st.markdown(
 )
 
 
-def generate_image(prompt: str, attempt: int, gt: Path,id: str) -> Path:
+def generate_image(prompt: str,seed:int,session:int ,attempt: int, gt: Path,id: str) -> Path:
     params = config.params.copy() # copy the params dict so we don't change the original one
     params["prompt"] = prompt # set the prompt
-    
-    api_model.send_generation_request(host="https://api.stability.ai/v2beta/stable-image/generate/sd3",params=params,
-                                      iteration=attempt,user_id=id)
-    path = config.GEN_DIR /f"user_{id}"/f"gen_{attempt}.png" # path to the generated image
+    params["seed"] = seed # set the seed
+    path = api_model.send_generation_request(host="https://api.stability.ai/v2beta/stable-image/generate/sd3",params=params,
+                                      iteration=attempt,session_num=session,user_id=id)
+
     ImageOps.contain(Image.open(path), (512, 512))
     return path
 
@@ -57,17 +59,20 @@ def similarity(GT_path: Path, GEN_path: Path) -> float:
 
     objective_similarity_score, cosine_distance = vgg_similarity.compute_similarity_score(GT_embedding, GEN_embedding)
 
-    return objective_similarity_score 
+    return objective_similarity_score , cosine_distance
 
 # TO BE CHANGED: here goes LOG saving. Here is a simple function that appends one row per generation to a specific CSV log for each session. Creates the file and header on first write.
 def log_row(**kw):
     f = config.LOG_DIR / f"{kw['uid']}.csv"
+    
     first = not f.exists()
     with f.open("a", newline="", encoding="utf-8") as h:
         w = csv.DictWriter(h, fieldnames=kw.keys())
         if first:
             w.writeheader()
         w.writerow(kw)
+    f = str(f)  
+
 
 
 # A helper for st.rerun() function in Steamlit. It is named differently in different versions of Steamlit, so we just make sure that we have something of this kind.
@@ -86,7 +91,8 @@ def next_gt():
 
     S.gt_path = random.choice(remaining)
     S.used.add(S.gt_path.name)
-
+    S.session += 1 # increase session counter
+    S.seed = np.random.randint(1, 4000000) # randomise the seed for the next generation
     S.attempt = 1
     S.generated = False
     S.gen_path = None
@@ -100,12 +106,15 @@ def next_gt():
 for k, v in {
     "uid": uuid4().hex, # user/session ID
     "used": set(), # set of ground-truth images already shown
-    "gt_path": None, # TO BE CHANGED: path to the current ground-truth
-    "attempt": 1, # current attempt counter (from 1 to 5)
+    "gt_path": None, # TO BE CHANGED: path to the current ground-truth,
+    "session":0, # The number of seesion per user (for the same user, we can have multiple sessions, e.g. if the user closes the browser and comes back later)
+    "attempt": 1, # current attempt counter (from 1 to 5),
+    "seed":np.random.randint(1,4000000), # seed for the image generation (can be randomised later)
     "generated": False, # TO BE CHANGED: telling whether we have a generated image to show or not
     "gen_path": None, # TO BE CHANGED: path to generated image
     "finished": False, # True when pool exhausted
     "last_score": 0.0, # similarity of last generation
+    "cosine_distance": 0.0, # cosine distance of last generation
     "text_key": fresh_key(), # widget key for the textbox
 }.items():
     st.session_state.setdefault(k, v)
@@ -127,10 +136,10 @@ if not S.participant_info_submitted:
             S.participant_gender = gender
             S.participant_native = native
             S.participant_info_submitted = True
-            st.success("Thank you! Starting the session...")
+            st.success("Thank you! ")
             st.rerun()
     st.stop()
-if S.gt_path is None:      # loading the next ground truth picture
+if S.gt_path is None:      
     next_gt()
 
 # The finish screen (appears when the user presses "exit" button or there are no more ground truth pictures).
@@ -171,9 +180,9 @@ with left:
 
     if st.button("Generate", type="primary", disabled=gen_disabled):
 
-        S.gen_path = generate_image(S.prompt, S.attempt, S.gt_path,S.uid) # generate the image
+        S.gen_path = generate_image(S.prompt,S.seed,S.session ,S.attempt, S.gt_path,S.uid) # generate the image
         try:
-            S.last_score = similarity(S.gt_path, S.gen_path)
+            S.last_score,S.cosine_distance = similarity(S.gt_path, S.gen_path)
         except Exception as e:
             st.error(f"Error calculating similarity: {e}")
             S.last_score = 0.0
@@ -185,10 +194,13 @@ with left:
             participant_gender= S.participant_gender,
             participant_native=S.participant_native,
             gt=S.gt_path.name,
+            session = S.session,
             attempt=S.attempt,
             prompt=S.prompt,
-            gen=S.gen_path.name,
+            gen=S.gen_path,
             similarity=round(S.last_score, 4),
+            cosine_distance=round(S.cosine_distance, 4),
+            subjective_score=S.subjective_score if "subjective_score" in S else None,
             ts=int(time.time()),
         )
         S.generated = True
@@ -222,12 +234,19 @@ with right:
         st.progress(int(S.last_score))
         st.write(f"**{S.last_score:.1f}%**")
 
+        S.subjective_score = st.radio(
+            "Subjective Similarity (1 = not similar, 6 = very similar)",
+            [1, 2, 3, 4, 5,6],
+            horizontal=True,
+            key=f"subjective_score_{S.session}_{S.attempt}",
+        )
+
         a_col, t_col = st.columns(2)
 
-        if a_col.button("Accept"):
+        if a_col.button("DONE : Next image"):
             next_gt()
 # "Try again" button is disabled on 5th attempt
-        if t_col.button("Try again", disabled=S.attempt >= config.MAX_ATTEMPTS):
+        if t_col.button("Another try", disabled=S.attempt >= config.MAX_ATTEMPTS):
             S.generated = False
             S.attempt += 1
             rerun()

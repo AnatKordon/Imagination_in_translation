@@ -112,5 +112,5 @@ ENV/
 *.png
 *.jpg
 *.jpeg
-
+*.csv
 client_secrets.json
