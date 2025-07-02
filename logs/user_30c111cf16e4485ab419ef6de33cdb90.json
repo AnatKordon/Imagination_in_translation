@@ -1,0 +1,11 @@
+[
+  {
+    "iteration": 1,
+    "prompt": "a dam, dry grass, prevents water from coming",
+    "seed": "1",
+    "aspect_ratio": "1:1",
+    "output_format": "png",
+    "model": "sd3.5-large-turbo",
+    "image_path": "images/user_30c111cf16e4485ab419ef6de33cdb90\\gen_1.png"
+  }
+]
