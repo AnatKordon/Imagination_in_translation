@@ -1,3 +1,4 @@
+from typing import Optional, Dict, Any
 import os
 import requests
 from dotenv import load_dotenv
@@ -9,25 +10,27 @@ load_dotenv()
 STABILITY_KEY = os.getenv("STABILITY_API_KEY")
 
 # ------- Function to send generation request -------
-def send_generation_request(host, params, user_id, iteration, session_num, true_image_path=None):
+def send_generation_request(
+    host: str,
+    params: Dict[str, Any],
+    user_id: str,
+    iteration: int,
+    session_num: int,
+    true_image_path: Optional[str] = None
+) -> str:
     """
-    Generates an image using Stability AI API and handles image + metadata logging.
-
-    - Sends a POST request to the Stability AI endpoint with the given prompt and parameters.
-    - Saves the generated image locally under a user-specific folder, named by iteration.
-    - Optionally saves a true/reference image on the first iteration (if provided).
-    - Extracts key metadata (prompt, seed, model, etc.) and logs it into a per-user JSON file.
-    - Supports future flexibility for image-to-image workflows by managing optional 'image' and 'mask' fields.
+    Generates an image using Stability AI API and saves it locally with a flat filename structure.
 
     Parameters:
-    - host: URL of the Stability API endpoint.
-    - params: Dictionary of generation settings (prompt, aspect_ratio, seed, etc.).
-    - user_id: Unique identifier to organize images and logs per user.
-    - iteration: Index of current generation to name and track image progress.
-    - true_image_path: Path to original image provided by user.
+    - host: API endpoint URL.
+    - params: Generation settings (prompt, aspect_ratio, seed, etc.).
+    - user_id: Unique ID for the user.
+    - iteration: Generation iteration number.
+    - session_num: Session number for tracking.
+    - true_image_path: Optional path to original reference image.
 
     Returns:
-    - Path to the saved generated image of the current iteration.
+    - Path to the saved generated image.
     """
 
     # ------- Prepare headers for the request -------
@@ -80,25 +83,4 @@ def send_generation_request(host, params, user_id, iteration, session_num, true_
         f.write(output_image)
 
     return image_path
-
-
-
-# === Main code ===
-params = {
-    "prompt": "a playground with ",
-    "aspect_ratio": "1:1",
-    "seed": 1,
-    "output_format": "png",
-    "model": "sd3.5-large-turbo"
-}
-
-send_generation_request(
-    host="https://api.stability.ai/v2beta/stable-image/generate/sd3",
-    params=params,
-    user_id="124",
-    iteration=1,
-    session_num=1,
-)
-
-
 
