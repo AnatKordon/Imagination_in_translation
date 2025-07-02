@@ -30,6 +30,9 @@ Pathlib
 #google drive authentication
 PyDrive
 
+#analysis
+tabulate
+
 #development tools
 #pip==19.2.3
 bump2version==0.5.11
