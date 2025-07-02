@@ -1,0 +1,56 @@
+[
+  {
+    "iteration": 1,
+    "prompt": "a bedroom with a single bed, looks like in a hut in the woods (you don't see woods). there are some clothes on the bed, 2 misorganized pillows in red and a blanket, and smoe flipflops on the flor. very neglected\n",
+    "seed": "1",
+    "aspect_ratio": "1:1",
+    "output_format": "png",
+    "model": "sd3.5-large-turbo",
+    "image_path": "images/user_6dbed5e478c94e9b88f1c96d49138cf1\\gen_1.png"
+  },
+  {
+    "iteration": 2,
+    "prompt": "a small messy bedroom with a single bed, looks like in a hut in the woods or in jail, very simple and not photogenic (you don't see woods). there are some clothes on the bed - hiking pants, 2 misorganized pillows in red and a blanket, and some flipflops on the flor. very neglected, a shit of paper on the floor\n\n",
+    "seed": "1",
+    "aspect_ratio": "1:1",
+    "output_format": "png",
+    "model": "sd3.5-large-turbo",
+    "image_path": "images/user_6dbed5e478c94e9b88f1c96d49138cf1\\gen_2.png"
+  },
+  {
+    "iteration": 3,
+    "prompt": "realistic, like a bad quality photo from the 2000s. a small messy bedroom with a single bed, looks like in a hut in the woods or in jail, very simple and not photogenic (you don't see woods). there are some clothes on the bed - hiking pants (without legs), 2 misorganized pillows in red and a blanket, and some flipflops on the flor. very neglected, a shit of paper on the floor\n\n",
+    "seed": "1",
+    "aspect_ratio": "1:1",
+    "output_format": "png",
+    "model": "sd3.5-large-turbo",
+    "image_path": "images/user_6dbed5e478c94e9b88f1c96d49138cf1\\gen_3.png"
+  },
+  {
+    "iteration": 1,
+    "prompt": "a swamp in a rural area in africa, very low quality image, realistic",
+    "seed": "1",
+    "aspect_ratio": "1:1",
+    "output_format": "png",
+    "model": "sd3.5-large-turbo",
+    "image_path": "images/user_6dbed5e478c94e9b88f1c96d49138cf1\\gen_1.png"
+  },
+  {
+    "iteration": 2,
+    "prompt": "a swamp in a rural area in africa, very low quality image, realistic, some trees in the background , water is blueish but also muddy and there is a slight reflection of the trees",
+    "seed": "1",
+    "aspect_ratio": "1:1",
+    "output_format": "png",
+    "model": "sd3.5-large-turbo",
+    "image_path": "images/user_6dbed5e478c94e9b88f1c96d49138cf1\\gen_2.png"
+  },
+  {
+    "iteration": 1,
+    "prompt": " a lot of wordsa lot of wordsa lot of wordsa lot of wordsa lot of wordsa lot of wordsahttps://platform.stability.ai/docs/api-reference#tag/Generate/paths/~1v2beta~1stable-image~1generate~1ultra/posthttps://platform.stability.ai/docs/api-reference#tag/Generate/paths/~1v2beta~1stable-image~1generate~1ultra/posthttps://platform.stability.ai/docs/api-reference#tag/Generate/paths/~1v2beta~1stable-image~1generate~1ultra/posthttps://platform.stability.ai/docs/api-reference#tag/Generate/paths/~1v2beta~1stable-image~1generate~1ultra/posthttps://platform.stability.ai/docs/api-reference#tag/Generate/paths/~1v2bhttps://platform.stability.ai/docs/api-https://platform.stability.ai/docs/api-reference#tag/Generate/pathttps://platform.stability.ai/docs/api-reference#tag/Generate/pathttps://platform.stability.ai/docs/api-reference#tag/Generate/pathttps://platform.stability.ai/docs/api-reference#tag/Generate/pathttps://platform.stability.ai/docs/api-reference#tag/Generate/paths/~1v2beta~1stable-image~1generate~1ultra/posthttps://platform.stability.ai/docs/api-reference#tag/Generate/paths/~1v2beta~1stable-image~1generate~1ultra/posths/~1v2beta~1stable-image~1generate~1ultra/posths/~1v2beta~1stable-image~1generate~1ultra/posths/~1v2beta~1stable-image~1generate~1ultra/posths/~1v2beta~1stable-image~1generate~1ultra/postreference#tag/Generate/paths/~1v2beta~1stable-image~1generate~1ultra/post eta~1stable-image~1generate~1ultra/post",
+    "seed": "1",
+    "aspect_ratio": "1:1",
+    "output_format": "png",
+    "model": "sd3.5-large-turbo",
+    "image_path": "images/user_6dbed5e478c94e9b88f1c96d49138cf1\\gen_1.png"
+  }
+]
