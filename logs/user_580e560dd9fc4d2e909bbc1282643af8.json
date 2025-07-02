@@ -1,0 +1,11 @@
+[
+  {
+    "iteration": 1,
+    "prompt": "a picture of a swamp with a bit of trees. ultra realistic",
+    "seed": "1",
+    "aspect_ratio": "1:1",
+    "output_format": "png",
+    "model": "sd3.5-large-turbo",
+    "image_path": "images/user_580e560dd9fc4d2e909bbc1282643af8\\gen_1.png"
+  }
+]
