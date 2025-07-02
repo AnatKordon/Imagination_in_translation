@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import glob
 from tabulate import tabulate
+import matplotlib.pyplot as plt
 
 def read_all_csv_files(directory_path="."):
     """
@@ -42,20 +43,33 @@ def read_all_csv_files(directory_path="."):
         return pd.DataFrame()
 
 # Read all CSV files from current directory (logs folder)
-df = read_all_csv_files(r'C:\Users\yaniv\Github repositories\Imagination_in_Translation\Imagination_in_translation\ui\data\logs')
+df = read_all_csv_files(r'.\ui\data\logs')
 
-# Display basic info about the combined DataFrame
-if not df.empty:
-    print(f"\nDataFrame shape: {df.shape}")
-    print(f"Columns: {list(df.columns)}")
-    print("\nFirst few rows:")
-    print(df.head())
-else:
-    print("No data loaded")
-## For wide tables, transpose or select specific columns:
-print("Transposed view (first 5 rows):")
-print(tabulate(df.head().T, headers='keys', tablefmt='grid'))
+avg_similarity = df.groupby(['uid', 'session'])['similarity'].mean()
 
-# Or select specific columns
-#columns_to_show = ['column1', 'column2', 'column3']  # Replace with your actual column names
-#print(tabulate(df[columns_to_show].head(), headers='keys', tablefmt='grid'))
+print("\nAverage similarity score per uid per session:")
+print(tabulate(avg_similarity.reset_index(), headers='keys', tablefmt='grid'))
+
+# Create line graph for each uid
+plt.figure(figsize=(12, 8))
+    
+# Get unique UIDs
+unique_uids = df['uid'].unique()
+
+for uid in unique_uids:
+    # Get data for this specific uid
+    uid_data = avg_similarity[avg_similarity.index.get_level_values('uid') == uid]
+    # Extract sessions and similarity values
+    sessions = uid_data.index.get_level_values('session')
+    similarities = uid_data.values
+    # Plot line for this uid
+    plt.plot(sessions, similarities, marker='o', label=f'UID: {uid}', linewidth=2)
+
+# Add plot formatting AFTER the loop
+plt.xlabel('Session Number')
+plt.ylabel('Average Similarity Score')
+plt.title('Average Similarity Score Across Sessions by UID')
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.show()
+        

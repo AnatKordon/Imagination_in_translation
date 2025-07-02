@@ -1,3 +1,0 @@
-uid,participant_age,participant_gender,participant_native,gt,attempt,prompt,gen,similarity,ts
-2e8e0aac16764685816998c27429c03c,30,Male,Yes,bedroom_l.jpg,1,a pictur of a bedroom,gen_1.png,70,1751375702
-2e8e0aac16764685816998c27429c03c,30,Male,Yes,bedroom_l.jpg,2,a car,gen_2.png,54,1751375720

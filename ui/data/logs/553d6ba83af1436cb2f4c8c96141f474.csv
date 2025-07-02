@@ -1,4 +1,0 @@
-uid,gt,attempt,prompt,gen,similarity,ts
-553d6ba83af1436cb2f4c8c96141f474,factory_h.jpg,1,a picture of two power plant something,gen_1.png,73,1751374215
-553d6ba83af1436cb2f4c8c96141f474,factory_h.jpg,2,"a picture of two power plant something. surrounded by forest, there is a mountain to the left",gen_2.png,78,1751374259
-553d6ba83af1436cb2f4c8c96141f474,factory_h.jpg,3,a car,gen_3.png,56,1751374454
