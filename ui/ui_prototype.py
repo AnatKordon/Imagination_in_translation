@@ -1,5 +1,5 @@
 # It's a prototype of UI for the project. It doesn't actually send anything to the model or calculate image similarity yet.
-# To call the app, write: cd UI streamlit run ui_prototype.py --server.port 8501 in the codespace terminal (in github or locally, then "cd UI" part is optional), but first, install the required libraries listed in the requirements.txt file with a single command: pip install -r requirements.txt.
+# To call the app, write:  run ui/ui_prototype.py --server.port 8501 in the codespace terminal  but first, install the required libraries listed in the requirements.txt file with a single command: pip install -r requirements.txt.
 # Note, that by default a user has to press ctrl+enter after filling in the text box to apply the text, count characters, send it to generation etc. 
 import sys
 from pathlib import Path

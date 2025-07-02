@@ -110,7 +110,7 @@ ENV/
 
 #images
 *.png
-.jpg
-.jpeg
+*.jpg
+*.jpeg
 
 client_secrets.json

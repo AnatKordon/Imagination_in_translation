@@ -1,0 +1,20 @@
+[
+  {
+    "iteration": 1,
+    "prompt": "a bridge over a small ugly lake, with little half dry grass in the foreground and some trees in the back. bridge is built from bricks in pale pink/orange, sky is blue",
+    "seed": "1",
+    "aspect_ratio": "1:1",
+    "output_format": "png",
+    "model": "sd3.5-large-turbo",
+    "image_path": "images/user_d6d89091c97c44168808cf1a4b0a4af9\\gen_1.png"
+  },
+  {
+    "iteration": 2,
+    "prompt": "a bridge over a small ugly lake, with little half dry grass in the foreground and some trees in the back. bridge is built from bricks in pale pink/orange, sky is blue. an image that is not cinemtic, but like an image form 2005\n",
+    "seed": "1",
+    "aspect_ratio": "1:1",
+    "output_format": "png",
+    "model": "sd3.5-large-turbo",
+    "image_path": "images/user_d6d89091c97c44168808cf1a4b0a4af9\\gen_2.png"
+  }
+]

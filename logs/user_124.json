@@ -151,5 +151,14 @@
     "output_format": "png",
     "model": "sd3.5-large-turbo",
     "image_path": "images/user_124\\gen_1.png"
+  },
+  {
+    "iteration": 1,
+    "prompt": "a playground with ",
+    "seed": "1",
+    "aspect_ratio": "1:1",
+    "output_format": "png",
+    "model": "sd3.5-large-turbo",
+    "image_path": "images/user_124\\gen_1.png"
   }
 ]
