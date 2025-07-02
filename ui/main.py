@@ -5,7 +5,7 @@ import pandas as pd
 from PIL import Image 
 
 def main():
-
+    imagesize = config.IMAGE_SIZE
     image_path = config.EXAMPLE_IMAGE
     st.title("Imagination in Translation")
 
@@ -23,7 +23,7 @@ def main():
     st.image(image, caption="Sample Image")
 
     st.write("Please describe what you see.")
-    st.session_state.user_input = st.text_area("Your description:", value=st.session_state.user_input, height=200,key="Description")
+    st.session_state.user_input = st.text_area("Your description:", value=st.session_state.user_input, height=imagesize,key="Description")
     if st.button("Submit"):
             text = st.session_state.user_input
 

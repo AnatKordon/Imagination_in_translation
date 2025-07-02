@@ -1,0 +1,11 @@
+[
+  {
+    "iteration": 1,
+    "prompt": "a playground with red slide ",
+    "seed": "1",
+    "aspect_ratio": "1:1",
+    "output_format": "png",
+    "model": "sd3.5-large-turbo",
+    "image_path": "images/user_4439d425c5aa404a98f7c03b642b6919\\gen_1.png"
+  }
+]

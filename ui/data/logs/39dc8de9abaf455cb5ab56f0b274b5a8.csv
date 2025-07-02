@@ -1,0 +1,7 @@
+uid,gt,attempt,prompt,gen,similarity,ts
+39dc8de9abaf455cb5ab56f0b274b5a8,pool_l.jpg,1,"an image of a cloudy day, realistic.
+there is a pool with palms",gen_1.png,77,1751373977
+39dc8de9abaf455cb5ab56f0b274b5a8,pool_l.jpg,2,"an image of a cloudy day, realistic.
+there is a pool with palms, the pool is taking most of the frame from the right side to the left side",gen_2.png,73,1751374021
+39dc8de9abaf455cb5ab56f0b274b5a8,pool_l.jpg,3,"an image of a cloudy day, realistic.
+there is a pool with palms, the pool is taking most of the frame from the right side to the left side, horizontally. The bottom of the frame should include a little bit of a floor before the pool (typical outside floor). there is a place to jummp from to the water on the left side",gen_3.png,69,1751374129

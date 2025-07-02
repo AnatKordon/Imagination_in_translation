@@ -1,0 +1,29 @@
+[
+  {
+    "iteration": 1,
+    "prompt": "an image of a cloudy day, realistic.\nthere is a pool with palms",
+    "seed": "1",
+    "aspect_ratio": "1:1",
+    "output_format": "png",
+    "model": "sd3.5-large-turbo",
+    "image_path": "images/user_39dc8de9abaf455cb5ab56f0b274b5a8\\gen_1.png"
+  },
+  {
+    "iteration": 2,
+    "prompt": "an image of a cloudy day, realistic.\nthere is a pool with palms, the pool is taking most of the frame from the right side to the left side",
+    "seed": "1",
+    "aspect_ratio": "1:1",
+    "output_format": "png",
+    "model": "sd3.5-large-turbo",
+    "image_path": "images/user_39dc8de9abaf455cb5ab56f0b274b5a8\\gen_2.png"
+  },
+  {
+    "iteration": 3,
+    "prompt": "an image of a cloudy day, realistic.\nthere is a pool with palms, the pool is taking most of the frame from the right side to the left side, horizontally. The bottom of the frame should include a little bit of a floor before the pool (typical outside floor). there is a place to jummp from to the water on the left side",
+    "seed": "1",
+    "aspect_ratio": "1:1",
+    "output_format": "png",
+    "model": "sd3.5-large-turbo",
+    "image_path": "images/user_39dc8de9abaf455cb5ab56f0b274b5a8\\gen_3.png"
+  }
+]

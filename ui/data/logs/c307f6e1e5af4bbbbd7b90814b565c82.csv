@@ -1,0 +1,5 @@
+uid,gt,attempt,prompt,gen,similarity,ts
+c307f6e1e5af4bbbbd7b90814b565c82,iceberg_h.jpg,1,a picture of a big boat sails near a big glacier in the northern sea,gen_1.png,0.0,1751372631
+c307f6e1e5af4bbbbd7b90814b565c82,iceberg_h.jpg,2,a picture of a big boat sails near a big glacier in the northern sea,gen_2.png,0.0,1751372648
+c307f6e1e5af4bbbbd7b90814b565c82,iceberg_h.jpg,3,a picture of a big boat sails near a big glacier in the northern sea..,gen_3.png,0.0,1751372669
+c307f6e1e5af4bbbbd7b90814b565c82,iceberg_h.jpg,4,a picture of a big boat sails near a big glacier in the northern sea..,gen_4.png,0.0,1751372691
