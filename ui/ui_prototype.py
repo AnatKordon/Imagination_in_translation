@@ -10,11 +10,12 @@ if str(project_root) not in sys.path:
                     
 from uuid import uuid4 # used to create session / user IDs
 from models import api_model # the model API wrapper
-
+from langdetect import detect_langs
 from similarity import vgg_similarity # the similarity function (to be changed)
 import random, csv, time 
 import config
 import numpy as np 
+import re
 import streamlit as st # Streamlit UI framework
 from PIL import Image, ImageOps # Pillow library to manipulate images
 
@@ -166,6 +167,25 @@ with left:
         placeholder="Type an accurate description of the target image. After finished press ctrl+enter to apply the text.",
     )
 
+    ## ERROR HANDLING for the prompt text
+
+    ##check for symbols##
+    symbols = bool(re.search(r"[^a-zA-Z0-9\s.,!?'\"\()-]", S.prompt))
+    if symbols:
+        st.error("Please, use only letters, numbers, spaces and punctuation marks (.,!?') in your description. Other symbols are not allowed.")
+
+    ## Check for https links ##
+    http = any(i in S.prompt for i in config.websites)
+    if http:
+        st.error("Please, do not use links in your description. Only text is allowed.")
+
+    ##Check for legth##
+    if len(S.prompt) > config.MAX_LENGTH-1:
+        st.error(f"Your description is too long. Only the first {config.MAX_LENGTH} characters will be used.")
+        S.prompt = S.prompt[:config.MAX_LENGTH-1]
+
+
+
 # Character counters (below the box)
     c1, c2 = st.columns(2)
     c1.caption(f"{len(S.prompt)} characters")
@@ -176,6 +196,8 @@ with left:
         S.generated
         or not str(S.prompt).strip()
         or S.attempt > config.MAX_ATTEMPTS
+        or symbols
+        or http
     )
 
     if st.button("Generate", type="primary", disabled=gen_disabled):
@@ -236,7 +258,7 @@ with right:
 
         S.subjective_score = st.radio(
             "Subjective Similarity (1 = not similar, 6 = very similar)",
-            [1, 2, 3, 4, 5,6],
+            [1, 2, 3, 4, 5, 6 ],
             horizontal=True,
             key=f"subjective_score_{S.session}_{S.attempt}",
         )

@@ -13,6 +13,7 @@ torchvision
 
 #UI packages
 streamlit
+langdetect
 Pillow
 # Data visualization
 matplotlib
