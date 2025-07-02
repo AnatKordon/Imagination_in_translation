@@ -1,4 +1,0 @@
-uid,participant_age,participant_gender,participant_native,gt,attempt,prompt,gen,similarity,ts
-d6d89091c97c44168808cf1a4b0a4af9,31,Female,No,canal_h.jpg,1,"a bridge over a small ugly lake, with little half dry grass in the foreground and some trees in the back. bridge is built from bricks in pale pink/orange, sky is blue",gen_1.png,65,1751445537
-d6d89091c97c44168808cf1a4b0a4af9,31,Female,No,canal_h.jpg,2,"a bridge over a small ugly lake, with little half dry grass in the foreground and some trees in the back. bridge is built from bricks in pale pink/orange, sky is blue. an image that is not cinemtic, but like an image form 2005
-",gen_2.png,64,1751445616
