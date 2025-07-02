@@ -235,7 +235,7 @@ with right:
         st.write(f"**{S.last_score:.1f}%**")
 
         S.subjective_score = st.radio(
-            "Subjective Similarity (1 = not similar, 5 = very similar)",
+            "Subjective Similarity (1 = not similar, 6 = very similar)",
             [1, 2, 3, 4, 5,6],
             horizontal=True,
             key=f"subjective_score_{S.session}_{S.attempt}",
