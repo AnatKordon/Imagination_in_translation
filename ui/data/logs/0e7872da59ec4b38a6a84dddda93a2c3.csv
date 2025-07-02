@@ -1,0 +1,3 @@
+uid,participant_age,participant_gender,participant_native,gt,attempt,prompt,gen,similarity,ts
+0e7872da59ec4b38a6a84dddda93a2c3,25,Male,No,mountain_l.jpg,1,"a picture of a desertish enviorment, ultra realistic.
+a few trees an snow can be seen in mountain tops at distance",gen_1.png,73,1751375635

@@ -1,26 +1,24 @@
 # It's a prototype of UI for the project. It doesn't actually send anything to the model or calculate image similarity yet.
 # To call the app, write: cd UI streamlit run ui_prototype.py --server.port 8501 in the codespace terminal (in github or locally, then "cd UI" part is optional), but first, install the required libraries listed in the requirements.txt file with a single command: pip install -r requirements.txt.
 # Note, that by default a user has to press ctrl+enter after filling in the text box to apply the text, count characters, send it to generation etc. 
-
+import sys
 from pathlib import Path
-from uuid import uuid4 # used to create session / user IDs
-import random, csv, time 
 
+project_root = Path(__file__).resolve().parents[1]
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+                    
+from uuid import uuid4 # used to create session / user IDs
+from models import api_model # the model API wrapper
+from similarity import vgg_similarity # the similarity function (to be changed)
+import random, csv, time 
+import config
 import streamlit as st # Streamlit UI framework
 from PIL import Image, ImageOps # Pillow library to manipulate images
 
-# Directories (MIGHT NEED TO BE CHANGED)
-ROOT = Path(__file__).resolve().parent
-GT_DIR = ROOT.parent / "data" / "wilma_ground_truth" # folder with target images
-GEN_DIR = ROOT / "generated" # folder for generated images
-LOG_DIR = ROOT / "data" / "logs" # folder with CSV log files per user/session
-FALLBACK = ROOT / "mona_lisa_2.jpg" # TO BE REMOVED: dummy placeholder picture that is used instead of a generated one
-
-MAX_ATTEMPTS = 5 # Attempts to improve the description are limited to 5
-IMG_H = 260  # The height of images is limited to 260 px so the user doesn't need to scroll
 
 # ensuring all the required folders exist so .save() or logging never crash
-for d in (GEN_DIR, LOG_DIR):
+for d in (config.GEN_DIR, config.LOG_DIR):
     d.mkdir(parents=True, exist_ok=True)
 
 # Setting up the appearance
@@ -37,19 +35,33 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# TO BE CHANGED: here goes actual IMAGE GENERATION. So far, it just pretends to run a diffusion model: it copies the fallback Mona Lisa picture to a new filename so we have something to display.
-def generate_image(prompt: str, attempt: int, gt: Path) -> Path:
-    out = GEN_DIR / f"{gt.stem}_att{attempt}.png"
-    ImageOps.contain(Image.open(FALLBACK), (512, 512)).save(out)
-    return out
 
-# TO BE CHANGED: here goes actual SIMILARITY SCORE. So far, it's just random numbers.
-def similarity(_: Path, __: Path) -> float:
-    return random.uniform(0.25, 0.9)
+def generate_image(prompt: str, attempt: int, gt: Path,id: str) -> Path:
+    params = config.params.copy() # copy the params dict so we don't change the original one
+    params["prompt"] = prompt # set the prompt
+    
+    api_model.send_generation_request(host="https://api.stability.ai/v2beta/stable-image/generate/sd3",params=params,
+                                      iteration=attempt,user_id=id)
+    path = config.GEN_DIR /f"user_{id}"/f"gen_{attempt}.png" # path to the generated image
+    ImageOps.contain(Image.open(path), (512, 512))
+    return path
+
+
+def similarity(GT_path: Path, GEN_path: Path) -> float:
+    ## use vgg to create embeddings and calculate similarity
+    embedder = vgg_similarity.get_vgg_embedder()  # get the VGG embedder
+    GT_path = str(GT_path)  # convert Path to string for the similarity function
+    GEN_path = str(GEN_path)  # convert Path to string for the similarity function
+    GT_embedding = embedder.get_embedding(img_path=GT_path)  # get embedding for the ground truth image
+    GEN_embedding = embedder.get_embedding(img_path=GEN_path)  # get embedding for the generated image
+
+    objective_similarity_score, cosine_distance = vgg_similarity.compute_similarity_score(GT_embedding, GEN_embedding)
+
+    return objective_similarity_score 
 
 # TO BE CHANGED: here goes LOG saving. Here is a simple function that appends one row per generation to a specific CSV log for each session. Creates the file and header on first write.
 def log_row(**kw):
-    f = LOG_DIR / f"{kw['uid']}.csv"
+    f = config.LOG_DIR / f"{kw['uid']}.csv"
     first = not f.exists()
     with f.open("a", newline="", encoding="utf-8") as h:
         w = csv.DictWriter(h, fieldnames=kw.keys())
@@ -67,7 +79,7 @@ def fresh_key() -> str:
 
 # Function that loads a new ground-truth image (or finish the whole thing if none left in the folder) and reset all per-target variables. Then force an immediate rerun.
 def next_gt():
-    remaining = [p for p in GT_DIR.glob("*.[pj][pn]g") if p.name not in S.used]
+    remaining = [p for p in config.GT_DIR.glob("*.[pj][pn]g") if p.name not in S.used]
     if not remaining:
         S.finished = True
         rerun()
@@ -99,6 +111,25 @@ for k, v in {
     st.session_state.setdefault(k, v)
 S = st.session_state
 
+if "participant_info_submitted" not in S:
+    S.participant_info_submitted = False
+# If the participant info is not submitted, show the form to collect it.
+if not S.participant_info_submitted:
+    with st.form("participant_info_form"):
+        st.header("Participant Information")
+        age = st.number_input("Age", min_value=10, max_value=100, step=1)
+        gender = st.selectbox("Gender", ["Prefer not to say", "Male", "Female", "Other"])
+        native = st.radio("Are you a native English speaker?", ["Yes", "No"])
+
+        submit = st.form_submit_button("Submit")
+        if submit:
+            S.participant_age = age
+            S.participant_gender = gender
+            S.participant_native = native
+            S.participant_info_submitted = True
+            st.success("Thank you! Starting the session...")
+            st.rerun()
+    st.stop()
 if S.gt_path is None:      # loading the next ground truth picture
     next_gt()
 
@@ -123,26 +154,36 @@ with left:
         "The picture shows...",
         key=S.text_key,
         height=140,
-        placeholder="Type an accurate description of the target image",
+        placeholder="Type an accurate description of the target image. After finished press ctrl+enter to apply the text.",
     )
 
 # Character counters (below the box)
     c1, c2 = st.columns(2)
     c1.caption(f"{len(S.prompt)} characters")
-    c2.caption(f"{S.attempt} / {MAX_ATTEMPTS}")
+    c2.caption(f"{S.attempt} / {config.MAX_ATTEMPTS}")
 
-# the generation is disabled if the image is already generated, we have empty prompt, or there were more than five attempts
+
     gen_disabled = (
         S.generated
         or not str(S.prompt).strip()
-        or S.attempt > MAX_ATTEMPTS
+        or S.attempt > config.MAX_ATTEMPTS
     )
-# TO BE CHANGED: "Generate" button should send the prompt for a real IMAGE GENERATION, but now it just runs a dummy generator, saves some logs, then reruns
+
     if st.button("Generate", type="primary", disabled=gen_disabled):
-        S.gen_path = generate_image(S.prompt, S.attempt, S.gt_path)
-        S.last_score = similarity(S.gt_path, S.gen_path)
+
+        S.gen_path = generate_image(S.prompt, S.attempt, S.gt_path,S.uid) # generate the image
+        try:
+            S.last_score = similarity(S.gt_path, S.gen_path)
+        except Exception as e:
+            st.error(f"Error calculating similarity: {e}")
+            S.last_score = 0.0
+
+
         log_row(
             uid=S.uid,
+            participant_age=S.participant_age,
+            participant_gender= S.participant_gender,
+            participant_native=S.participant_native,
             gt=S.gt_path.name,
             attempt=S.attempt,
             prompt=S.prompt,
@@ -164,7 +205,7 @@ with right:
   # always shows ground truth picture
     with gt_c:
         st.image(
-            ImageOps.contain(Image.open(S.gt_path), (int(IMG_H * 1.8), IMG_H)),
+            ImageOps.contain(Image.open(S.gt_path), (int(config.IMG_H * 1.8), config.IMG_H)),
             caption="Target image",
             clamp=True,
         )
@@ -172,21 +213,21 @@ with right:
     if S.generated:
         with gen_c:
             st.image(
-                ImageOps.contain(Image.open(S.gen_path), (int(IMG_H * 1.8), IMG_H)),
+                ImageOps.contain(Image.open(S.gen_path), (int(config.IMG_H * 1.8), config.IMG_H)),
                 caption="Generated image",
                 clamp=True,
             )
 
         st.caption("Similarity:")
-        st.progress(int(S.last_score * 100))
-        st.write(f"**{S.last_score * 100:.1f}%**")
+        st.progress(int(S.last_score))
+        st.write(f"**{S.last_score:.1f}%**")
 
         a_col, t_col = st.columns(2)
 
         if a_col.button("Accept"):
             next_gt()
 # "Try again" button is disabled on 5th attempt
-        if t_col.button("Try again", disabled=S.attempt >= MAX_ATTEMPTS):
+        if t_col.button("Try again", disabled=S.attempt >= config.MAX_ATTEMPTS):
             S.generated = False
             S.attempt += 1
             rerun()

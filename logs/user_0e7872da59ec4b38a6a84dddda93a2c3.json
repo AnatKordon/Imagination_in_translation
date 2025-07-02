@@ -1,0 +1,11 @@
+[
+  {
+    "iteration": 1,
+    "prompt": "a picture of a desertish enviorment, ultra realistic.\na few trees an snow can be seen in mountain tops at distance",
+    "seed": "1",
+    "aspect_ratio": "1:1",
+    "output_format": "png",
+    "model": "sd3.5-large-turbo",
+    "image_path": "images/user_0e7872da59ec4b38a6a84dddda93a2c3\\gen_1.png"
+  }
+]

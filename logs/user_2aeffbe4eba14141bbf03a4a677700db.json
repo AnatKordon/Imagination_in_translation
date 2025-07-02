@@ -1,0 +1,11 @@
+[
+  {
+    "iteration": 1,
+    "prompt": "a lake by a frozen glacier, looks like the alps",
+    "seed": "1",
+    "aspect_ratio": "1:1",
+    "output_format": "png",
+    "model": "sd3.5-large-turbo",
+    "image_path": "images/user_2aeffbe4eba14141bbf03a4a677700db\\gen_1.png"
+  }
+]

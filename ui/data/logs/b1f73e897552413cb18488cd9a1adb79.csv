@@ -1,0 +1,6 @@
+uid,gt,attempt,prompt,gen,similarity,ts
+b1f73e897552413cb18488cd9a1adb79,building_facade_h.jpg,1,a picture of a soviet style building with windows and staircase,gen_1.png,0.0,1751372899
+b1f73e897552413cb18488cd9a1adb79,building_facade_h.jpg,2,a picture of a soviet style building with windows and staircase,gen_2.png,0.0,1751372961
+b1f73e897552413cb18488cd9a1adb79,building_facade_h.jpg,3,a picture of a soviet style building with windows and staircase,gen_3.png,0.0,1751372992
+b1f73e897552413cb18488cd9a1adb79,building_facade_h.jpg,4,a picture of a soviet style building with windows and staircase,gen_4.png,0.0,1751373064
+b1f73e897552413cb18488cd9a1adb79,building_facade_h.jpg,5,a picture of a soviet style building with windows and staircase,gen_5.png,0.0,1751373285

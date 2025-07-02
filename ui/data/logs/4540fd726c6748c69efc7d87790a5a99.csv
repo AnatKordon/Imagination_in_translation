@@ -1,0 +1,3 @@
+uid,participant_age,participant_gender,participant_native,gt,attempt,prompt,gen,similarity,ts
+4540fd726c6748c69efc7d87790a5a99,30,Male,Yes,house_l.jpg,1,this is a picture of a house with grass,gen_1.png,82,1751375541
+4540fd726c6748c69efc7d87790a5a99,30,Male,Yes,house_l.jpg,2,this is a realistic picture of a house with grass. the house dosen't have greens on it,gen_2.png,78,1751375573
