@@ -68,8 +68,9 @@ def send_generation_request(
         raise Warning("NSFW content filtered.")
 
     # ------- Save generated image with flat filename structure -------
-    # Make sure images/ directory exists
-    os.makedirs("gen_images", exist_ok=True)
+    # Make sure Logs/gen_images/ directory exists
+    output_dir = os.path.join("Logs", "gen_images")
+    os.makedirs(output_dir, exist_ok=True)
 
     # Save image using flat structure
     filename = f"{user_id}_session{session_num}_iter{iteration}.png"
