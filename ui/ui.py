@@ -9,7 +9,6 @@ if str(project_root) not in sys.path:
                     
 from uuid import uuid4 # used to create session / user IDs
 from models import api_model # the model API wrapper
-from langdetect import detect_langs
 from similarity import vgg_similarity # the similarity function (to be changed)
 import random, csv, time 
 import config
