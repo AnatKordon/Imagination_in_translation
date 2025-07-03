@@ -1,0 +1,6 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
+acf4f37ff6b940c3864bedbe6b85bdb0,10,Prefer not to say,Yes,golf_course_h.jpg,1,1,"a picture of a golf course with palm trees, in the horizon we can see the ocean in a ckear day",images\acf4f37ff6b940c3864bedbe6b85bdb0_session1_iter1.png,76,0.4651,,1751453809
+acf4f37ff6b940c3864bedbe6b85bdb0,10,Prefer not to say,Yes,golf_course_h.jpg,1,2,"a picture of a golf course with palm trees, in the horizon we can see the ocean in a ckear day. almost white beach sand",images\acf4f37ff6b940c3864bedbe6b85bdb0_session1_iter2.png,78,0.4361,1,1751453887
+acf4f37ff6b940c3864bedbe6b85bdb0,10,Prefer not to say,Yes,airport_terminal_l.jpg,2,1,משרד ,images\acf4f37ff6b940c3864bedbe6b85bdb0_session2_iter1.png,57,0.8435,6,1751453936
+acf4f37ff6b940c3864bedbe6b85bdb0,10,Prefer not to say,Yes,pool_h.jpg,3,1,ילד עם חיוך,images\acf4f37ff6b940c3864bedbe6b85bdb0_session3_iter1.png,56,0.8723,6,1751453962
+acf4f37ff6b940c3864bedbe6b85bdb0,10,Prefer not to say,Yes,pool_h.jpg,3,2,רחוב אפלולי,images\acf4f37ff6b940c3864bedbe6b85bdb0_session3_iter2.png,59,0.8116,5,1751453986

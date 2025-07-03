@@ -1,0 +1,2 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
+08739233a703498bbd851ac8b05482a5,10,Prefer not to say,Yes,skyscraper_h.jpg,1,1,a building,,0.0,0.0,,1751531009

@@ -1,0 +1,2 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,ts
+2a72412442ec45fba63a61baaa15c86c,10,Prefer not to say,Yes,bedroom_l.jpg,2,1,a bed,images\2a72412442ec45fba63a61baaa15c86c_session2_iter1.png,67,1751449158

@@ -1,0 +1,2 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
+ab44e1355b3b452597c79321055e8ff0,10,Prefer not to say,Yes,canal_l.jpg,1,1,a boat in a creek,images\ab44e1355b3b452597c79321055e8ff0_session1_iter1.png,65,0.6962,,1751456715
