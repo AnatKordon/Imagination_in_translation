@@ -1,0 +1,2 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
+a43b86072c6a430fadc76019dcd362a4,10,Prefer not to say,Yes,street_h.jpg,1,1,a boy,,0.0,0.0,,1751543406
