@@ -42,7 +42,7 @@ def generate_image(prompt: str,seed:int,session:int ,attempt: int, gt: Path,id: 
     params = config.params.copy() # copy the params dict so we don't change the original one
     params["prompt"] = prompt # set the prompt
     params["seed"] = seed # set the seed
-    path = api_model.send_generation_request(host="https://api.stability.ai/v2beta/stable-image/generate/sd3",params=params,
+    path = api_model.send_generation_request(host="https://api.stability.ai/v2beta/stable-image/control/style",params=params,
                                       iteration=attempt,session_num=session,user_id=id)
 
     ImageOps.contain(Image.open(path), (512, 512))
