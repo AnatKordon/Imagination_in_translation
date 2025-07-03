@@ -91,6 +91,8 @@ celerybeat-schedule
 venv/
 ENV/
 venv/
+.venv311
+venv311
 
 # Spyder project settings
 .spyderproject
