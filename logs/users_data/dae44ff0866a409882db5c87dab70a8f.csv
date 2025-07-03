@@ -1,0 +1,5 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
+dae44ff0866a409882db5c87dab70a8f,10,Prefer not to say,Yes,dining_room_l.jpg,1,1,"a lounge for food
+",logs\gen_images\dae44ff0866a409882db5c87dab70a8f_session1_iter1.png,77,0.4476,,1751537148
+dae44ff0866a409882db5c87dab70a8f,10,Prefer not to say,Yes,dining_room_l.jpg,1,2,"a lounge for food just a table with 4 simple wooden chair. very dark lighting
+",logs\gen_images\dae44ff0866a409882db5c87dab70a8f_session1_iter2.png,76,0.4748,3,1751537191
