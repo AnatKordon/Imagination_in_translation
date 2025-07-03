@@ -9,6 +9,10 @@ import numpy as np
 #import my class and simoilarity function
 from similarity.vgg_similarity import compute_similarity_score, VGGEmbedder
 
+
+# Directories (MIGHT NEED TO BE CHANGED)
+ROOT = Path(__file__).resolve().parent  # root of the project, where this file is located
+
 #Initalize model and embedder for use in all test functions
 weights = VGG16_Weights.IMAGENET1K_V1
 vgg_imagenet = models.vgg16(weights=weights)
@@ -18,8 +22,9 @@ embedder = VGGEmbedder(model=vgg_imagenet, layer='Classifier_4')
 
 def test_identical_similarity():
     # testing two identical image
-    img_path1 = Path(r'GT_images\wilma_ground_truth\badlands_h.jpg')
-    img_path2 = Path(r'GT_images\wilma_ground_truth\badlands_h.jpg') #identical
+    img_path1 = ROOT.parent / "GT_images" / "wilma_ground_truth" / "badlands_h.jpg"
+    img_path2 = ROOT.parent / "GT_images" / "wilma_ground_truth" / "badlands_h.jpg" #identical
+
     # Get embeddings for both
     embedding1 = embedder.get_embedding(img_path=str(img_path1))
     embedding2 = embedder.get_embedding(img_path=str(img_path2))
