@@ -9,7 +9,6 @@ if str(project_root) not in sys.path:
                     
 from uuid import uuid4 # used to create session / user IDs
 from models import api_model # the model API wrapper
-from langdetect import detect_langs
 from similarity import vgg_similarity # the similarity function (to be changed)
 import random, csv, time 
 import config
@@ -24,7 +23,7 @@ for d in (config.GEN_DIR, config.LOG_DIR):
     d.mkdir(parents=True, exist_ok=True)
 
 # Setting up the appearance
-st.set_page_config(page_title="Image Description", layout="wide") # the page is full-width 
+st.set_page_config(page_title="Imagination in Translation", layout="wide") # the page is full-width 
 
 # Customising the buttons
 st.markdown(
@@ -61,7 +60,7 @@ def similarity(GT_path: Path, GEN_path: Path) -> float:
 
     return objective_similarity_score , cosine_distance
 
-# TO BE CHANGED: here goes LOG saving. Here is a simple function that appends one row per generation to a specific CSV log for each session. Creates the file and header on first write.
+
 def log_row(**kw):
     f = config.LOG_DIR / f"{kw['uid']}.csv"
     
