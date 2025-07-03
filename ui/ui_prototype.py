@@ -1,4 +1,3 @@
-# It's a prototype of UI for the project. It doesn't actually send anything to the model or calculate image similarity yet.
 # To call the app, write:  run ui/ui_prototype.py --server.port 8501 in the codespace terminal  but first, install the required libraries listed in the requirements.txt file with a single command: pip install -r requirements.txt.
 # Note, that by default a user has to press ctrl+enter after filling in the text box to apply the text, count characters, send it to generation etc. 
 import sys
@@ -117,6 +116,7 @@ for k, v in {
     "last_score": 0.0, # similarity of last generation
     "cosine_distance": 0.0, # cosine distance of last generation
     "text_key": fresh_key(), # widget key for the textbox
+    "last_prompt": "", # stores the last image description
 }.items():
     st.session_state.setdefault(k, v)
 S = st.session_state
@@ -168,6 +168,9 @@ with left:
     )
 
     ## ERROR HANDLING for the prompt text
+    
+    ## checks whether the user has changed the description since the last attempt
+    same_prompt = S.prompt.strip() == S.last_prompt.strip()
 
     ##check for symbols##
     symbols = bool(re.search(r"[^a-zA-Z0-9\s.,!?'\"\()-]", S.prompt))
@@ -190,7 +193,9 @@ with left:
     c1, c2 = st.columns(2)
     c1.caption(f"{len(S.prompt)} characters")
     c2.caption(f"{S.attempt} / {config.MAX_ATTEMPTS}")
-
+   
+    if same_prompt and not S.generated:
+        st.info("Please modify your description before generating again.")
 
     gen_disabled = (
         S.generated
@@ -198,6 +203,7 @@ with left:
         or S.attempt > config.MAX_ATTEMPTS
         or symbols
         or http
+        or same_prompt
     )
 
     if st.button("Generate", type="primary", disabled=gen_disabled):
