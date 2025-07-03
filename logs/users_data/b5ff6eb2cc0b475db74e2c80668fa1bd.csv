@@ -1,4 +1,0 @@
-uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
-b5ff6eb2cc0b475db74e2c80668fa1bd,10,Prefer not to say,Yes,dam_l.jpg,1,1,"an ugly dam, some dry grass, blue sky",logs\gen_images\b5ff6eb2cc0b475db74e2c80668fa1bd_session1_iter1.png,79,0.4185,,1751552925
-b5ff6eb2cc0b475db74e2c80668fa1bd,10,Prefer not to say,Yes,dam_l.jpg,1,1,"an ugly dam, some dry grass, blue sky",logs\gen_images\b5ff6eb2cc0b475db74e2c80668fa1bd_session1_iter1.png,79,0.4185,1,1751552951
-b5ff6eb2cc0b475db74e2c80668fa1bd,10,Prefer not to say,Yes,dam_l.jpg,1,2,"an ugly dam, some dry grass, blue sky wtw",logs\gen_images\b5ff6eb2cc0b475db74e2c80668fa1bd_session1_iter2.png,78,0.4315,5,1751552992

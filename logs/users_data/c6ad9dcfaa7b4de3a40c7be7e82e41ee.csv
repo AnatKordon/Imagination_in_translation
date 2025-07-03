@@ -1,3 +1,0 @@
-uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
-c6ad9dcfaa7b4de3a40c7be7e82e41ee,25,Other,No,bedroom_h.jpg,1,1,An untidy bed with jeans on it,logs\gen_images\c6ad9dcfaa7b4de3a40c7be7e82e41ee_session1_iter1.png,71,0.5654,,1751545418
-c6ad9dcfaa7b4de3a40c7be7e82e41ee,25,Other,No,bedroom_h.jpg,1,2,An untidy bed with one jeans on it. the sheets are red colour ,logs\gen_images\c6ad9dcfaa7b4de3a40c7be7e82e41ee_session1_iter2.png,75,0.4961,2,1751545463

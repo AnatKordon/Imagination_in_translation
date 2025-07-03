@@ -1,3 +1,0 @@
-uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
-947b56278bfc4dbb9957183efecf85d6,30,Other,No,castle_l.jpg,1,1,A picture of a castle in a cloudy day . a cross is visible on a tower,logs\gen_images\947b56278bfc4dbb9957183efecf85d6_session1_iter1.png,83,0.3221,,1751545162
-947b56278bfc4dbb9957183efecf85d6,30,Other,No,airport_terminal_h.jpg,2,1,A car,logs\gen_images\947b56278bfc4dbb9957183efecf85d6_session2_iter1.png,56,0.88,3,1751545196
