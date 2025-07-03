@@ -1,0 +1,3 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
+9c6cc9f730ea400397890a4003599554,10,Prefer not to say,Yes,house_h.jpg,1,1,an house,,0.0,0.0,,1751543596
+9c6cc9f730ea400397890a4003599554,10,Prefer not to say,Yes,house_h.jpg,1,1,an house with a tree,,0.0,0.0,,1751543610

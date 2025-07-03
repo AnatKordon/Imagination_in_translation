@@ -273,18 +273,18 @@ with right:
         )
 # the generated picture is shown together with the similarity score and "accept" and "try again" buttons
     if S.generated:
-        try:
-            with gen_c:
+        with gen_c:
+            try:
                 st.image(
                     ImageOps.contain(Image.open(S.gen_path), (int(config.IMG_H * 1.8), config.IMG_H)),
                     caption="Generated image",
                     clamp=True,
                 )
-        except (FileNotFoundError, AttributeError, ValueError) as e:
-            st.error(f"Generated image cannot be displayed: {e}")
-            S.generated = False
-            S.gen_path = None
-            st.stop()
+            except (FileNotFoundError, AttributeError, ValueError) as e:
+                st.error(f"Generated image cannot be displayed: Try again later")
+                S.generated = False
+                S.gen_path = None
+                st.stop()
 
 
         st.caption("Similarity:")
