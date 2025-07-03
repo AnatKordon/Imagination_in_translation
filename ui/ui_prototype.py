@@ -1,4 +1,3 @@
-# It's a prototype of UI for the project. It doesn't actually send anything to the model or calculate image similarity yet.
 # To call the app, write:  run ui/ui_prototype.py --server.port 8501 in the codespace terminal  but first, install the required libraries listed in the requirements.txt file with a single command: pip install -r requirements.txt.
 # Note, that by default a user has to press ctrl+enter after filling in the text box to apply the text, count characters, send it to generation etc. 
 import sys
@@ -43,7 +42,7 @@ def generate_image(prompt: str,seed:int,session:int ,attempt: int, gt: Path,id: 
     params = config.params.copy() # copy the params dict so we don't change the original one
     params["prompt"] = prompt # set the prompt
     params["seed"] = seed # set the seed
-    path = api_model.send_generation_request(host="https://api.stability.ai/v2beta/stable-image/generate/sd3",params=params,
+    path = api_model.send_generation_request(host="https://api.stability.ai/v2beta/stable-image/control/style",params=params,
                                       iteration=attempt,session_num=session,user_id=id)
 
     ImageOps.contain(Image.open(path), (512, 512))
@@ -117,6 +116,7 @@ for k, v in {
     "last_score": 0.0, # similarity of last generation
     "cosine_distance": 0.0, # cosine distance of last generation
     "text_key": fresh_key(), # widget key for the textbox
+    "last_prompt": "", # stores the last image description
 }.items():
     st.session_state.setdefault(k, v)
 S = st.session_state
@@ -157,7 +157,7 @@ left, right = st.columns([1, 2])
 # left column: textbox for descriptive prompt and "generate" and "exit" buttons.
 with left:
     st.write(f"**Your ID:** `{S.uid}`")
-    st.markdown("**Please, describe the picture as precisely as possible. You have up to 5 attempts to improve your description.**")
+    st.markdown("**Please, describe the picture as precisely as possible. You have up to 5 attempts to improve your description. Please, press ctrl + enter buttons after you are done typing to apply the text. Note that you cannot use the same description twice.**")
 
 # Textbox (unique key per target)
     S.prompt = st.text_area(
@@ -168,6 +168,9 @@ with left:
     )
 
     ## ERROR HANDLING for the prompt text
+    
+    ## checks whether the user has changed the description since the last attempt
+    same_prompt = S.prompt.strip() == S.last_prompt.strip()
 
     ##check for symbols##
     symbols = bool(re.search(r"[^a-zA-Z0-9\s.,!?'\"\()-]", S.prompt))
@@ -190,7 +193,9 @@ with left:
     c1, c2 = st.columns(2)
     c1.caption(f"{len(S.prompt)} characters")
     c2.caption(f"{S.attempt} / {config.MAX_ATTEMPTS}")
-
+   
+    if same_prompt and not S.generated:
+        st.info("Please modify your description before generating again.")
 
     gen_disabled = (
         S.generated
@@ -198,14 +203,36 @@ with left:
         or S.attempt > config.MAX_ATTEMPTS
         or symbols
         or http
+        or same_prompt
     )
 
     if st.button("Generate", type="primary", disabled=gen_disabled):
-
-        S.gen_path = generate_image(S.prompt,S.seed,S.session ,S.attempt, S.gt_path,S.uid) # generate the image
+        try:
+            S.gen_path = generate_image(S.prompt,S.seed,S.session ,S.attempt, S.gt_path,S.uid) # generate the image
+            print(f"Generated image saved to {S.gen_path}")
+        except Exception as e:
+            msg = str(e)
+            print(e)
+            KNOWN_ERRORS = config.KNOWN_ERRORS
+            if KNOWN_ERRORS["required_field"] in msg:
+                st.error("Some required field is missing. Please check the inputs.")
+            elif KNOWN_ERRORS["content_moderation"] in msg:
+                st.error("Your request was flagged for unsafe content. Please rephrase.")
+            elif KNOWN_ERRORS["payload_too_large"] in msg:
+                st.error("Your prompt is too large. Try shortening it.")
+            elif KNOWN_ERRORS["language_not_supported"] in msg:
+                st.error("Only English is supported. Please write in English.")
+            elif KNOWN_ERRORS["rate_limit"] in msg:
+                st.error("Too many requests. Please wait a moment and try again.")
+            elif KNOWN_ERRORS["server_error"] in msg:
+                st.error("Server error. Please try again shortly.")
+            else:
+                st.error(f"Unexpected error: {msg}")
+                
         try:
             S.last_score,S.cosine_distance = similarity(S.gt_path, S.gen_path)
         except Exception as e:
+            print(e)
             st.error(f"Error calculating similarity: {e}")
             S.last_score = 0.0
 
@@ -245,12 +272,19 @@ with right:
         )
 # the generated picture is shown together with the similarity score and "accept" and "try again" buttons
     if S.generated:
-        with gen_c:
-            st.image(
-                ImageOps.contain(Image.open(S.gen_path), (int(config.IMG_H * 1.8), config.IMG_H)),
-                caption="Generated image",
-                clamp=True,
-            )
+        try:
+            with gen_c:
+                st.image(
+                    ImageOps.contain(Image.open(S.gen_path), (int(config.IMG_H * 1.8), config.IMG_H)),
+                    caption="Generated image",
+                    clamp=True,
+                )
+        except (FileNotFoundError, AttributeError, ValueError) as e:
+            st.error(f"Generated image cannot be displayed: {e}")
+            S.generated = False
+            S.gen_path = None
+            st.stop()
+
 
         st.caption("Similarity:")
         st.progress(int(S.last_score))

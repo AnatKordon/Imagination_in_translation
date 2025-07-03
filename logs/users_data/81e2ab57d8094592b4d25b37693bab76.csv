@@ -1,0 +1,2 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
+81e2ab57d8094592b4d25b37693bab76,10,Prefer not to say,Yes,tower_h.jpg,1,1,a castle,,0.0,0.0,,1751531474

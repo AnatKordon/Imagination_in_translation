@@ -38,19 +38,18 @@ def send_generation_request(
         "Accept": "image/*",
         "Authorization": f"Bearer {STABILITY_KEY}"
     }
-    
-    # ------- Handle optional image and mask files -------
-    # This setup supports both text-to-image and image-based tasks (we will only use text to image)
-    # In our project, we're using only text-to-image, so 'image' and 'mask' are usually not provided.
-    # We keep this section for compatibility with the Stability AI example and future flexibility.
+    # ------- Prepare payload (text-to-image) -------
     files = {
         "prompt": (None, params["prompt"]),
+        "image": open(r"GT_images\wilma_ground_truth\sample_image\bridge_h.jpg", "rb"), #style guide, from api documentation - to generate images similar to our dataset, "rb" - read mode, binary mode
+        "fidelity": (None, "0.2"), #setting lower fidelity to style image to allow variablity and adjstment to all images in dataset
         "aspect_ratio": (None, params["aspect_ratio"]),
         "output_format": (None, params["output_format"]),
         "model": (None, params["model"]),
         "seed": (None, str(params["seed"]))
+        #"style_preset": (None, "photographic") # try "analog-film", "photographic"
     }
-
+    # ------- Handle optional image and mask files -------
     if "image" in params:
         files["image"] = open(params["image"], "rb")
     if "mask" in params:
@@ -72,12 +71,14 @@ def send_generation_request(
         raise Warning("NSFW content filtered.")
 
     # ------- Save generated image with flat filename structure -------
-    # Make sure images/ directory exists
-    os.makedirs("images", exist_ok=True)
+    # Make sure Logs/gen_images/ directory exists
+    output_dir = os.path.join("logs", "gen_images")
+    os.makedirs(output_dir, exist_ok=True)
 
     # Save image using flat structure
     filename = f"{user_id}_session{session_num}_iter{iteration}.png"
-    image_path = os.path.join("images", filename)
+    image_path = os.path.join(output_dir, filename)
+
 
     with open(image_path, "wb") as f:
         f.write(output_image)

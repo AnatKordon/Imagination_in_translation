@@ -1,0 +1,2 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
+fe8113428bd6421788a9c0c4944aab9f,10,Prefer not to say,Yes,street_h.jpg,1,1,a road,,0.0,0.0,,1751531704

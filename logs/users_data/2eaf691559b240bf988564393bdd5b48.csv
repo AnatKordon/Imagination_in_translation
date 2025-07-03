@@ -1,0 +1,2 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
+2eaf691559b240bf988564393bdd5b48,10,Prefer not to say,Yes,airport_terminal_l.jpg,1,1,a office with florescent,,0.0,0.0,,1751531628
