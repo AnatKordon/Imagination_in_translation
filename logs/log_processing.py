@@ -2,7 +2,52 @@ import pandas as pd
 import os
 import glob
 from tabulate import tabulate
+from scipy.stats import pearsonr
 import matplotlib.pyplot as plt
+
+def normalize_score_to_cosine_distance_scale(
+    score: float,
+    old_max: float = 6.0,
+    old_min: float = 1.0,
+    new_min: float = 0.0,
+    new_max: float = 2.0
+) -> float:
+    """
+    Normalizes a score (e.g.: range [1, 6]) to the numerical range of cosine distance (e,g: range [0, 2]).
+
+    This function transforms your original score so it becomes directly comparable
+    to a cosine distance value.
+
+    Args:
+        score (float): The score from 1 to 6.
+        old_min, old_max - old range
+        new_max, new_min - new range
+    Returns:
+        float: The input score, normalized to the [0, 2] range, representing
+               its equivalent value on the cosine distance scale.
+               A score of 1 maps to 0 (most similar), and a score of 6 maps to 2 (most dissimilar).
+    """
+    
+    # Ensure the input is within the expected range, or clamp it
+    # This prevents unexpected outputs if the score is outside range
+    if not (old_min <= score <= old_max):
+        # In a real application, you might raise an error or handle this differently.
+        # For demonstration, a warning and clamping is sufficient.
+        print(f"Warning: Input score {score} is outside the expected range [{old_min}, {old_max}]. Clamping value.")
+        score = max(old_min, min(score, old_max))
+
+    # Step 1: Normalize the score to a [0, 1] range
+    # This expresses the score's position proportionally within its original range
+    normalized_to_0_1 = (score - old_min) / (old_max - old_min)
+
+    # Step 2: Scale this [0, 1] normalized score to the new range
+    # Then shift it to start at the new_min (which is 0 in this case)
+    normalized_score_cd_scale = (normalized_to_0_1 * (new_max - new_min)) + new_min
+
+    return normalized_score_cd_scale
+
+
+
 
 def read_all_csv_files(directory_path="."):
     """
@@ -43,12 +88,32 @@ def read_all_csv_files(directory_path="."):
         return pd.DataFrame()
 
 # Read all CSV files from current directory (logs folder)
-df = read_all_csv_files(r'.\ui\data\logs')
+df = read_all_csv_files(r'.\logs\user_data')
 
 avg_similarity = df.groupby(['uid', 'session'])['similarity'].mean()
+avg_cosine_distance = df.groupby(['uid', 'session'])['cosine_distance'].mean()
+avg_subjective_score = df.groupby(['uid', 'session'])['subjective_score'].mean()
+# Normalize avg_similarity using the provided normalization function
+avg_similarity_normalized = avg_similarity.apply(
+    lambda x: normalize_score_to_cosine_distance_scale(x, old_min=0, old_max=100)
+)
+avg_subjective_score_normalized = avg_subjective_score.apply(normalize_score_to_cosine_distance_scale)
 
-print("\nAverage similarity score per uid per session:")
-print(tabulate(avg_similarity.reset_index(), headers='keys', tablefmt='grid'))
+# Combine all averages into a single DataFrame
+avg_df = pd.DataFrame({
+    'avg_similarity': avg_similarity,
+    'avg_cosine_distance': avg_cosine_distance,
+    'avg_subjective_score': avg_subjective_score,
+    'avg_similarity_normalized': avg_similarity_normalized,
+    'avg_subjective_score_normalized' : avg_subjective_score_normalized
+}).reset_index()
+
+print("\nAverage similarity, cosine distance, and subjective score per uid per session:")
+# Print a more compact table (rounded values, fewer decimals, smaller format)
+compact_df = avg_df.copy()
+for col in ['avg_similarity', 'avg_cosine_distance', 'avg_subjective_score', 'avg_similarity_normalized', 'avg_subjective_score_normalized']:
+    compact_df[col] = compact_df[col].round(3)
+print(tabulate(compact_df, headers='keys', tablefmt='simple', showindex=False, numalign="right"))
 
 # Create line graph for each uid
 plt.figure(figsize=(12, 8))
@@ -57,19 +122,30 @@ plt.figure(figsize=(12, 8))
 unique_uids = df['uid'].unique()
 
 for uid in unique_uids:
-    # Get data for this specific uid
-    uid_data = avg_similarity[avg_similarity.index.get_level_values('uid') == uid]
-    # Extract sessions and similarity values
-    sessions = uid_data.index.get_level_values('session')
-    similarities = uid_data.values
-    # Plot line for this uid
-    plt.plot(sessions, similarities, marker='o', label=f'UID: {uid}', linewidth=2)
+    # Get data for this specific uid from avg_df
+    uid_df = avg_df[avg_df['uid'] == uid]
+    sessions = uid_df['session']
+    # Plot avg_similarity_normalized
+    plt.plot(sessions, uid_df['avg_similarity_normalized'], marker='s', linestyle='--', label=f'UID: {uid} - Similarity (Norm)', linewidth=2)
+    # Plot avg_cosine_distance
+    plt.plot(sessions, uid_df['avg_cosine_distance'], marker='^', linestyle='-.', label=f'UID: {uid} - Cosine Dist', linewidth=2)
+    # Plot avg_subjective_score_normalized
+    plt.plot(sessions, uid_df['avg_subjective_score_normalized'], marker='x', linestyle=':', label=f'UID: {uid} - Subjective (Norm)', linewidth=2)
 
+  
 # Add plot formatting AFTER the loop
 plt.xlabel('Session Number')
-plt.ylabel('Average Similarity Score')
-plt.title('Average Similarity Score Across Sessions by UID')
+plt.ylabel('Average Score')
+plt.title('Average Score Across Sessions by UID')
 plt.legend()
 plt.grid(True, alpha=0.3)
-plt.show()
-        
+#plt.show()
+
+print("\nPearson correlation between avg_cosine_distance and avg_similarity per uid:")
+for uid in avg_df['uid'].unique():
+    uid_data = avg_df[avg_df['uid'] == uid]
+    if len(uid_data) > 1:
+        corr, pval = pearsonr(uid_data['avg_cosine_distance'], uid_data['avg_similarity'])
+        print(f"UID: {uid} | Pearson r: {corr:.3f} | p-value: {pval:.3g}")
+    else:
+        print(f"UID: {uid} | Not enough data for correlation (need at least 2 sessions)")
