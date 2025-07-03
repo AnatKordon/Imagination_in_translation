@@ -1,5 +1,0 @@
-uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
-8e9d33d285d64df3ae92cd3516a30628,10,Prefer not to say,No,bedroom_l.jpg,1,1,a b image of a tidy room. dimmed lighting nice persian carpets,logs\gen_images\8e9d33d285d64df3ae92cd3516a30628_session1_iter1.png,80,0.3861,,1751542487
-8e9d33d285d64df3ae92cd3516a30628,10,Prefer not to say,No,bedroom_l.jpg,1,2,a b image of a tidy room. dimmed lighting nice persian carpets with a bed,logs\gen_images\8e9d33d285d64df3ae92cd3516a30628_session1_iter2.png,80,0.3951,1,1751542526
-8e9d33d285d64df3ae92cd3516a30628,10,Prefer not to say,No,airport_terminal_h.jpg,2,1,A picture of mario cart,logs\gen_images\8e9d33d285d64df3ae92cd3516a30628_session2_iter1.png,54,0.9104,6,1751542580
-8e9d33d285d64df3ae92cd3516a30628,10,Prefer not to say,No,airport_terminal_h.jpg,2,2,a picture of a snail,logs\gen_images\8e9d33d285d64df3ae92cd3516a30628_session2_iter2.png,54,0.9121,1,1751542619
