@@ -104,7 +104,7 @@ def read_all_csv_files(directory_path="."):
         return pd.DataFrame()
 
 # Read all CSV files from current directory (logs folder)
-df = read_all_csv_files(r'.\logs\user_data\\')
+df = read_all_csv_files(r'.\logs\users_data\\')
 
 if df.empty:
     assert not df.empty, "No data found. Exiting script."
