@@ -38,11 +38,7 @@ def send_generation_request(
         "Accept": "image/*",
         "Authorization": f"Bearer {STABILITY_KEY}"
     }
-    
-    # ------- Handle optional image and mask files -------
-    # This setup supports both text-to-image and image-based tasks (we will only use text to image)
-    # In our project, we're using only text-to-image, so 'image' and 'mask' are usually not provided.
-    # We keep this section for compatibility with the Stability AI example and future flexibility.
+    # ------- Prepare payload (text-to-image) -------
     files = {
         "prompt": (None, params["prompt"]),
         "aspect_ratio": (None, params["aspect_ratio"]),
@@ -50,7 +46,7 @@ def send_generation_request(
         "model": (None, params["model"]),
         "seed": (None, str(params["seed"]))
     }
-
+    # ------- Handle optional image and mask files -------
     if "image" in params:
         files["image"] = open(params["image"], "rb")
     if "mask" in params:
@@ -73,7 +69,7 @@ def send_generation_request(
 
     # ------- Save generated image with flat filename structure -------
     # Make sure images/ directory exists
-    os.makedirs("images", exist_ok=True)
+    os.makedirs("gen_images", exist_ok=True)
 
     # Save image using flat structure
     filename = f"{user_id}_session{session_num}_iter{iteration}.png"
