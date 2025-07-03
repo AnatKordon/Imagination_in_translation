@@ -23,6 +23,7 @@ KNOWN_ERRORS = {
     "language_not_supported": "English is the only supported language",
     "rate_limit": "You have exceeded the rate limit",
     "server_error": "An unexpected server error has occurred",
+    "Invalid_Api" :"Invalid Api Key"
 }
 
 

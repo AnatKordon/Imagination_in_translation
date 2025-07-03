@@ -226,6 +226,8 @@ with left:
                 st.error("Too many requests. Please wait a moment and try again.")
             elif KNOWN_ERRORS["server_error"] in msg:
                 st.error("Server error. Please try again shortly.")
+            elif KNOWN_ERRORS["Invalid_Api"] in msg:
+                st.error("Invalid API key. Please check readme for more details.")
             else:
                 st.error(f"Unexpected error: {msg}")
                 
