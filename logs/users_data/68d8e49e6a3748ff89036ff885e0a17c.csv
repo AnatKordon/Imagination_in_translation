@@ -1,0 +1,5 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
+68d8e49e6a3748ff89036ff885e0a17c,30,Female,No,amusement_park_h.jpg,1,1,roller coaster,logs\gen_images\68d8e49e6a3748ff89036ff885e0a17c_session1_iter1.png,64,0.7058,,1751548561
+68d8e49e6a3748ff89036ff885e0a17c,30,Female,No,amusement_park_h.jpg,1,2,"roller coaster, have an ""astroland"" sign on the top",logs\gen_images\68d8e49e6a3748ff89036ff885e0a17c_session1_iter2.png,69,0.6158,4,1751548632
+68d8e49e6a3748ff89036ff885e0a17c,30,Female,No,lake_h.jpg,2,1,goldfish in a pond,logs\gen_images\68d8e49e6a3748ff89036ff885e0a17c_session2_iter1.png,68,0.6284,1,1751548841
+68d8e49e6a3748ff89036ff885e0a17c,30,Female,No,lake_h.jpg,2,2,"goldfish in a pond, plants ",logs\gen_images\68d8e49e6a3748ff89036ff885e0a17c_session2_iter2.png,70,0.5874,2,1751548885

@@ -6,13 +6,17 @@
     doing pearson correlation between the cosine distance and the subjective similarity score per user
 """
 
-import pandas as pd
-import os
 import glob
-from tabulate import tabulate
-from scipy.stats import pearsonr
+import os
 import sys
+import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.stats import pearsonr
+from tabulate import tabulate
+
+# Add parent directory to sys.path to import ui.config
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from ui import config
 
 def normalize_score_to_cosine_distance_scale(
     score: float,
@@ -104,7 +108,8 @@ def read_all_csv_files(directory_path="."):
         return pd.DataFrame()
 
 # Read all CSV files from current directory (logs folder)
-df = read_all_csv_files(r'.\logs\users_data\\')
+
+df = read_all_csv_files(str(config.LOG_DIR))
 
 if df.empty:
     assert not df.empty, "No data found. Exiting script."
