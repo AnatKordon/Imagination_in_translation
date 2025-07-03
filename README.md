@@ -17,12 +17,21 @@ The data for all generation attempts (e.g., text descriptions, generated images,
 
 ## Setup Instructions
 1. Open the terminal.
-2. Clone the repository.
+2. Check your Python version. For certain packages (e.g. PyTorch) you need Python 3.11 or lower (but higher than Python 3.7).
+```bash
+# Windows
+python --version
+````  
+```bash
+# Linux / macOS
+python3 --version
+````
+3. If the version is correct, clone the repository.
 ```bash
 git clone https://github.com/AnatKordon/Imagination_in_translation.git
 cd Imagination_in_translation
 ````
-3. Set up a Python virtual environment.
+4. Set up a Python virtual environment.
 ```bash
 # Linux / macOS
 python3 -m venv .venv
@@ -30,20 +39,20 @@ source .venv/bin/activate
 ````
 ```bash
 # Windows PowerShell
-python -m venv .venv
+python -m venv venv
 venv\Scripts\Activate
 ````
-4. Install the dependencies:
+5. Install the dependencies:
 ```bash
 pip install -r requirements_dev.txt
 ````
-5. Create manually a file called .env in the project root and add your Stability AI API key (do not share the key)
+6. Create manually a file called .env in the project root and add your Stability AI API key (do not share the key)
 ```bash
 STABILITY_API_KEY=your_stability_ai_key_goes_here
 ```` 
-6. Run the Streamlit app.
+7. Run the Streamlit app.
 ```bash
-streamlit run ui\ui.py
+streamlit run ui/ui.py
 ```` 
 ## License
 MIT – see `LICENSE` for full text.
