@@ -80,7 +80,7 @@ def test_file_extension(generated_image_path):
     assert generated_image_path.endswith(".png")
 
 def test_file_exists(mock_file_open, generated_image_path):
-    # Since file writing is mocked, the file does NOT exist on disk.
+    # Since file writing is mocked, the file does not exist on disk.
     # Instead, verify that open was called with the correct filename and 'wb' (write binary) mode,
     # which means the function attempted to write the image file.
     mock_file_open.assert_any_call(generated_image_path, "wb")
