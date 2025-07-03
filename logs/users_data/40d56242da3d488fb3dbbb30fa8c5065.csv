@@ -1,2 +1,0 @@
-uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
-40d56242da3d488fb3dbbb30fa8c5065,10,Prefer not to say,Yes,mountain_h.jpg,1,1,a curvy road,logs\gen_images\40d56242da3d488fb3dbbb30fa8c5065_session1_iter1.png,74,0.5142,,1751548190
