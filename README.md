@@ -15,7 +15,7 @@ The data for all generation attempts (e.g., text descriptions, generated images,
 - [JSON](https://www.json.org/json-en.html) logging of all sessions and iterations
 
 ## Setup Instructions
-1. Open the terminal
+1. Open the terminal.
 2. Clone the repository.
 ```bash
 git clone https://github.com/<org-or-user>/Imagination_in_translation.git
@@ -37,7 +37,7 @@ pip install -r requirements_dev.txt
 ```bash
 STABILITY_API_KEY= your_stability_ai_key_goes_here
 ```` 
-6. Run the Streamlit app
+6. Run the Streamlit app.
 ```bash
 cd ui
 streamlit run ui.py
