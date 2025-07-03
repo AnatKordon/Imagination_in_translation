@@ -77,7 +77,8 @@ def send_generation_request(
 
     # Save image using flat structure
     filename = f"{user_id}_session{session_num}_iter{iteration}.png"
-    image_path = os.path.join("images", filename)
+    image_path = os.path.join(output_dir, filename)
+
 
     with open(image_path, "wb") as f:
         f.write(output_image)
