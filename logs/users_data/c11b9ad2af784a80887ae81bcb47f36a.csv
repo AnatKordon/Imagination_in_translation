@@ -1,0 +1,2 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
+c11b9ad2af784a80887ae81bcb47f36a,10,Prefer not to say,Yes,fountain_h.jpg,1,1,a fountain,logs\gen_images\c11b9ad2af784a80887ae81bcb47f36a_session1_iter1.png,66,0.6704,,1751554615
