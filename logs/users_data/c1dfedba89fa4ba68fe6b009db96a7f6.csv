@@ -1,0 +1,24 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
+c1dfedba89fa4ba68fe6b009db96a7f6,55,Male,No,airport_terminal_l.jpg,1,1,"a mall with a white counter view is from inside the mall and the doors are in teh back
+
+",logs\gen_images\c1dfedba89fa4ba68fe6b009db96a7f6_session1_iter1.png,81,0.3741,,1751547713
+c1dfedba89fa4ba68fe6b009db96a7f6,55,Male,No,airport_terminal_l.jpg,1,2,"a mall with a white counter view is from inside the mall and the doors are in the back, white flourscents lights on the ceiling
+
+
+",logs\gen_images\c1dfedba89fa4ba68fe6b009db96a7f6_session1_iter2.png,74,0.503,4,1751547771
+c1dfedba89fa4ba68fe6b009db96a7f6,55,Male,No,airport_terminal_l.jpg,1,3,"a mall with a white counter view is from inside the mall and the doors are in the back, white flourscents lights on the ceiling, only one counter.
+
+
+
+",logs\gen_images\c1dfedba89fa4ba68fe6b009db96a7f6_session1_iter3.png,76,0.4729,1,1751547835
+c1dfedba89fa4ba68fe6b009db96a7f6,55,Male,No,airport_terminal_l.jpg,1,4,"a mall with a white counter view is from inside the mall and the doors are in the back, white flourscents lights on the ceiling, only one counter. remove all the counters and leave only one
+
+
+
+",logs\gen_images\c1dfedba89fa4ba68fe6b009db96a7f6_session1_iter4.png,79,0.4062,4,1751547878
+c1dfedba89fa4ba68fe6b009db96a7f6,55,Male,No,amusement_park_h.jpg,2,1,roller coaster,logs\gen_images\c1dfedba89fa4ba68fe6b009db96a7f6_session2_iter1.png,65,0.6928,4,1751547932
+c1dfedba89fa4ba68fe6b009db96a7f6,55,Male,No,amusement_park_h.jpg,2,2,"roller coaster, the train is on the top the ride is from left to right.",logs\gen_images\c1dfedba89fa4ba68fe6b009db96a7f6_session2_iter2.png,65,0.689,4,1751548034
+c1dfedba89fa4ba68fe6b009db96a7f6,55,Male,No,street_h.jpg,3,1,road in the desert,logs\gen_images\c1dfedba89fa4ba68fe6b009db96a7f6_session3_iter1.png,84,0.3024,3,1751548090
+c1dfedba89fa4ba68fe6b009db96a7f6,55,Male,No,street_h.jpg,3,2,"road in the desert, wider road",logs\gen_images\c1dfedba89fa4ba68fe6b009db96a7f6_session3_iter2.png,88,0.2342,4,1751548132
+c1dfedba89fa4ba68fe6b009db96a7f6,55,Male,No,tower_h.jpg,4,1,clock tower,logs\gen_images\c1dfedba89fa4ba68fe6b009db96a7f6_session4_iter1.png,75,0.4944,5,1751548184
+c1dfedba89fa4ba68fe6b009db96a7f6,55,Male,No,tower_h.jpg,4,2,"clock tower, make the tower head fancier",logs\gen_images\c1dfedba89fa4ba68fe6b009db96a7f6_session4_iter2.png,82,0.3454,3,1751548251
