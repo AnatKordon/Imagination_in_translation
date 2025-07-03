@@ -109,6 +109,7 @@ df = read_all_csv_files(r'.\logs\users_data\\')
 if df.empty:
     assert not df.empty, "No data found. Exiting script."
 
+
 avg_similarity = df.groupby(['uid', 'session'])['similarity'].mean()
 avg_cosine_distance = df.groupby(['uid', 'session'])['cosine_distance'].mean()
 avg_subjective_score = df.groupby(['uid', 'session'])['subjective_score'].mean()
@@ -134,31 +135,25 @@ for col in ['avg_similarity', 'avg_cosine_distance', 'avg_subjective_score', 'av
     compact_df[col] = compact_df[col].round(3)
 print(tabulate(compact_df, headers='keys', tablefmt='simple', showindex=False, numalign="right"))
 
-# Create line graph for each uid
-plt.figure(figsize=(12, 8))
-    
 # Get unique UIDs
 unique_uids = df['uid'].unique()
 
 for uid in unique_uids:
-    # Get data for this specific uid from avg_df
+    # Create a new figure for each UID
+    plt.figure(figsize=(10, 6))
     uid_df = avg_df[avg_df['uid'] == uid]
     sessions = uid_df['session']
-    # Plot avg_similarity_normalized
-    plt.plot(sessions, uid_df['avg_similarity_normalized'], marker='s', linestyle='--', label=f'UID: {uid} - Similarity (Norm)', linewidth=2)
-    # Plot avg_cosine_distance
-    plt.plot(sessions, uid_df['avg_cosine_distance'], marker='^', linestyle='-.', label=f'UID: {uid} - Cosine Dist', linewidth=2)
-    # Plot avg_subjective_score_normalized
-    plt.plot(sessions, uid_df['avg_subjective_score_normalized'], marker='x', linestyle=':', label=f'UID: {uid} - Subjective (Norm)', linewidth=2)
+    plt.plot(sessions, uid_df['avg_cosine_distance'], marker='^', linestyle='-', label='Avg Cosine Distance')
+    plt.plot(sessions, uid_df['avg_similarity_normalized'], marker='x', linestyle='--', label='Similarity (Norm)')
+    plt.plot(sessions, uid_df['avg_subjective_score_normalized'], marker='d', linestyle='--', label='Subjective (Norm)')
+    plt.xlabel('Session Number')
+    plt.ylabel('Average Score')
+    plt.title(f'Average Scores Across Sessions for UID: {uid}')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.show()
 
-  
-# Add plot formatting AFTER the loop
-plt.xlabel('Session Number')
-plt.ylabel('Average Score')
-plt.title('Average Score Across Sessions by UID')
-plt.legend()
-plt.grid(True, alpha=0.3)
-#plt.show()
 
 print("\nPearson correlation between avg_cosine_distance and avg_similarity per uid:")
 for uid in avg_df['uid'].unique():
