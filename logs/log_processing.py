@@ -107,64 +107,62 @@ def read_all_csv_files(directory_path="."):
     else:
         return pd.DataFrame()
 
-# Read all CSV files from current directory (logs folder)
+if __name__ == "__main__":
+    # Read all CSV files from current directory (logs folder)
+    df = read_all_csv_files(str(config.LOG_DIR))
 
-df = read_all_csv_files(str(config.LOG_DIR))
+    if df.empty:
+        assert not df.empty, "No data found. Exiting script."
 
-if df.empty:
-    assert not df.empty, "No data found. Exiting script."
+    avg_similarity = df.groupby(['uid', 'session'])['similarity'].mean()
+    avg_cosine_distance = df.groupby(['uid', 'session'])['cosine_distance'].mean()
+    avg_subjective_score = df.groupby(['uid', 'session'])['subjective_score'].mean()
+    # Normalize avg_similarity using the provided normalization function
+    avg_similarity_normalized = avg_similarity.apply(
+        lambda x: normalize_score_to_cosine_distance_scale(x, old_min=0, old_max=100)
+    )
+    avg_subjective_score_normalized = avg_subjective_score.apply(normalize_score_to_cosine_distance_scale)
 
+    # Combine all averages into a single DataFrame
+    avg_df = pd.DataFrame({
+        'avg_similarity': avg_similarity,
+        'avg_cosine_distance': avg_cosine_distance,
+        'avg_subjective_score': avg_subjective_score,
+        'avg_similarity_normalized': avg_similarity_normalized,
+        'avg_subjective_score_normalized': avg_subjective_score_normalized
+    }).reset_index()
 
-avg_similarity = df.groupby(['uid', 'session'])['similarity'].mean()
-avg_cosine_distance = df.groupby(['uid', 'session'])['cosine_distance'].mean()
-avg_subjective_score = df.groupby(['uid', 'session'])['subjective_score'].mean()
-# Normalize avg_similarity using the provided normalization function
-avg_similarity_normalized = avg_similarity.apply(
-    lambda x: normalize_score_to_cosine_distance_scale(x, old_min=0, old_max=100)
-)
-avg_subjective_score_normalized = avg_subjective_score.apply(normalize_score_to_cosine_distance_scale)
+    print("\nAverage similarity, cosine distance, and subjective score per uid per session:")
+    # Print a more compact table (rounded values, fewer decimals, smaller format)
+    compact_df = avg_df.copy()
+    for col in ['avg_similarity', 'avg_cosine_distance', 'avg_subjective_score', 'avg_similarity_normalized', 'avg_subjective_score_normalized']:
+        compact_df[col] = compact_df[col].round(3)
+    print(tabulate(compact_df, headers='keys', tablefmt='simple', showindex=False, numalign="right"))
 
-# Combine all averages into a single DataFrame
-avg_df = pd.DataFrame({
-    'avg_similarity': avg_similarity,
-    'avg_cosine_distance': avg_cosine_distance,
-    'avg_subjective_score': avg_subjective_score,
-    'avg_similarity_normalized': avg_similarity_normalized,
-    'avg_subjective_score_normalized' : avg_subjective_score_normalized
-}).reset_index()
+    # Get unique UIDs
+    unique_uids = df['uid'].unique()
 
-print("\nAverage similarity, cosine distance, and subjective score per uid per session:")
-# Print a more compact table (rounded values, fewer decimals, smaller format)
-compact_df = avg_df.copy()
-for col in ['avg_similarity', 'avg_cosine_distance', 'avg_subjective_score', 'avg_similarity_normalized', 'avg_subjective_score_normalized']:
-    compact_df[col] = compact_df[col].round(3)
-print(tabulate(compact_df, headers='keys', tablefmt='simple', showindex=False, numalign="right"))
+    for uid in unique_uids:
+        # Create a new figure for each UID
+        plt.figure(figsize=(10, 6))
+        uid_df = avg_df[avg_df['uid'] == uid]
+        sessions = uid_df['session']
+        plt.plot(sessions, uid_df['avg_cosine_distance'], marker='^', linestyle='-', label='Avg Cosine Distance')
+        plt.plot(sessions, uid_df['avg_similarity_normalized'], marker='x', linestyle='--', label='Similarity (Norm)')
+        plt.plot(sessions, uid_df['avg_subjective_score_normalized'], marker='d', linestyle='--', label='Subjective (Norm)')
+        plt.xlabel('Session Number')
+        plt.ylabel('Average Score')
+        plt.title(f'Average Scores Across Sessions for UID: {uid}')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.show()
 
-# Get unique UIDs
-unique_uids = df['uid'].unique()
-
-for uid in unique_uids:
-    # Create a new figure for each UID
-    plt.figure(figsize=(10, 6))
-    uid_df = avg_df[avg_df['uid'] == uid]
-    sessions = uid_df['session']
-    plt.plot(sessions, uid_df['avg_cosine_distance'], marker='^', linestyle='-', label='Avg Cosine Distance')
-    plt.plot(sessions, uid_df['avg_similarity_normalized'], marker='x', linestyle='--', label='Similarity (Norm)')
-    plt.plot(sessions, uid_df['avg_subjective_score_normalized'], marker='d', linestyle='--', label='Subjective (Norm)')
-    plt.xlabel('Session Number')
-    plt.ylabel('Average Score')
-    plt.title(f'Average Scores Across Sessions for UID: {uid}')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.show()
-
-
-print("\nPearson correlation between avg_cosine_distance and avg_similarity per uid:")
-for uid in avg_df['uid'].unique():
-    uid_data = avg_df[avg_df['uid'] == uid]
-    if len(uid_data) > 1:
-        corr, pval = pearsonr(uid_data['avg_cosine_distance'], uid_data['avg_similarity'])
-        print(f"UID: {uid} | Pearson r: {corr:.3f} | p-value: {pval:.3g}")
-    else:
-        print(f"UID: {uid} | Not enough data for correlation (need at least 2 sessions)")
+    print("\nPearson correlation between avg_cosine_distance and avg_similarity per uid:")
+    for uid in avg_df['uid'].unique():
+        uid_data = avg_df[avg_df['uid'] == uid]
+        if len(uid_data) > 1:
+            corr, pval = pearsonr(uid_data['avg_cosine_distance'], uid_data['avg_similarity'])
+            print(f"UID: {uid} | Pearson r: {corr:.3f} | p-value: {pval:.3g}")
+        else:
+            print(f"UID: {uid} | Not enough data for correlation (need at least 2 sessions)")
