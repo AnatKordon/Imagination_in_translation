@@ -44,3 +44,19 @@ streamlit run ui.py
 ```` 
 ## License
 MIT – see `LICENSE` for full text.
+
+## Authors
+Anat Korol Gordon
+
+Itai Peleg
+
+Maayan Shirizly
+
+Nataliya Kalanova
+
+Sivan Flomen
+
+Yaniv Kopelman
+
+## Contacts 
+If you have any questions, suggestions or bug reports, please feel free to reach out at **anat.korol@gmail.com** (Anat Korol Gordon).
