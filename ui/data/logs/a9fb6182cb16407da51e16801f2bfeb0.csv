@@ -1,0 +1,2 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,ts
+a9fb6182cb16407da51e16801f2bfeb0,10,Prefer not to say,Yes,bedroom_h.jpg,2,1,an untidy bed,images\a9fb6182cb16407da51e16801f2bfeb0_session2_iter1.png,72,1751449001

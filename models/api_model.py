@@ -41,7 +41,7 @@ def send_generation_request(
     # ------- Prepare payload (text-to-image) -------
     files = {
         "prompt": (None, params["prompt"]),
-        "image": open("data/wilma_ground_truth/bridge_l.jpg", "rb"), #style guide, from api documentation - to generate images similar to our dataset, "rb" - read mode, binary mode
+        "image": open(r"GT_images\wilma_ground_truth\sample_image\bridge_h.jpg", "rb"), #style guide, from api documentation - to generate images similar to our dataset, "rb" - read mode, binary mode
         "fidelity": (None, "0.2"), #setting lower fidelity to style image to allow variablity and adjstment to all images in dataset
         "aspect_ratio": (None, params["aspect_ratio"]),
         "output_format": (None, params["output_format"]),

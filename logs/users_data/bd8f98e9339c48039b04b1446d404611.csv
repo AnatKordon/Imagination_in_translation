@@ -1,0 +1,2 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
+bd8f98e9339c48039b04b1446d404611,10,Prefer not to say,Yes,farm_l.jpg,1,1,a field,,0.0,0.0,,1751532081
