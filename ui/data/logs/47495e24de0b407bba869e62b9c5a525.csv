@@ -1,0 +1,4 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,ts
+47495e24de0b407bba869e62b9c5a525,10,Prefer not to say,Yes,living_room_l.jpg,1,1,a sallon,images\47495e24de0b407bba869e62b9c5a525_session1_iter1.png,54,1751450215
+47495e24de0b407bba869e62b9c5a525,10,Prefer not to say,Yes,dam_l.jpg,2,1,"an old damm, vintage shot, stale water
+",images\47495e24de0b407bba869e62b9c5a525_session2_iter1.png,69,1751450260
