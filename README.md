@@ -19,8 +19,13 @@ The data for all generation attempts (e.g., text descriptions, generated images,
 1. Open the terminal.
 2. Check your Python version. For certain packages (e.g. PyTorch) you need Python 3.11 or lower (but higher than Python 3.7).
 ```bash
+# Windows
 python --version
-```` 
+````  
+```bash
+# Linux / macOS
+python3 --version
+````
 3. If the version is correct, clone the repository.
 ```bash
 git clone https://github.com/AnatKordon/Imagination_in_translation.git
