@@ -5,7 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent  # root of the project, where this file is located
 GT_DIR = ROOT.parent / "data" / "wilma_ground_truth" # folder with target images
 LOG_DIR = ROOT / "data" / "logs" # folder with CSV log files per user/session
-GEN_DIR = ROOT.parent / "images"  # folder with images for the UI (e.g. fallback image)
+GEN_DIR = ROOT.parent / "gen_images"  # folder with images for the UI (e.g. fallback image)
 
 MAX_ATTEMPTS = 5 # Attempts to improve the description are limited to 5
 IMG_H = 260  # The height of images is limited to 260 px so the user doesn't need to scroll
