@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parent  # root of the project, where this file i
 GT_DIR = ROOT.parent / "GT_images" / "wilma_ground_truth" # folder with target images
 LOG_DIR = ROOT.parent / "logs" / "users_data" # folder with CSV log files per user/session
 GEN_DIR = ROOT.parent / "logs"/"gen_images"  # folder where generated images are saved
+STYLE_IMAGE = GT_DIR / "sample_image" / "bridge_l.jpg"  # Path to the style image
 MAX_ATTEMPTS = 5 # Attempts to improve the description are limited to 5
 IMG_H = 260  # The height of images is limited to 260 px so the user doesn't need to scroll
 MAX_LENGTH = 10000  # Maximum length of the prompt text
@@ -31,7 +32,7 @@ KNOWN_ERRORS = {
 
 params = {
     "prompt": "a playground with ",
-    "image": str(GT_DIR / "sample_image"/"bridge_l.jpg"),  # Path to the style image
+    "image": str(GT_DIR /"sample_image"/"bridge_l.jpg"),  # Path to the style image
     "aspect_ratio": "1:1",
     "seed": 1,
     "output_format": "png",
