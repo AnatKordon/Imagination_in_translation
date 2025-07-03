@@ -72,7 +72,7 @@ def send_generation_request(
 
     # ------- Save generated image with flat filename structure -------
     # Make sure Logs/gen_images/ directory exists
-    output_dir = os.path.join("Logs", "gen_images")
+    output_dir = os.path.join("logs", "gen_images")
     os.makedirs(output_dir, exist_ok=True)
 
     # Save image using flat structure
