@@ -156,7 +156,7 @@ left, right = st.columns([1, 2])
 # left column: textbox for descriptive prompt and "generate" and "exit" buttons.
 with left:
     st.write(f"**Your ID:** `{S.uid}`")
-    st.markdown("**Please, describe the picture as precisely as possible. You have up to 5 attempts to improve your description. Please, press ctrl + enter buttons after you are done typing to apply the text. Note that you cannot use the same description twice.**")
+    st.markdown("**Please, describe the picture as precisely as possible. You have up to 5 attempts to improve your description. Press ctrl + enter buttons after you are done typing to apply the text. Note that you cannot use the same description twice.**")
 
 # Textbox (unique key per target)
     S.prompt = st.text_area(
@@ -193,7 +193,7 @@ with left:
     c1.caption(f"{len(S.prompt)} characters")
     c2.caption(f"{S.attempt} / {config.MAX_ATTEMPTS}")
    
-    if same_prompt and not S.generated:
+    if same_prompt and not S.generated and S.attempt > 1:
         st.info("Please modify your description before generating again.")
 
     gen_disabled = (
@@ -254,6 +254,7 @@ with left:
             ts=int(time.time()),
         )
         S.generated = True
+        S.last_prompt = S.prompt.strip()  # save the last prompt to check if it is the same as the current one
         rerun()
 
 # flags session as finished and rerun
