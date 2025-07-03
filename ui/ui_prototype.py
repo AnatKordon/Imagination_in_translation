@@ -157,7 +157,7 @@ left, right = st.columns([1, 2])
 # left column: textbox for descriptive prompt and "generate" and "exit" buttons.
 with left:
     st.write(f"**Your ID:** `{S.uid}`")
-    st.markdown("**Please, describe the picture as precisely as possible. You have up to 5 attempts to improve your description.**")
+    st.markdown("**Please, describe the picture as precisely as possible. You have up to 5 attempts to improve your description. Please, press ctrl + enter buttons after you are done typing to apply the text. Note that you cannot use the same description twice.**")
 
 # Textbox (unique key per target)
     S.prompt = st.text_area(
