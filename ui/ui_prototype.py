@@ -207,11 +207,32 @@ with left:
     )
 
     if st.button("Generate", type="primary", disabled=gen_disabled):
-
-        S.gen_path = generate_image(S.prompt,S.seed,S.session ,S.attempt, S.gt_path,S.uid) # generate the image
+        try:
+            S.gen_path = generate_image(S.prompt,S.seed,S.session ,S.attempt, S.gt_path,S.uid) # generate the image
+            print(f"Generated image saved to {S.gen_path}")
+        except Exception as e:
+            msg = str(e)
+            print(e)
+            KNOWN_ERRORS = config.KNOWN_ERRORS
+            if KNOWN_ERRORS["required_field"] in msg:
+                st.error("Some required field is missing. Please check the inputs.")
+            elif KNOWN_ERRORS["content_moderation"] in msg:
+                st.error("Your request was flagged for unsafe content. Please rephrase.")
+            elif KNOWN_ERRORS["payload_too_large"] in msg:
+                st.error("Your prompt is too large. Try shortening it.")
+            elif KNOWN_ERRORS["language_not_supported"] in msg:
+                st.error("Only English is supported. Please write in English.")
+            elif KNOWN_ERRORS["rate_limit"] in msg:
+                st.error("Too many requests. Please wait a moment and try again.")
+            elif KNOWN_ERRORS["server_error"] in msg:
+                st.error("Server error. Please try again shortly.")
+            else:
+                st.error(f"Unexpected error: {msg}")
+                
         try:
             S.last_score,S.cosine_distance = similarity(S.gt_path, S.gen_path)
         except Exception as e:
+            print(e)
             st.error(f"Error calculating similarity: {e}")
             S.last_score = 0.0
 
@@ -251,12 +272,19 @@ with right:
         )
 # the generated picture is shown together with the similarity score and "accept" and "try again" buttons
     if S.generated:
-        with gen_c:
-            st.image(
-                ImageOps.contain(Image.open(S.gen_path), (int(config.IMG_H * 1.8), config.IMG_H)),
-                caption="Generated image",
-                clamp=True,
-            )
+        try:
+            with gen_c:
+                st.image(
+                    ImageOps.contain(Image.open(S.gen_path), (int(config.IMG_H * 1.8), config.IMG_H)),
+                    caption="Generated image",
+                    clamp=True,
+                )
+        except (FileNotFoundError, AttributeError, ValueError) as e:
+            st.error(f"Generated image cannot be displayed: {e}")
+            S.generated = False
+            S.gen_path = None
+            st.stop()
+
 
         st.caption("Similarity:")
         st.progress(int(S.last_score))

@@ -1,0 +1,2 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
+7ad568de75284420ae3182d9fc2ae53f,10,Prefer not to say,Yes,bridge_l.jpg,1,1,a bridge,,0.0,0.0,,1751531538

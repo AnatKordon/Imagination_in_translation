@@ -109,8 +109,8 @@ ENV/
 .idea/
 
 #images
-*.png
-*.jpg
+.png
+.jpg
 *.jpeg
-*.csv
+.csv
 client_secrets.json
