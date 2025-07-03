@@ -24,10 +24,13 @@ cd Imagination_in_translation
 ````
 3. Set up a Python virtual environment.
 ```bash
-python -m venv .venv
 # Linux / macOS
+python3 -m venv .venv
 source .venv/bin/activate
+````
+```bash
 # Windows PowerShell
+python -m venv .venv
 venv\Scripts\Activate
 ````
 4. Install the dependencies:
