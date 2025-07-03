@@ -12,13 +12,14 @@ The data for all generation attempts (e.g., text descriptions, generated images,
 - Local Stable Diffusion 3.5 Large Turbo [model](https://platform.stability.ai/docs/api-reference#tag/Generate/paths/~1v2beta~1stable-image~1generate~1sd3/post) for image generation
 - [Streamlit](https://streamlit.io/)-based user interface
 - [VGG16](https://arxiv.org/abs/1409.1556)-based visual similarity analysis
-- [JSON](https://www.json.org/json-en.html) logging of all sessions and iterations
+- Logging of all sessions, iterations and generated pictures
+- Data processing
 
 ## Setup Instructions
 1. Open the terminal.
 2. Clone the repository.
 ```bash
-git clone https://github.com/<org-or-user>/Imagination_in_translation.git
+git clone https://github.com/AnatKordon/Imagination_in_translation.git
 cd Imagination_in_translation
 ````
 3. Set up a Python virtual environment.
@@ -27,7 +28,7 @@ python -m venv .venv
 # Linux / macOS
 source .venv/bin/activate
 # Windows PowerShell
-.venv\Scripts\Activate
+venv\Scripts\Activate
 ````
 4. Install the dependencies:
 ```bash
@@ -35,12 +36,11 @@ pip install -r requirements_dev.txt
 ````
 5. Create manually a file called .env in the project root and add your Stability AI API key (do not share the key)
 ```bash
-STABILITY_API_KEY= your_stability_ai_key_goes_here
+STABILITY_API_KEY=your_stability_ai_key_goes_here
 ```` 
 6. Run the Streamlit app.
 ```bash
-cd ui
-streamlit run ui.py
+streamlit run ui\ui.py
 ```` 
 ## License
 MIT – see `LICENSE` for full text.
