@@ -1,8 +1,7 @@
-# Imagination_in_translation
+# Imagination in translation
 
-### 📄 **Project README**
+### **Project README**
 
-```markdown
 # Imagination in Translation:
 An interactive experiment for studying the gap between semantic and visual representations in humans and AI
 
