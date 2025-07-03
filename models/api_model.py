@@ -72,12 +72,13 @@ def send_generation_request(
 
     # ------- Save generated image with flat filename structure -------
     # Make sure Logs/gen_images/ directory exists
-    output_dir = os.path.join("Logs", "gen_images")
+    output_dir = os.path.join("logs", "gen_images")
     os.makedirs(output_dir, exist_ok=True)
 
     # Save image using flat structure
     filename = f"{user_id}_session{session_num}_iter{iteration}.png"
-    image_path = os.path.join("images", filename)
+    image_path = os.path.join(output_dir, filename)
+
 
     with open(image_path, "wb") as f:
         f.write(output_image)
