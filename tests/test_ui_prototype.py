@@ -1,5 +1,10 @@
 import pytest
-import re
+from ui import ui
+
+def test_input_is_english():
+    fname = pathlib.Path(__file__)
+    q = QuestionnaireAnalysis(fname)
+    assert fname == q.data_fname
 
 # Unit test to verify that prompt text is in English letters only
 
