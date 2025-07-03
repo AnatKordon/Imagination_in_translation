@@ -1,3 +1,0 @@
-uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,ts
-a4d56935396e4ca6acdfff250641f89d,10,Prefer not to say,No,canal_l.jpg,1,1,a canal with a boat and clouds,images\a4d56935396e4ca6acdfff250641f89d_session1_iter1.png,69,1751449322
-a4d56935396e4ca6acdfff250641f89d,10,Prefer not to say,No,canal_l.jpg,1,2,a picture realistic of a canal with a boat and clouds,images\a4d56935396e4ca6acdfff250641f89d_session1_iter2.png,69,1751449359
