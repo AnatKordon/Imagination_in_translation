@@ -1,13 +1,11 @@
-import sys
 from pathlib import Path
-
-# Add project root to sys.path
-sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 import torch
 from torchvision import models
 from torchvision.models import VGG16_Weights
+
 import numpy as np
+
 #import my class and simoilarity function
 from similarity.vgg_similarity import compute_similarity_score, VGGEmbedder
 
@@ -31,7 +29,6 @@ def test_identical_similarity():
 
     # Assert distance is 0 for identical images
     assert cosine_distance == 0
-
 
 def test_opposite_similarity():
     #compute_similarity_score accepts a 1D numpy array
