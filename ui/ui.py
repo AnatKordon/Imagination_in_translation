@@ -39,6 +39,7 @@ st.markdown(
 
 def generate_image(prompt: str,seed:int,session:int ,attempt: int, gt: Path,id: str) -> Path:
     params = config.params.copy() # copy the params dict so we don't change the original one
+    #adding changing params
     params["prompt"] = prompt # set the prompt
     params["seed"] = seed # set the seed
     path = api_model.send_generation_request(host="https://api.stability.ai/v2beta/stable-image/control/style",params=params,
@@ -108,7 +109,7 @@ for k, v in {
     "gt_path": None, # TO BE CHANGED: path to the current ground-truth,
     "session":0, # The number of seesion per user (for the same user, we can have multiple sessions, e.g. if the user closes the browser and comes back later)
     "attempt": 1, # current attempt counter (from 1 to 5),
-    "seed":np.random.randint(1,4000000), # seed for the image generation (can be randomised later)
+    "seed": np.random.randint(1,4000000), # seed for the image generation (can be randomised later)
     "generated": False, # TO BE CHANGED: telling whether we have a generated image to show or not
     "gen_path": None, # TO BE CHANGED: path to generated image
     "finished": False, # True when pool exhausted
@@ -246,6 +247,7 @@ with left:
             gt=S.gt_path.name,
             session = S.session,
             attempt=S.attempt,
+            seed=S.seed,
             prompt=S.prompt,
             gen=S.gen_path,
             similarity=round(S.last_score, 4),
@@ -305,6 +307,7 @@ with right:
             next_gt()
 # "Try again" button is disabled on 5th attempt
         if t_col.button("Another try", disabled=S.attempt >= config.MAX_ATTEMPTS):
+            S.seed = np.random.randint(1, 4000000) 
             S.generated = False
             S.attempt += 1
             rerun()
