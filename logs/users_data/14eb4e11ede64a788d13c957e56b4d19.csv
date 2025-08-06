@@ -1,0 +1,4 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
+14eb4e11ede64a788d13c957e56b4d19,10,Prefer not to say,Yes,stadium_h.jpg,1,1,racetrack having  ground texture and blue borders. near the trackgray seating places with blue boxes around,logs\gen_images\14eb4e11ede64a788d13c957e56b4d19_session1_iter1.png,67,0.6498,,1752868886
+14eb4e11ede64a788d13c957e56b4d19,10,Prefer not to say,Yes,stadium_h.jpg,1,1,racetrack having  ground texture and blue borders. near the trackgray seating places with blue boxes around,logs\gen_images\14eb4e11ede64a788d13c957e56b4d19_session1_iter1.png,67,0.6498,1,1752868914
+14eb4e11ede64a788d13c957e56b4d19,10,Prefer not to say,Yes,stadium_h.jpg,1,2,racetrack having  ground texture and blue borders. near the trackgray seating places with blue boxes around j,logs\gen_images\14eb4e11ede64a788d13c957e56b4d19_session1_iter2.png,68,0.6219,2,1752869029
