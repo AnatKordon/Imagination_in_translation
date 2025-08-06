@@ -33,8 +33,7 @@ KNOWN_ERRORS = {
 params = {
     "prompt": "a playground with ",
     "image": str(GT_DIR /"sample_image"/"bridge_l.jpg"),  # Path to the style image
-    "aspect_ratio": "1:1",
-    "seed": 1,
+    "aspect_ratio": "1:1", 
     "output_format": "png",
     "model": "sd3.5-large-turbo"
 }
