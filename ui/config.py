@@ -13,7 +13,7 @@ MAX_LENGTH = 10000  # Maximum length of the prompt text
 ##  Params for image generation
 
 
-## for erroe handling
+## for error handling
 websites = [".com", ".net", ".org", ".edu", ".gov", ".io", ".co", ".uk", ".de", ".fr", ".jp", ".ru","https", "http", "www."]
 
 
