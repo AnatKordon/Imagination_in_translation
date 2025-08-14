@@ -115,5 +115,45 @@ venv311
 *.png
 *.jpg
 *.jpeg
-#*.csv
+*.csv
 client_secrets.json
+
+
+# Virtual environments
+venv/
+venv311/
+env/
+.venv/
+
+# Python installers
+*.exe
+python-*.exe
+*-installer.exe
+
+# Large files
+*.zip
+*.tar.gz
+*.dmg
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Large model files (if any)
+*.pkl
+*.joblib
+models/
