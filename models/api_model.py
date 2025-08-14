@@ -1,6 +1,6 @@
 from typing import Optional, Dict, Any
 import os
-from ui import config  # Importing configuration settings
+import config  # Importing configuration settings
 import requests
 from dotenv import load_dotenv
 from PIL import Image

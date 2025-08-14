@@ -3,9 +3,9 @@ from pathlib import Path
 
 # Directories (MIGHT NEED TO BE CHANGED)
 ROOT = Path(__file__).resolve().parent  # root of the project, where this file is located
-GT_DIR = ROOT.parent / "GT_images" / "wilma_ground_truth" # folder with target images
-LOG_DIR = ROOT.parent / "logs" / "users_data" # folder with CSV log files per user/session
-GEN_DIR = ROOT.parent / "logs"/"gen_images"  # folder where generated images are saved
+GT_DIR = ROOT / "GT_images" / "wilma_ground_truth" # folder with target images
+LOG_DIR = ROOT / "logs" / "users_data" # folder with CSV log files per user/session
+GEN_DIR = ROOT / "logs"/"gen_images"  # folder where generated images are saved
 STYLE_IMAGE = GT_DIR / "sample_image" / "bridge_l.jpg"  # Path to the style image
 MAX_ATTEMPTS = 5 # Attempts to improve the description are limited to 5
 IMG_H = 260  # The height of images is limited to 260 px so the user doesn't need to scroll

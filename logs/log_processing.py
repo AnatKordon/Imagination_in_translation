@@ -16,7 +16,7 @@ from tabulate import tabulate
 
 # Add parent directory to sys.path to import ui.config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from ui import config
+from . import config
 
 def normalize_score_to_cosine_distance_scale(
     score: float,

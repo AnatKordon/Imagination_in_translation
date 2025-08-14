@@ -1,0 +1,5 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,seed,prompt,gen,similarity,cosine_distance,subjective_score,ts
+beecfd4cfac34c35b36680970bfcec99,10,Prefer not to say,Yes,stadium_l.jpg,1,1,493966,pillow,logs\gen_images\beecfd4cfac34c35b36680970bfcec99_session1_iter1.png,55,0.8889,,1755156822
+beecfd4cfac34c35b36680970bfcec99,10,Prefer not to say,Yes,stadium_l.jpg,1,2,2422682,a hockey arena,logs\gen_images\beecfd4cfac34c35b36680970bfcec99_session1_iter2.png,63,0.732,1,1755156900
+beecfd4cfac34c35b36680970bfcec99,10,Prefer not to say,Yes,stadium_l.jpg,1,3,1782533,a hockey arena with brown wall,logs\gen_images\beecfd4cfac34c35b36680970bfcec99_session1_iter3.png,66,0.6632,3,1755156982
+beecfd4cfac34c35b36680970bfcec99,10,Prefer not to say,Yes,stadium_l.jpg,1,4,236564,"a hockey arena with brown wall with pictures on the walls - looks from the 90s, with a field goal and a big clock in the middle",logs\gen_images\beecfd4cfac34c35b36680970bfcec99_session1_iter3.png,66,0.6632,3,1755157070

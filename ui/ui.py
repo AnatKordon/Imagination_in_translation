@@ -3,15 +3,16 @@
 import sys
 from pathlib import Path
 
-project_root = Path(__file__).resolve().parents[1]
-if str(project_root) not in sys.path:
-    sys.path.append(str(project_root))
-                    
+# Add project root to Python search path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
+import config
+             
 from uuid import uuid4 # used to create session / user IDs
 from models import api_model # the model API wrapper
 from similarity import vgg_similarity # the similarity function (to be changed)
 import random, csv, time 
-import config
+
 import numpy as np 
 import re
 import streamlit as st # Streamlit UI framework
@@ -109,7 +110,7 @@ for k, v in {
     "gt_path": None, # TO BE CHANGED: path to the current ground-truth,
     "session":0, # The number of seesion per user (for the same user, we can have multiple sessions, e.g. if the user closes the browser and comes back later)
     "attempt": 1, # current attempt counter (from 1 to 5),
-    "seed": np.random.randint(1,4000000), # seed for the image generation (can be randomised later)
+    "seed": np.random.randint(1,4000000), # seed for the image generation - randomized
     "generated": False, # TO BE CHANGED: telling whether we have a generated image to show or not
     "gen_path": None, # TO BE CHANGED: path to generated image
     "finished": False, # True when pool exhausted

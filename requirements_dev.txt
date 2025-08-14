@@ -12,6 +12,8 @@ torch
 torchvision
 transformers
 
+lpips
+
 #UI packages
 streamlit
 langdetect

@@ -102,8 +102,8 @@ def compute_similarity_score(embedding1: np.ndarray, embedding2: np.ndarray) -> 
             Similarity score between 0 and 100 (higher = more similar).
         """
         cosine_distance = cosine(embedding1, embedding2) #dissimilarity value - lower is higher similarity, used for logging ranges [0, 2]
-        similarity = 1 - cosine(embedding1, embedding2)  # ranges [-1,+1]
-        scaled_similarity = int(((similarity + 1) / 2) * 100)  # maps to [0,100] for visibility, rounding for user rfeiendliness
+        similarity = 1 - cosine_distance  # ranges [-1,+1]
+        scaled_similarity = int(((similarity + 1) / 2) * 100)  # maps to [0,100] for visibility, rounding for user friendliness
         return scaled_similarity, cosine_distance  # maybe we should only log similarity
 def get_vgg_embedder():
     """
