@@ -20,7 +20,7 @@ langdetect
 Pillow
 # Data visualization
 matplotlib
-
+altair
 
 # API requests and environment variables
 requests
