@@ -1,11 +1,7 @@
 # To call the app, write:  run ui/ui_prototype.py --server.port 8501 in the codespace terminal  but first, install the required libraries listed in the requirements.txt file with a single command: pip install -r requirements.txt.
 # Note, that by default a user has to press ctrl+enter after filling in the text box to apply the text, count characters, send it to generation etc. 
-import sys
 from pathlib import Path
-
-
-import config
-             
+import config       
 from uuid import uuid4 # used to create session / user IDs
 from models import api_model # the model API wrapper
 from similarity import vgg_similarity # the similarity function (to be changed)
