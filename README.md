@@ -52,7 +52,7 @@ STABILITY_API_KEY=your_stability_ai_key_goes_here
 ```` 
 7. Run the Streamlit app.
 ```bash
-streamlit run ui/ui.py
+streamlit run app.py
 ````
 8. After you are done testing, close the browser.
    

@@ -6,13 +6,13 @@ pytest==6.2.4
 numpy
 pandas
 scipy
-
+scikit-learn
 #ML and DL
 torch
 torchvision
 transformers
 
-lpips
+# lpips
 
 #UI packages
 streamlit
@@ -31,20 +31,18 @@ Pillow
 Pathlib
 
 #google drive authentication
-PyDrive
+PyDrive2
 
-#analysis
-tabulate
+# #analysis
+# tabulate
 
-#languagte detector
-langdetect
-#development tools
-#pip==19.2.3
-bump2version==0.5.11
-#wheel==0.33.6
-tox==3.14.0
-coverage==4.5.4
-Sphinx==7.2.6
-twine==5.0.0
-ruff==0.3.5
-watchdog>=2.1.0
+# #development tools
+# #pip==19.2.3
+# bump2version==0.5.11
+# #wheel==0.33.6
+# tox==3.14.0
+# coverage==4.5.4
+# Sphinx==7.2.6
+# twine==5.0.0
+# ruff==0.3.5
+# watchdog>=2.1.0
