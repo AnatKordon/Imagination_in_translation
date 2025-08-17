@@ -31,8 +31,9 @@ Pillow
 Pathlib
 
 #google drive authentication
-PyDrive2
-
+google-api-python-client
+google-auth
+google-auth-oauthlib
 # #analysis
 # tabulate
 

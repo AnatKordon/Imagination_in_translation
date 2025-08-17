@@ -1,11 +1,11 @@
 from typing import Optional, Dict, Any
 import os
-import config  # Importing configuration settings
+from config import GEN_DIR  # Importing configuration settings
 import requests
 from dotenv import load_dotenv
 from PIL import Image
 from shutil import copyfile
-
+from pathlib import Path
 # ------- Load API key from .env -------
 load_dotenv()
 STABILITY_KEY = os.getenv("STABILITY_API_KEY")
@@ -74,13 +74,12 @@ def send_generation_request(
 
     # ------- Save generated image with flat filename structure -------
     # Make sure Logs/gen_images/ directory exists
-    output_dir = os.path.join("logs", "gen_images")
-    os.makedirs(output_dir, exist_ok=True)
+
+    GEN_DIR.mkdir(parents=True, exist_ok=True)
 
     # Save image using flat structure
-    filename = f"{user_id}_session{session_num}_iter{iteration}.png"
-    image_path = os.path.join(output_dir, filename)
-
+    filename = f"{user_id}_session{session_num:02d}_iter{iteration:02d}.png"
+    image_path = GEN_DIR / filename
 
     with open(image_path, "wb") as f:
         f.write(output_image)

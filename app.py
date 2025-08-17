@@ -4,14 +4,20 @@ from pathlib import Path
 import config       
 from uuid import uuid4 # used to create session / user IDs
 from models import api_model # the model API wrapper
-from similarity import vgg_similarity # the similarity function (to be changed)
+from similarity import vgg_similarity # the similarity function 
+from drive_utils import get_drive_service, create_folder, upload_file
 import random, csv, time 
 
+import os
 import numpy as np 
 import re
 import streamlit as st # Streamlit UI framework
 from PIL import Image, ImageOps # Pillow library to manipulate images
 
+from google.oauth2 import service_account
+from mimetypes import guess_type # for uploading to google drive - png or csv
+
+from dotenv import load_dotenv
 
 # ensuring all the required folders exist so .save() or logging never crash
 for d in (config.GEN_DIR, config.LOG_DIR):
@@ -19,6 +25,23 @@ for d in (config.GEN_DIR, config.LOG_DIR):
 
 # Setting up the appearance
 st.set_page_config(page_title="Imagination in Translation", layout="wide") # the page is full-width 
+
+load_dotenv()
+#load google drive api db:
+if "google" in st.secrets:
+    creds = service_account.Credentials.from_service_account_info(
+        st.secrets["google"],
+        scopes=["https://www.googleapis.com/auth/drive"]
+    )
+    #for local host
+elif os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
+    creds = service_account.Credentials.from_service_account_file(
+        Path(os.getenv("GOOGLE_APPLICATION_CREDENTIALS")),
+        scopes=["https://www.googleapis.com/auth/drive"]
+    )
+else:
+    creds = None
+    print("❌ Error, No Google Drive credentials found. contact experiment host")
 
 # Customising the buttons
 st.markdown(
@@ -30,6 +53,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
 
 
 def generate_image(prompt: str,seed:int,session:int ,attempt: int, gt: Path,id: str) -> Path:
@@ -69,6 +93,28 @@ def log_row(**kw):
     f = str(f)  
 
 
+def log_participant_info(uid: str, age: int, gender: str, native: str) -> Path:
+    """
+    Saves a participant info CSV file with their demographic details.
+    Returns the Path to the saved CSV.
+    """
+    info_data = {
+        "uid": uid,
+        "age": age,
+        "gender": gender,
+        "native_language": native,
+    }
+    
+    filename = f"participant_{uid}_info.csv"
+    path = LOG_DIR / filename
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=info_data.keys())
+        writer.writeheader()
+        writer.writerow(info_data)
+
+    return path
 
 # A helper for st.rerun() function in Steamlit. It is named differently in different versions of Steamlit, so we just make sure that we have something of this kind.
 rerun = st.rerun if hasattr(st, "rerun") else st.experimental_rerun
@@ -116,6 +162,21 @@ for k, v in {
     st.session_state.setdefault(k, v)
 S = st.session_state
 
+#store the google drive service in the session state
+if creds and "drive_service" not in S:
+    service = get_drive_service(creds)
+    S.drive_service = service
+
+    # Create root folder once
+    root_folder_id = create_folder(service, "participants_data")
+
+    # Create participant folder once and store its ID
+    participant_folder_id = create_folder(service, S.uid, root_folder_id)
+    S.participant_drive_folder_id = participant_folder_id
+
+    # Create subfolder for generated images (optional)
+    S.gen_drive_folder_id = create_folder(service, "gen_images", participant_folder_id)
+
 if "participant_info_submitted" not in S:
     S.participant_info_submitted = False
 # If the participant info is not submitted, show the form to collect it.
@@ -132,7 +193,14 @@ if not S.participant_info_submitted:
             S.participant_gender = gender
             S.participant_native = native
             S.participant_info_submitted = True
-            st.success("Thank you! ")
+            
+            info_path = log_participant_info(S.uid, age, gender, native)
+
+            # Upload to Google Drive
+            if "drive_service" in S and "participant_drive_folder_id" in S:
+                upload_file(S.drive_service, info_path, "text/csv", S.participant_drive_folder_id)
+
+            st.success("Thank you!")
             st.rerun()
     st.stop()
 if S.gt_path is None:      
@@ -151,7 +219,7 @@ left, right = st.columns([1, 2])
 
 # left column: textbox for descriptive prompt and "generate" and "exit" buttons.
 with left:
-    st.write(f"**Your ID:** `{S.uid}`")
+    # st.write(f"**Your ID:** `{S.uid}`")
     st.markdown("**Please, describe the picture as precisely as possible. You have up to 5 attempts to improve your description. Press ctrl + enter buttons after you are done typing to apply the text. Note that you cannot use the same description twice.**")
 
 # Textbox (unique key per target)
@@ -244,7 +312,7 @@ with left:
             attempt=S.attempt,
             seed=S.seed,
             prompt=S.prompt,
-            gen=S.gen_path,
+            gen=S.gen_path.name,
             similarity=round(S.last_score, 4),
             cosine_distance=round(S.cosine_distance, 4),
             subjective_score=S.subjective_score if "subjective_score" in S else None,
@@ -254,7 +322,24 @@ with left:
         S.last_prompt = S.prompt.strip()  # save the last prompt to check if it is the same as the current one
         rerun()
 
-# flags session as finished and rerun
+        if creds and "drive_service" in S:
+            # Upload image
+            img_mime = guess_type(S.gen_path)[0] or "image/png"
+            upload_file(S.drive_service, Path(S.gen_path), img_mime, S.gen_drive_folder_id)
+
+            # Upload CSV log file with official MIME type for CSV files.
+            csv_path = config.LOG_DIR / f"{S.uid}.csv"
+
+            upload_file(S.drive_service, csv_path, "text/csv", S.participant_drive_folder_id)
+
+        # Upload info if not uploaded yet
+        if not getattr(S, "info_uploaded", False):
+            info_path = config.LOG_DIR / f"participant_{S.uid}_info.csv"
+            if info_path.exists():
+                upload_file(S.drive_service, info_path, "text/csv", S.participant_drive_folder_id)
+            S.info_uploaded = True
+        
+        # flags session as finished and rerun
     if st.button("Exit"):
         S.finished = True
         rerun()
