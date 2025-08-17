@@ -117,7 +117,7 @@ venv311
 *.jpeg
 *.csv
 client_secrets.json
-
+service_account.json
 
 # Virtual environments
 venv/
