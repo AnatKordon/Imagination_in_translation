@@ -7,7 +7,7 @@ from models import api_model # the model API wrapper
 from similarity import vgg_similarity # the similarity function 
 from drive_utils import get_drive_service, create_folder, upload_file
 import random, csv, time 
-
+import time
 import os
 import numpy as np 
 import re
@@ -90,7 +90,7 @@ def log_row(**kw):
         if first:
             w.writeheader()
         w.writerow(kw)
-    f = str(f)  
+    # f = str(f)   # remove unused line
 
 
 def log_participant_info(uid: str, age: int, gender: str, native: str) -> Path:
@@ -106,7 +106,7 @@ def log_participant_info(uid: str, age: int, gender: str, native: str) -> Path:
     }
     
     filename = f"participant_{uid}_info.csv"
-    path = LOG_DIR / filename
+    path = config.LOG_DIR / filename
     path.parent.mkdir(parents=True, exist_ok=True)
 
     with path.open("w", newline="", encoding="utf-8") as f:
@@ -115,6 +115,11 @@ def log_participant_info(uid: str, age: int, gender: str, native: str) -> Path:
         writer.writerow(info_data)
 
     return path
+
+def update_gen_folder():
+    if "drive_service" in S and "participant_drive_folder_id" in S:
+        gen_images_root = create_folder(S.drive_service, "gen_images", S.participant_drive_folder_id)
+        S.gen_drive_folder_id = create_folder(S.drive_service, f"session_{S.session:02d}", gen_images_root)
 
 # A helper for st.rerun() function in Steamlit. It is named differently in different versions of Steamlit, so we just make sure that we have something of this kind.
 rerun = st.rerun if hasattr(st, "rerun") else st.experimental_rerun
@@ -133,6 +138,7 @@ def next_gt():
     S.gt_path = random.choice(remaining)
     S.used.add(S.gt_path.name)
     S.session += 1 # increase session counter
+    update_gen_folder()
     S.seed = np.random.randint(1, 4000000) # randomise the seed for the next generation
     S.attempt = 1
     S.generated = False
@@ -171,11 +177,17 @@ if creds and "drive_service" not in S:
     root_folder_id = create_folder(service, "participants_data")
 
     # Create participant folder once and store its ID
+    timestamp = time.strftime("%Y%m%d-%H%M%S")  # e.g., 20250817-134512
+    folder_name = f"{timestamp}_{S.uid}"
+    participant_folder_id = create_folder(service, folder_name, root_folder_id)
+
     participant_folder_id = create_folder(service, S.uid, root_folder_id)
     S.participant_drive_folder_id = participant_folder_id
 
-    # Create subfolder for generated images (optional)
-    S.gen_drive_folder_id = create_folder(service, "gen_images", participant_folder_id)
+    # Create subfolders for generated images (optional)
+    #S.gen_drive_folder_id = create_folder(service, "gen_images", participant_folder_id)
+    gen_images_root = create_folder(service, "gen_images", participant_folder_id)
+    S.gen_drive_folder_id = create_folder(service, f"session_{S.session:02d}", gen_images_root)
 
 if "participant_info_submitted" not in S:
     S.participant_info_submitted = False
@@ -304,9 +316,9 @@ with left:
 
         log_row(
             uid=S.uid,
-            participant_age=S.participant_age,
-            participant_gender= S.participant_gender,
-            participant_native=S.participant_native,
+            # participant_age=S.participant_age,
+            # participant_gender= S.participant_gender,
+            # participant_native=S.participant_native,
             gt=S.gt_path.name,
             session = S.session,
             attempt=S.attempt,
