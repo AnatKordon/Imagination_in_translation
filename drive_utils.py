@@ -1,3 +1,4 @@
+#This is not used as for now we don't have a service account
 from pathlib import Path
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
@@ -16,6 +17,7 @@ def create_folder(service, name, parent_id=None):
     file_metadata = {
         "name": name,
         "mimeType": "application/vnd.google-apps.folder"
+        "parents": [parent_id]
     }
     if parent_id:
         file_metadata["parents"] = [parent_id]
