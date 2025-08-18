@@ -61,11 +61,19 @@ def generate_image(prompt: str,seed:int,session:int ,attempt: int, gt: Path,id: 
     #adding changing params
     params["prompt"] = prompt # set the prompt
     params["seed"] = seed # set the seed
-    path = api_model.send_generation_request(host="https://api.stability.ai/v2beta/stable-image/generate/sd3",params=params,
+    local_path = api_model.send_generation_request(host="https://api.stability.ai/v2beta/stable-image/generate/sd3",params=params,
                                       iteration=attempt,session_num=session,user_id=id)
 
-    ImageOps.contain(Image.open(path), (512, 512))
-    return path
+    ImageOps.contain(Image.open(local_path), (512, 512))
+    if "drive_service" in S and S.drive_service and "gen_drive_folder_id" in S and S.gen_drive_folder_id:
+        try:
+            file_id = upload_file(S.drive_service, local_path, "image/png", S.gen_drive_folder_id)
+            print(f"✅ Generated image uploaded to Drive: {local_path.name} -> {file_id}")
+        except Exception as upload_error:
+            print(f"❌ Failed to upload generated image: {upload_error}")
+            # Continue anyway - local file is still available
+    return local_path
+
 
 
 def similarity(GT_path: Path, GEN_path: Path) -> float:
@@ -117,9 +125,20 @@ def log_participant_info(uid: str, age: int, gender: str, native: str) -> Path:
     return path
 
 def update_gen_folder():
-    if "drive_service" in S and "participant_drive_folder_id" in S:
-        gen_images_root = create_folder(S.drive_service, "gen_images", S.participant_drive_folder_id)
-        S.gen_drive_folder_id = create_folder(S.drive_service, f"session_{S.session:02d}", gen_images_root)
+    """Update generation folder for new session and create in Drive if available"""
+    if "drive_service" in S and S.drive_service and "gen_images_root_id" in S:
+        try:
+            # Create new session folder in Drive
+            session_folder_id = create_folder(
+                S.drive_service, 
+                f"session_{S.session:02d}", 
+                S.gen_images_root_id
+            )
+            S.gen_drive_folder_id = session_folder_id
+            print(f"✅ Created Drive session folder: session_{S.session:02d}")
+        except Exception as e:
+            print(f"❌ Failed to create session folder in Drive: {e}")
+            S.gen_drive_folder_id = None
 
 # A helper for st.rerun() function in Steamlit. It is named differently in different versions of Steamlit, so we just make sure that we have something of this kind.
 rerun = st.rerun if hasattr(st, "rerun") else st.experimental_rerun
@@ -174,26 +193,33 @@ if creds and "drive_service" not in S:
     S.drive_service = service
     SHARED_FOLDER_ID = extract_folder_id_from_url(config.DRIVE_FOLDER)
 
-    shared_folder_info = service.files().get(fileId=SHARED_FOLDER_ID).execute()
-    print(f"✅ Successfully accessed shared folder: {shared_folder_info.get('name')}")
+    try:
+        shared_folder_info = service.files().get(fileId=SHARED_FOLDER_ID).execute()
+        print(f"✅ Successfully accessed shared folder: {shared_folder_info.get('name')}")
+            
+        # Create root folder once
+        root_folder_id = create_folder(service, "participants_data", SHARED_FOLDER_ID)
+        print(f"Root folder created with ID: {root_folder_id}")
+        # Create participant folder once and store its ID
+        timestamp = time.strftime("%Y%m%d-%H%M%S")  # e.g., 20250817-134512
+        folder_name = f"{timestamp}_{S.uid}"
         
-    # Create root folder once
-    root_folder_id = create_folder(service, "participants_data", SHARED_FOLDER_ID)
-    print(f"Root folder created with ID: {root_folder_id}")
-    # Create participant folder once and store its ID
-    timestamp = time.strftime("%Y%m%d-%H%M%S")  # e.g., 20250817-134512
-    folder_name = f"{timestamp}_{S.uid}"
-    participant_folder_id = create_folder(service, folder_name, root_folder_id)
-    print(f"Participant folder created with ID: {participant_folder_id}")
-    S.participant_drive_folder_id = participant_folder_id
+        #  create folder per participant
+        participant_folder_id = create_folder(service, folder_name, root_folder_id)
+        print(f"Participant folder created with ID: {participant_folder_id}")
+        S.participant_drive_folder_id = participant_folder_id
 
-    # Create subfolders for generated images
-    gen_images_root = create_folder(service, "gen_images", participant_folder_id)
-    S.gen_drive_folder_id = create_folder(service, f"session_{S.session:02d}", gen_images_root)
+        # Create subfolders for generated images
+        gen_images_root = create_folder(service, "gen_images", participant_folder_id)
+        S.gen_images_root_id = gen_images_root
+        S.gen_drive_folder_id = create_folder(service, f"session_{S.session:02d}", gen_images_root)
 
-if "participant_info_submitted" not in S:
-    S.participant_info_submitted = False
-# If the participant info is not submitted, show the form to collect it.
+        print("🎉 All Drive folders created successfully!")
+    except Exception as e:
+        print(f"❌ Drive setup failed: {e}")
+        S.drive_service = None  # Disable drive if setup fails
+
+# FIXED: Participant info form with proper error handling
 if not S.participant_info_submitted:
     with st.form("participant_info_form"):
         st.header("Participant Information")
@@ -208,13 +234,21 @@ if not S.participant_info_submitted:
             S.participant_native = native
             S.participant_info_submitted = True
             
+            # Save locally first
             info_path = log_participant_info(S.uid, age, gender, native)
-
+            print(f"Participant info saved to {info_path}")
+            
             # Upload to Google Drive
             if "drive_service" in S and "participant_drive_folder_id" in S:
-                upload_file(S.drive_service, info_path, "text/csv", S.participant_drive_folder_id)
-
-            st.success("Thank you!")
+                try:
+                    file_id = upload_file(S.drive_service, info_path, "text/csv", S.participant_drive_folder_id)
+                    print(f"✅ Participant info uploaded to Drive: {file_id}")
+                    st.success("✅ Thank you! Information saved to cloud.")
+                except Exception as upload_error:
+                    print(f"❌ Failed to upload participant info: {upload_error}")
+                    st.success("✅ Thank you! Information saved locally.")
+            else:
+                st.success("✅ Thank you! Information saved locally.")
             st.rerun()
     st.stop()
 if S.gt_path is None:      

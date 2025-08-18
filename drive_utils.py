@@ -52,12 +52,27 @@ def create_folder(service, name, parent_id=None):
 
 def upload_file(service, file_path: Path, mime_type: str, parent_id: str):
     """Upload file to specified folder"""
+    if not file_path.exists():
+        raise FileNotFoundError(f"File not found: {file_path}")
+    if not parent_id:
+        raise ValueError("No parent folder ID provided")
     try:
+        parent_info = service.files().get(fileId=parent_id, fields="id,name").execute()
+        print(f"📁 Uploading {file_path.name} to folder: {parent_info.get('name')}")
+
         file_metadata = {"name": file_path.name, "parents": [parent_id]}
         media = MediaFileUpload(str(file_path), mimetype=mime_type)
         uploaded = service.files().create(body=file_metadata, media_body=media, fields="id,webViewLink").execute()
         print(f"✅ Uploaded: {file_path.name} (ID: {uploaded['id']})")
         return uploaded["id"]
     except Exception as e:
-        print(f"❌ Failed to upload {file_path.name}: {e}")
+        print(f"❌ Upload failed for {file_path.name}: {e}")
+        # Log detailed error info
+        if "403" in str(e):
+            print("💡 Permission denied - check folder sharing")
+        elif "404" in str(e):
+            print("💡 Folder not found - check folder ID")
+        elif "quota" in str(e).lower():
+            print("💡 Storage quota exceeded")
         raise
+
