@@ -5,7 +5,7 @@ import config
 from uuid import uuid4 # used to create session / user IDs
 from models import api_model # the model API wrapper
 from similarity import vgg_similarity # the similarity function 
-from drive_utils import get_drive_service, create_folder, upload_file
+from drive_utils import get_drive_service, create_folder, upload_file, extract_folder_id_from_url
 import random, csv, time 
 import time
 import os
@@ -178,12 +178,13 @@ S = st.session_state
 if creds and "drive_service" not in S:
     service = get_drive_service(creds)
     S.drive_service = service
-    
-    shared_folder_info = service.files().get(fileId=config.DRIVE_FOLDER).execute()
+    SHARED_FOLDER_ID = extract_folder_id_from_url(config.DRIVE_FOLDER)
+
+    shared_folder_info = service.files().get(fileId=SHARED_FOLDER_ID).execute()
     print(f"✅ Successfully accessed shared folder: {shared_folder_info.get('name')}")
         
     # Create root folder once
-    root_folder_id = create_folder(service, "participants_data", config.DRIVE_FOLDER)
+    root_folder_id = create_folder(service, "participants_data", SHARED_FOLDER_ID)
     print(f"Root folder created with ID: {root_folder_id}")
     # Create participant folder once and store its ID
     timestamp = time.strftime("%Y%m%d-%H%M%S")  # e.g., 20250817-134512
