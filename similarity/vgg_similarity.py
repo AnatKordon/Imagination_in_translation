@@ -37,10 +37,11 @@ class VGGEmbedder:
         for idx, layer_module in enumerate(model.features):
             if f'Layer_{idx}' == layer:
                 layer_module.register_forward_hook(self.get_embeddings_by_layer(layer))
+                print(f"Layer_{idx}: {layer.__class__.__name__}")
         for idx, layer_module in enumerate(model.classifier):
             if f'Classifier_{idx}' == layer:
                 layer_module.register_forward_hook(self.get_embeddings_by_layer(layer))
-
+                print(f"Classifier_{idx}: {layer.__class__.__name__}")
         # Define  transforms to match images to what model is used to
         self.transforms = transforms.Compose([
             transforms.Resize((224, 224)),
@@ -105,14 +106,15 @@ def compute_similarity_score(embedding1: np.ndarray, embedding2: np.ndarray) -> 
         similarity = 1 - cosine_distance  # ranges [-1,+1]
         scaled_similarity = int(((similarity + 1) / 2) * 100)  # maps to [0,100] for visibility, rounding for user friendliness
         return scaled_similarity, cosine_distance  # maybe we should only log similarity
-def get_vgg_embedder():
+
+def get_vgg_embedder(layer='Classifier_4'):
     """
     Initializes and returns a VGGEmbedder instance with preloaded VGG16 model.
     """
     # Load the pre-trained VGG16 model with ImageNet weights
     weights = VGG16_Weights.IMAGENET1K_V1
     vgg_imagenet = vgg16(weights=weights)
-    return VGGEmbedder(model=vgg_imagenet, layer='Classifier_4')
+    return VGGEmbedder(model=vgg_imagenet, layer=layer)
 
 if __name__ == "__main__":
     # Load VGG model
