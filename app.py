@@ -31,19 +31,13 @@ load_dotenv()
 if "google" in st.secrets:
     creds = service_account.Credentials.from_service_account_info(
         st.secrets["google"],
-        scopes=[
-            "https://www.googleapis.com/auth/drive.file",  # Only files created by the app
-            "https://www.googleapis.com/auth/drive.folder"  # Folder operations
-        ]
+        scopes=["https://www.googleapis.com/auth/drive"]
     )
     #for local host
 elif os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
     creds = service_account.Credentials.from_service_account_file(
         Path(os.getenv("GOOGLE_APPLICATION_CREDENTIALS")),
-        scopes=[
-            "https://www.googleapis.com/auth/drive.file",  # Only files created by the app
-            "https://www.googleapis.com/auth/drive.folder"  # Folder operations
-        ]
+        scopes=["https://www.googleapis.com/auth/drive"]
     )
 else:
     creds = None
