@@ -17,7 +17,9 @@ def send_generation_request(
     user_id: str,
     iteration: int,
     session_num: int,
-    true_image_path: Optional[str] = None
+    true_image_path: Optional[str] = None,
+    drive_service=None,  # Add this parameter
+    drive_folder_id: Optional[str] = None
 ) -> str:
     """
     Generates an image using Stability AI API and saves it locally with a flat filename structure.
@@ -83,6 +85,15 @@ def send_generation_request(
 
     with open(image_path, "wb") as f:
         f.write(output_image)
+
+    if drive_service and drive_folder_id:
+        try:
+            from drive_utils import upload_file  # Import your upload function
+            file_id = upload_file(drive_service, image_path, "image/png", drive_folder_id)
+            print(f"✅ Image uploaded to Drive: {filename} -> {file_id}")
+        except Exception as upload_error:
+            print(f"❌ Drive upload failed for {filename}: {upload_error}")
+            # Continue anyway - local file is still available
 
     return image_path
 
