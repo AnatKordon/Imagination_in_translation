@@ -179,8 +179,11 @@ if creds and "drive_service" not in S:
     service = get_drive_service(creds)
     S.drive_service = service
     
+    shared_folder_info = service.files().get(fileId=config.DRIVE_FOLDER).execute()
+    print(f"✅ Successfully accessed shared folder: {shared_folder_info.get('name')}")
+        
     # Create root folder once
-    root_folder_id = create_folder(service, "participants_data")
+    root_folder_id = create_folder(service, "participants_data", config.DRIVE_FOLDER)
     print(f"Root folder created with ID: {root_folder_id}")
     # Create participant folder once and store its ID
     timestamp = time.strftime("%Y%m%d-%H%M%S")  # e.g., 20250817-134512
