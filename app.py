@@ -172,20 +172,18 @@ S = st.session_state
 if creds and "drive_service" not in S:
     service = get_drive_service(creds)
     S.drive_service = service
-
+    
     # Create root folder once
     root_folder_id = create_folder(service, "participants_data")
-
+    print(f"Root folder created with ID: {root_folder_id}")
     # Create participant folder once and store its ID
     timestamp = time.strftime("%Y%m%d-%H%M%S")  # e.g., 20250817-134512
     folder_name = f"{timestamp}_{S.uid}"
     participant_folder_id = create_folder(service, folder_name, root_folder_id)
-
-    participant_folder_id = create_folder(service, S.uid, root_folder_id)
+    print(f"Participant folder created with ID: {participant_folder_id}")
     S.participant_drive_folder_id = participant_folder_id
 
-    # Create subfolders for generated images (optional)
-    #S.gen_drive_folder_id = create_folder(service, "gen_images", participant_folder_id)
+    # Create subfolders for generated images
     gen_images_root = create_folder(service, "gen_images", participant_folder_id)
     S.gen_drive_folder_id = create_folder(service, f"session_{S.session:02d}", gen_images_root)
 
@@ -347,6 +345,7 @@ with left:
         # Upload info if not uploaded yet
         if not getattr(S, "info_uploaded", False):
             info_path = config.LOG_DIR / f"participant_{S.uid}_info.csv"
+            assert info_path.exists(), f"Participant info file does not exist: {info_path}"
             if info_path.exists():
                 upload_file(S.drive_service, info_path, "text/csv", S.participant_drive_folder_id)
             S.info_uploaded = True
