@@ -219,7 +219,9 @@ if creds and "drive_service" not in S:
         print(f"❌ Drive setup failed: {e}")
         S.drive_service = None  # Disable drive if setup fails
 
-# FIXED: Participant info form with proper error handling
+
+if "participant_info_submitted" not in S:
+    S.participant_info_submitted = False
 if not S.participant_info_submitted:
     with st.form("participant_info_form"):
         st.header("Participant Information")
