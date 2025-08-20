@@ -26,22 +26,22 @@ for d in (config.GEN_DIR, config.LOG_DIR):
 # Setting up the appearance
 st.set_page_config(page_title="Imagination in Translation", layout="wide") # the page is full-width 
 
-load_dotenv()
-#load google drive api db:
-if "google" in st.secrets:
-    creds = service_account.Credentials.from_service_account_info(
-        st.secrets["google"],
-        scopes=["https://www.googleapis.com/auth/drive"]
-    )
-    #for local host
-elif os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
-    creds = service_account.Credentials.from_service_account_file(
-        Path(os.getenv("GOOGLE_APPLICATION_CREDENTIALS")),
-        scopes=["https://www.googleapis.com/auth/drive"]
-    )
-else:
-    creds = None
-    print("❌ Error, No Google Drive credentials found. contact experiment host")
+# load_dotenv()
+# #load google drive api db:
+# if "google" in st.secrets:
+#     creds = service_account.Credentials.from_service_account_info(
+#         st.secrets["google"],
+#         scopes=["https://www.googleapis.com/auth/drive"]
+#     )
+#     #for local host
+# elif os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
+#     creds = service_account.Credentials.from_service_account_file(
+#         Path(os.getenv("GOOGLE_APPLICATION_CREDENTIALS")),
+#         scopes=["https://www.googleapis.com/auth/drive"]
+#     )
+# else:
+#     creds = None
+#     print("❌ Error, No Google Drive credentials found. contact experiment host")
 
 # Customising the buttons
 st.markdown(
@@ -65,13 +65,13 @@ def generate_image(prompt: str,seed:int,session:int ,attempt: int, gt: Path,id: 
                                       iteration=attempt,session_num=session,user_id=id, drive_service=drive_service, drive_folder_id=drive_folder_id)  # Pass current session folder)
 
     ImageOps.contain(Image.open(local_path), (512, 512))
-    if "drive_service" in S and S.drive_service and "gen_drive_folder_id" in S and S.gen_drive_folder_id:
-        try:
-            file_id = upload_file(S.drive_service, local_path, "image/png", S.gen_drive_folder_id)
-            print(f"✅ Generated image uploaded to Drive: {local_path.name} -> {file_id}")
-        except Exception as upload_error:
-            print(f"❌ Failed to upload generated image: {upload_error}")
-            # Continue anyway - local file is still available
+    # if "drive_service" in S and S.drive_service and "gen_drive_folder_id" in S and S.gen_drive_folder_id:
+    #     try:
+    #         file_id = upload_file(S.drive_service, local_path, "image/png", S.gen_drive_folder_id)
+    #         print(f"✅ Generated image uploaded to Drive: {local_path.name} -> {file_id}")
+    #     except Exception as upload_error:
+    #         print(f"❌ Failed to upload generated image: {upload_error}")
+    #         # Continue anyway - local file is still available
     return local_path
 
 
@@ -124,21 +124,21 @@ def log_participant_info(uid: str, age: int, gender: str, native: str) -> Path:
 
     return path
 
-def update_gen_folder():
-    """Update generation folder for new session and create in Drive if available"""
-    if "drive_service" in S and S.drive_service and "gen_images_root_id" in S:
-        try:
-            # Create new session folder in Drive
-            session_folder_id = create_folder(
-                S.drive_service, 
-                f"session_{S.session:02d}", 
-                S.gen_images_root_id
-            )
-            S.gen_drive_folder_id = session_folder_id
-            print(f"✅ Created Drive session folder: session_{S.session:02d}")
-        except Exception as e:
-            print(f"❌ Failed to create session folder in Drive: {e}")
-            S.gen_drive_folder_id = None
+# def update_gen_folder():
+#     """Update generation folder for new session and create in Drive if available"""
+#     if "drive_service" in S and S.drive_service and "gen_images_root_id" in S:
+#         try:
+#             # Create new session folder in Drive
+#             session_folder_id = create_folder(
+#                 S.drive_service, 
+#                 f"session_{S.session:02d}", 
+#                 S.gen_images_root_id
+#             )
+#             S.gen_drive_folder_id = session_folder_id
+#             print(f"✅ Created Drive session folder: session_{S.session:02d}")
+#         except Exception as e:
+#             print(f"❌ Failed to create session folder in Drive: {e}")
+#             S.gen_drive_folder_id = None
 
 # A helper for st.rerun() function in Steamlit. It is named differently in different versions of Steamlit, so we just make sure that we have something of this kind.
 rerun = st.rerun if hasattr(st, "rerun") else st.experimental_rerun
@@ -157,7 +157,7 @@ def next_gt():
     S.gt_path = random.choice(remaining)
     S.used.add(S.gt_path.name)
     S.session += 1 # increase session counter
-    update_gen_folder()
+    # update_gen_folder()
     S.seed = np.random.randint(1, 4000000) # randomise the seed for the next generation
     S.attempt = 1
     S.generated = False
@@ -188,36 +188,36 @@ for k, v in {
 S = st.session_state
 
 #store the google drive service in the session state
-if creds and "drive_service" not in S:
-    service = get_drive_service(creds)
-    S.drive_service = service
-    SHARED_FOLDER_ID = extract_folder_id_from_url(config.DRIVE_FOLDER)
+# if creds and "drive_service" not in S:
+#     service = get_drive_service(creds)
+#     S.drive_service = service
+#     SHARED_FOLDER_ID = extract_folder_id_from_url(config.DRIVE_FOLDER)
 
-    try:
-        shared_folder_info = service.files().get(fileId=SHARED_FOLDER_ID).execute()
-        print(f"✅ Successfully accessed shared folder: {shared_folder_info.get('name')}")
+#     try:
+    #     shared_folder_info = service.files().get(fileId=SHARED_FOLDER_ID).execute()
+    #     print(f"✅ Successfully accessed shared folder: {shared_folder_info.get('name')}")
             
-        # Create root folder once
-        root_folder_id = create_folder(service, "participants_data", SHARED_FOLDER_ID)
-        print(f"Root folder created with ID: {root_folder_id}")
-        # Create participant folder once and store its ID
-        timestamp = time.strftime("%Y%m%d-%H%M%S")  # e.g., 20250817-134512
-        folder_name = f"{timestamp}_{S.uid}"
+    #     # Create root folder once
+    #     root_folder_id = create_folder(service, "participants_data", SHARED_FOLDER_ID)
+    #     print(f"Root folder created with ID: {root_folder_id}")
+    #     # Create participant folder once and store its ID
+    #     timestamp = time.strftime("%Y%m%d-%H%M%S")  # e.g., 20250817-134512
+    #     folder_name = f"{timestamp}_{S.uid}"
         
-        #  create folder per participant
-        participant_folder_id = create_folder(service, folder_name, root_folder_id)
-        print(f"Participant folder created with ID: {participant_folder_id}")
-        S.participant_drive_folder_id = participant_folder_id
+    #     #  create folder per participant
+    #     participant_folder_id = create_folder(service, folder_name, root_folder_id)
+    #     print(f"Participant folder created with ID: {participant_folder_id}")
+    #     S.participant_drive_folder_id = participant_folder_id
 
-        # Create subfolders for generated images
-        gen_images_root = create_folder(service, "gen_images", participant_folder_id)
-        S.gen_images_root_id = gen_images_root
-        S.gen_drive_folder_id = create_folder(service, f"session_{S.session:02d}", gen_images_root)
+    #     # Create subfolders for generated images
+    #     gen_images_root = create_folder(service, "gen_images", participant_folder_id)
+    #     S.gen_images_root_id = gen_images_root
+    #     S.gen_drive_folder_id = create_folder(service, f"session_{S.session:02d}", gen_images_root)
 
-        print("🎉 All Drive folders created successfully!")
-    except Exception as e:
-        print(f"❌ Drive setup failed: {e}")
-        S.drive_service = None  # Disable drive if setup fails
+    #     print("🎉 All Drive folders created successfully!")
+    # except Exception as e:
+    #     print(f"❌ Drive setup failed: {e}")
+    #     S.drive_service = None  # Disable drive if setup fails
 
 
 if "participant_info_submitted" not in S:
@@ -240,17 +240,17 @@ if not S.participant_info_submitted:
             info_path = log_participant_info(S.uid, age, gender, native)
             print(f"Participant info saved to {info_path}")
             
-            # Upload to Google Drive
-            if "drive_service" in S and "participant_drive_folder_id" in S:
-                try:
-                    file_id = upload_file(S.drive_service, info_path, "text/csv", S.participant_drive_folder_id)
-                    print(f"✅ Participant info uploaded to Drive: {file_id}")
-                    st.success("✅ Thank you! Information saved to cloud.")
-                except Exception as upload_error:
-                    print(f"❌ Failed to upload participant info: {upload_error}")
-                    st.success("✅ Thank you! Information saved locally.")
-            else:
-                st.success("✅ Thank you! Information saved locally.")
+            # # Upload to Google Drive
+            # if "drive_service" in S and "participant_drive_folder_id" in S:
+            #     try:
+            #         file_id = upload_file(S.drive_service, info_path, "text/csv", S.participant_drive_folder_id)
+            #         print(f"✅ Participant info uploaded to Drive: {file_id}")
+            #         st.success("✅ Thank you! Information saved to cloud.")
+            #     except Exception as upload_error:
+            #         print(f"❌ Failed to upload participant info: {upload_error}")
+            #         st.success("✅ Thank you! Information saved locally.")
+            # else:
+            #     st.success("✅ Thank you! Information saved locally.")
             st.rerun()
     st.stop()
 if S.gt_path is None:      
@@ -354,9 +354,9 @@ with left:
 
         log_row(
             uid=S.uid,
-            # participant_age=S.participant_age,
-            # participant_gender= S.participant_gender,
-            # participant_native=S.participant_native,
+            participant_age=S.participant_age,
+            participant_gender= S.participant_gender,
+            participant_native=S.participant_native,
             gt=S.gt_path.name,
             session = S.session,
             attempt=S.attempt,
@@ -372,23 +372,23 @@ with left:
         S.last_prompt = S.prompt.strip()  # save the last prompt to check if it is the same as the current one
         rerun()
 
-        if creds and "drive_service" in S:
-            # Upload image
-            img_mime = guess_type(S.gen_path)[0] or "image/png"
-            upload_file(S.drive_service, Path(S.gen_path), img_mime, S.gen_drive_folder_id)
+        # if creds and "drive_service" in S:
+        #     # Upload image
+        #     img_mime = guess_type(S.gen_path)[0] or "image/png"
+        #     upload_file(S.drive_service, Path(S.gen_path), img_mime, S.gen_drive_folder_id)
 
-            # Upload CSV log file with official MIME type for CSV files.
-            csv_path = config.LOG_DIR / f"{S.uid}.csv"
+        #     # Upload CSV log file with official MIME type for CSV files.
+        #     csv_path = config.LOG_DIR / f"{S.uid}.csv"
 
-            upload_file(S.drive_service, csv_path, "text/csv", S.participant_drive_folder_id)
+        #     upload_file(S.drive_service, csv_path, "text/csv", S.participant_drive_folder_id)
 
-        # Upload info if not uploaded yet
-        if not getattr(S, "info_uploaded", False):
-            info_path = config.LOG_DIR / f"participant_{S.uid}_info.csv"
-            assert info_path.exists(), f"Participant info file does not exist: {info_path}"
-            if info_path.exists():
-                upload_file(S.drive_service, info_path, "text/csv", S.participant_drive_folder_id)
-            S.info_uploaded = True
+        # # Upload info if not uploaded yet
+        # if not getattr(S, "info_uploaded", False):
+        #     info_path = config.LOG_DIR / f"participant_{S.uid}_info.csv"
+        #     assert info_path.exists(), f"Participant info file does not exist: {info_path}"
+        #     # if info_path.exists():
+        #     #     upload_file(S.drive_service, info_path, "text/csv", S.participant_drive_folder_id)
+        #     S.info_uploaded = True
         
         # flags session as finished and rerun
     if st.button("Exit"):
