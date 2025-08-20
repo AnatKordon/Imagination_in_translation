@@ -5,7 +5,7 @@ import config
 from uuid import uuid4 # used to create session / user IDs
 from models import api_model # the model API wrapper
 from similarity import vgg_similarity # the similarity function 
-from drive_utils import get_drive_service, create_folder, upload_file, extract_folder_id_from_url
+# from drive_utils import get_drive_service, create_folder, upload_file, extract_folder_id_from_url
 import random, csv, time 
 import time
 import os
@@ -14,10 +14,10 @@ import re
 import streamlit as st # Streamlit UI framework
 from PIL import Image, ImageOps # Pillow library to manipulate images
 
-from google.oauth2 import service_account
-from mimetypes import guess_type # for uploading to google drive - png or csv
+# from google.oauth2 import service_account
+# from mimetypes import guess_type # for uploading to google drive - png or csv
 
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
 # ensuring all the required folders exist so .save() or logging never crash
 for d in (config.GEN_DIR, config.LOG_DIR):
