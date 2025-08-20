@@ -62,7 +62,7 @@ def generate_image(prompt: str,seed:int,session:int ,attempt: int, gt: Path,id: 
     params["prompt"] = prompt # set the prompt
     params["seed"] = seed # set the seed
     local_path = api_model.send_generation_request(host="https://api.stability.ai/v2beta/stable-image/generate/sd3",params=params,
-                                      iteration=attempt,session_num=session,user_id=id, drive_service=drive_service, drive_folder_id=drive_folder_id)  # Pass current session folder)
+                                      iteration=attempt,session_num=session,user_id=id) #, drive_service=drive_service, drive_folder_id=drive_folder_id)  # Pass current session folder)
 
     ImageOps.contain(Image.open(local_path), (512, 512))
     # if "drive_service" in S and S.drive_service and "gen_drive_folder_id" in S and S.gen_drive_folder_id:
