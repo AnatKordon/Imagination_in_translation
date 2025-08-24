@@ -363,7 +363,7 @@ with left:
             seed=S.seed,
             prompt=S.prompt,
             gen=S.gen_path.name,
-            similarity=round(S.last_score, 4),
+            similarity=S.last_score,
             cosine_distance=round(S.cosine_distance, 4),
             subjective_score=S.subjective_score if "subjective_score" in S else None,
             ts=int(time.time()),
@@ -425,10 +425,12 @@ with right:
         st.progress(int(S.last_score))
         st.write(f"**{S.last_score:.1f}%**")
 
-        S.subjective_score = st.radio(
-            "Subjective Similarity (1 = not similar, 6 = very similar)",
-            [1, 2, 3, 4, 5, 6 ],
-            horizontal=True,
+        S.subjective_score = st.slider(
+            "Subjective Similarity (0 = not similar, 100 = very similar)",
+            min_value=0,
+            max_value=100,
+            value=50,  # default position
+            step=1,
             key=f"subjective_score_{S.session}_{S.attempt}",
         )
 
