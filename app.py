@@ -3,8 +3,6 @@
 from pathlib import Path
 import config       
 from uuid import uuid4 # used to create session / user IDs
-from models import api_model # the model API wrapper
-from similarity import vgg_similarity # the similarity function 
 # from drive_utils import get_drive_service, create_folder, upload_file, extract_folder_id_from_url
 import random, csv, time 
 import time
@@ -19,12 +17,42 @@ from PIL import Image, ImageOps # Pillow library to manipulate images
 
 # from dotenv import load_dotenv
 
-# ensuring all the required folders exist so .save() or logging never crash
-for d in (config.GEN_DIR, config.LOG_DIR):
-    d.mkdir(parents=True, exist_ok=True)
 
-# Setting up the appearance
-st.set_page_config(page_title="Imagination in Translation", layout="wide") # the page is full-width 
+
+st.set_page_config(page_title="Imagination in Translation", layout="wide")
+
+
+# --- Loading screen ---
+if "vgg_loaded" not in st.session_state:
+    placeholder = st.empty()
+    with placeholder.container():
+        st.markdown(
+            """
+            <div style='display: flex; flex-direction: column; align-items: center; 
+                        justify-content: center; height: 80vh;'>
+                <h1 style='font-size: 2.5rem;'>🔄 Experiment is loading…</h1>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # ensuring all the required folders exist so .save() or logging never crash
+    for d in (config.GEN_DIR, config.LOG_DIR):
+        d.mkdir(parents=True, exist_ok=True)
+
+
+    # --- heavy imports AFTER showing loading message --- (don't move them back up)
+    from models import api_model # the model API wrapper
+    from similarity import vgg_similarity # the similarity function 
+    embedder = vgg_similarity.get_vgg_embedder()
+
+    # save once for reuse
+    st.session_state.vgg_embedder = embedder
+    st.session_state.vgg_loaded = True
+
+    # let the screen be visible a moment
+    time.sleep(0.5)
+    st.rerun()
 
 # load_dotenv()
 # #load google drive api db:
@@ -44,42 +72,42 @@ st.set_page_config(page_title="Imagination in Translation", layout="wide") # the
 #     print("❌ Error, No Google Drive credentials found. contact experiment host")
 
 # Customising the buttons
-# st.markdown(
-#     """
-#     <style>
-#         button[kind="primary"]{background:#8B0000;color:white}
-#         button[kind="primary"]:hover{background:#A80000;color:white}
-#     </style>
-#     """,
-#     unsafe_allow_html=True,
-# )
-
-
 st.markdown(
     """
     <style>
-    /* Thicker slider track */
-    div[data-baseweb="slider"] > div {
-        height: 12px !important;
-    }
-
-    /* Make the filled-in blue part thicker */
-    div[data-baseweb="slider"] > div > div {
-        background: #1E90FF !important;
-    }
-
-    /* Make the slider handle (knob) blue & bigger */
-    div[role="slider"] {
-        background-color: #1E90FF !important;
-        border: 2px solid #1E90FF !important;
-        height: 28px !important;
-        width: 28px !important;
-        border-radius: 50% !important;
-    }
+        button[kind="primary"]{background:#8B0000;color:white}
+        button[kind="primary"]:hover{background:#A80000;color:white}
     </style>
     """,
     unsafe_allow_html=True,
 )
+
+
+# st.markdown(
+#     """
+#     <style>
+#     /* Thicker slider track */
+#     div[data-baseweb="slider"] > div {
+#         height: 12px !important;
+#     }
+
+#     /* Make the filled-in blue part thicker */
+#     div[data-baseweb="slider"] > div > div {
+#         background: #1E90FF !important;
+#     }
+
+#     /* Make the slider handle (knob) blue & bigger */
+#     div[role="slider"] {
+#         background-color: #1E90FF !important;
+#         border: 2px solid #1E90FF !important;
+#         height: 28px !important;
+#         width: 28px !important;
+#         border-radius: 50% !important;
+#     }
+#     </style>
+#     """,
+#     unsafe_allow_html=True,
+# )
 
 
 def generate_image(prompt: str,seed:int,session:int ,attempt: int, gt: Path,id: str) -> Path:
