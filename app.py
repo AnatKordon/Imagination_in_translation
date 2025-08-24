@@ -115,7 +115,7 @@ def generate_image(prompt: str,seed:int,session:int ,attempt: int, gt: Path,id: 
     #adding changing params
     params["prompt"] = prompt # set the prompt
     params["seed"] = seed # set the seed
-    local_path = api_model.send_generation_request(host="https://api.stability.ai/v2beta/stable-image/generate/sd3",params=params,
+    local_path = api_model.send_generation_request(host="https://api.stability.ai/v2beta/stable-image/generate/ultra",params=params,
                                       iteration=attempt,session_num=session,user_id=id) #, drive_service=drive_service, drive_folder_id=drive_folder_id)  # Pass current session folder)
 
     ImageOps.contain(Image.open(local_path), (512, 512))
