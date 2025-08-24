@@ -44,16 +44,42 @@ st.set_page_config(page_title="Imagination in Translation", layout="wide") # the
 #     print("❌ Error, No Google Drive credentials found. contact experiment host")
 
 # Customising the buttons
+# st.markdown(
+#     """
+#     <style>
+#         button[kind="primary"]{background:#8B0000;color:white}
+#         button[kind="primary"]:hover{background:#A80000;color:white}
+#     </style>
+#     """,
+#     unsafe_allow_html=True,
+# )
+
+
 st.markdown(
     """
     <style>
-        button[kind="primary"]{background:#8B0000;color:white}
-        button[kind="primary"]:hover{background:#A80000;color:white}
+    /* Thicker slider track */
+    div[data-baseweb="slider"] > div {
+        height: 12px !important;
+    }
+
+    /* Make the filled-in blue part thicker */
+    div[data-baseweb="slider"] > div > div {
+        background: #1E90FF !important;
+    }
+
+    /* Make the slider handle (knob) blue & bigger */
+    div[role="slider"] {
+        background-color: #1E90FF !important;
+        border: 2px solid #1E90FF !important;
+        height: 28px !important;
+        width: 28px !important;
+        border-radius: 50% !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,
 )
-
 
 
 def generate_image(prompt: str,seed:int,session:int ,attempt: int, gt: Path,id: str) -> Path:
