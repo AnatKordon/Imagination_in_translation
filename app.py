@@ -2,6 +2,8 @@
 # Note, that by default a user has to press ctrl+enter after filling in the text box to apply the text, count characters, send it to generation etc. 
 from pathlib import Path
 import config       
+from models import api_model # the model API wrapper
+from similarity import vgg_similarity # the similarity function 
 from uuid import uuid4 # used to create session / user IDs
 # from drive_utils import get_drive_service, create_folder, upload_file, extract_folder_id_from_url
 import random, csv, time 
@@ -42,8 +44,8 @@ if "vgg_loaded" not in st.session_state:
 
 
     # --- heavy imports AFTER showing loading message --- (don't move them back up)
-    from models import api_model # the model API wrapper
-    from similarity import vgg_similarity # the similarity function 
+    
+    
     embedder = vgg_similarity.get_vgg_embedder()
 
     # save once for reuse
@@ -109,39 +111,35 @@ st.markdown(
 #     unsafe_allow_html=True,
 # )
 
+#new generation of 4 images
+def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path, uid: str) -> list[Path]:
+    params = config.params.copy()
+    params["prompt"] = prompt
+    local_paths = []
 
-def generate_image(prompt: str,seed:int,session:int ,attempt: int, gt: Path,id: str) -> Path:
-    params = config.params.copy() # copy the params dict so we don't change the original one
-    #adding changing params
-    params["prompt"] = prompt # set the prompt
-    params["seed"] = seed # set the seed
-    local_path = api_model.send_generation_request(host="https://api.stability.ai/v2beta/stable-image/generate/ultra",params=params,
-                                      iteration=attempt,session_num=session,user_id=id) #, drive_service=drive_service, drive_folder_id=drive_folder_id)  # Pass current session folder)
+    for i in range(4):  # generate 4 images
+        params["seed"] = seed + i  # vary seed to get diversity
+        local_path = api_model.send_generation_request(
+            host="https://api.stability.ai/v2beta/stable-image/generate/ultra",
+            params=params,
+            iteration=attempt,
+            session_num=session,
+            user_id=uid,
+        )
+        ImageOps.contain(Image.open(local_path), (512, 512))
+        local_paths.append(local_path)
+    return local_paths  
 
-    ImageOps.contain(Image.open(local_path), (512, 512))
-    # if "drive_service" in S and S.drive_service and "gen_drive_folder_id" in S and S.gen_drive_folder_id:
-    #     try:
-    #         file_id = upload_file(S.drive_service, local_path, "image/png", S.gen_drive_folder_id)
-    #         print(f"✅ Generated image uploaded to Drive: {local_path.name} -> {file_id}")
-    #     except Exception as upload_error:
-    #         print(f"❌ Failed to upload generated image: {upload_error}")
-    #         # Continue anyway - local file is still available
-    return local_path
-
-
-
-def similarity(GT_path: Path, GEN_path: Path) -> float:
-    ## use vgg to create embeddings and calculate similarity
-    embedder = vgg_similarity.get_vgg_embedder()  # get the VGG embedder
-    GT_path = str(GT_path)  # convert Path to string for the similarity function
-    GEN_path = str(GEN_path)  # convert Path to string for the similarity function
-    GT_embedding = embedder.get_embedding(img_path=GT_path)  # get embedding for the ground truth image
-    GEN_embedding = embedder.get_embedding(img_path=GEN_path)  # get embedding for the generated image
-
-    objective_similarity_score, cosine_distance = vgg_similarity.compute_similarity_score(GT_embedding, GEN_embedding)
-
-    return objective_similarity_score , cosine_distance
-
+#similarity scores for all gen images
+def similarities(GT_path: Path, GEN_paths: list[Path]) -> list[float]:
+    embedder = st.session_state.vgg_embedder  # use cached model
+    GT_embedding = embedder.get_embedding(img_path=str(GT_path))
+    scores = []
+    for gen_path in GEN_paths:
+        GEN_embedding = embedder.get_embedding(img_path=str(gen_path))
+        score, _ = vgg_similarity.compute_similarity_score(GT_embedding, GEN_embedding)
+        scores.append(score)
+    return scores
 
 def log_row(**kw):
     f = config.LOG_DIR / f"{kw['uid']}.csv"
@@ -375,8 +373,8 @@ with left:
 
     if st.button("Generate", type="primary", disabled=gen_disabled):
         try:
-            S.gen_path = generate_image(S.prompt,S.seed,S.session ,S.attempt, S.gt_path,S.uid) # generate the image
-            print(f"Generated image saved to {S.gen_path}")
+            S.gen_paths = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image
+            print(f"Generated images saved to {S.gen_path}")
         except Exception as e:
             msg = str(e)
             print(e)
@@ -399,34 +397,35 @@ with left:
                 st.error(f"Unexpected error: {msg}")
                 
         try:
-            S.last_score,S.cosine_distance = similarity(S.gt_path, S.gen_path)
+            S.last_scores = similarities(S.gt_path, S.gen_paths)
         except Exception as e:
             print(e)
             st.error(f"Error calculating similarity: {e}")
-            S.last_score = 0.0
+            S.last_scores = [0.0] * len(S.gen_paths)
 
+        for i, (gen_path, score) in enumerate(zip(S.gen_paths, S.last_scores), start=1):
+            log_row(
+                uid=S.uid,
+                participant_age=S.participant_age,
+                participant_gender=S.participant_gender,
+                participant_native=S.participant_native,
+                gt=S.gt_path.name,
+                session=S.session,
+                attempt=S.attempt,
+                seed=S.seed + i,
+                prompt=S.prompt,
+                gen=gen_path.name,
+                similarity=score,
+                subjective_score=S.subjective_score if "subjective_score" in S else None,
+                ts=int(time.time()),
+            )
 
-        log_row(
-            uid=S.uid,
-            participant_age=S.participant_age,
-            participant_gender= S.participant_gender,
-            participant_native=S.participant_native,
-            gt=S.gt_path.name,
-            session = S.session,
-            attempt=S.attempt,
-            seed=S.seed,
-            prompt=S.prompt,
-            gen=S.gen_path.name,
-            similarity=S.last_score,
-            cosine_distance=round(S.cosine_distance, 4),
-            subjective_score=S.subjective_score if "subjective_score" in S else None,
-            ts=int(time.time()),
-        )
+        
         S.generated = True
         S.last_prompt = S.prompt.strip()  # save the last prompt to check if it is the same as the current one
         rerun()
 
-        # if creds and "drive_service" in S:
+    # if creds and "drive_service" in S:
         #     # Upload image
         #     img_mime = guess_type(S.gen_path)[0] or "image/png"
         #     upload_file(S.drive_service, Path(S.gen_path), img_mime, S.gen_drive_folder_id)
@@ -463,21 +462,28 @@ with right:
     if S.generated:
         with gen_c:
             try:
-                st.image(
-                    ImageOps.contain(Image.open(S.gen_path), (int(config.IMG_H * 1.8), config.IMG_H)),
-                    caption="Generated image",
-                    clamp=True,
-                )
+                # create 2x2 layout
+                rows = [st.columns(2), st.columns(2)]
+                idx = 0
+                for r in rows:
+                    for c in r:
+                        if idx < len(S.gen_paths):
+                            c.image(
+                                ImageOps.contain(Image.open(S.gen_paths[idx]), (int(config.IMG_H * 1.2), config.IMG_H)),
+                                caption=f"Similarity to original — {S.last_scores[idx]:.1f}%",
+                                clamp=True,
+                            )
+                            idx += 1
             except (FileNotFoundError, AttributeError, ValueError) as e:
-                st.error(f"Generated image cannot be displayed: Try again later")
+                st.error("Generated images cannot be displayed: Try again later")
                 S.generated = False
-                S.gen_path = None
+                S.gen_paths = []
                 st.stop()
 
-
-        st.caption("Similarity:")
-        st.progress(int(S.last_score))
-        st.write(f"**{S.last_score:.1f}%**")
+        #removing the single similarity score
+        # st.caption("Similarity:")
+        # st.progress(int(S.last_score))
+        # st.write(f"**{S.last_score:.1f}%**")
 
         S.subjective_score = st.slider(
             "Subjective Similarity (0 = not similar, 100 = very similar)",
