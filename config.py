@@ -36,5 +36,5 @@ params = {
     # "image": str(GT_DIR /"sample_image"/"bridge_l.jpg"),  # Path to the style image
     "aspect_ratio": "1:1", 
     "output_format": "png",
-    "model": None # "sd3.5-large-turbo"
+    "model": "sd3.5-large" # "sd3.5-large-turbo"
 }

@@ -120,7 +120,7 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
     for i in range(4):  # generate 4 images
         params["seed"] = seed + i  # vary seed to get diversity
         local_path = api_model.send_generation_request(
-            host="https://api.stability.ai/v2beta/stable-image/generate/ultra",
+            host="https://api.stability.ai/v2beta/stable-image/generate/sd3",
             params=params,
             iteration=attempt,
             session_num=session,
