@@ -80,7 +80,7 @@ def send_generation_request(
     GEN_DIR.mkdir(parents=True, exist_ok=True)
 
     # Save image using flat structure
-    filename = f"{user_id}_session{session_num:02d}_iter{iteration:02d}.png"
+    filename = f"{user_id}_session{session_num:02d}_iter{iteration:02d}_seed{returned_seed}.png"
     image_path = GEN_DIR / filename
 
     with open(image_path, "wb") as f:
