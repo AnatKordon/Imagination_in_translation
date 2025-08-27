@@ -44,8 +44,6 @@ if "vgg_loaded" not in st.session_state:
 
 
     # --- heavy imports AFTER showing loading message --- (don't move them back up)
-    
-    
     embedder = vgg_similarity.get_vgg_embedder()
 
     # save once for reuse
