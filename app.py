@@ -2,8 +2,8 @@
 # Note, that by default a user has to press ctrl+enter after filling in the text box to apply the text, count characters, send it to generation etc. 
 from pathlib import Path
 import config       
-from models import api_model # the model API wrapper
-from similarity import vgg_similarity # the similarity function 
+from models import api_model  # the model API wrapper
+from similarity import vgg_similarity  # the similarity function 
 from uuid import uuid4 # used to create session / user IDs
 # from drive_utils import get_drive_service, create_folder, upload_file, extract_folder_id_from_url
 import random, csv, time 
@@ -17,46 +17,43 @@ from PIL import Image, ImageOps # Pillow library to manipulate images
 # from google.oauth2 import service_account
 # from mimetypes import guess_type # for uploading to google drive - png or csv
 
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
-
+load_dotenv()
 
 st.set_page_config(page_title="Imagination in Translation", layout="wide")
 
 
-# --- Loading screen ---
-if "vgg_loaded" not in st.session_state:
-    placeholder = st.empty()
-    with placeholder.container():
-        st.markdown(
-            """
-            <div style='display: flex; flex-direction: column; align-items: center; 
-                        justify-content: center; height: 80vh;'>
-                <h1 style='font-size: 2.5rem;'>🔄 Experiment is loading…</h1>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+# # --- Loading screen ---
+# if "vgg_loaded" not in st.session_state:
+#     placeholder = st.empty()
+#     with placeholder.container():
+#         st.markdown(
+#             """
+#             <div style='display: flex; flex-direction: column; align-items: center; 
+#                         justify-content: center; height: 80vh;'>
+#                 <h1 style='font-size: 2.5rem;'>🔄 Experiment is loading…</h1>
+#             </div>
+#             """,
+#             unsafe_allow_html=True,
+#         )
 
-    # ensuring all the required folders exist so .save() or logging never crash
-    for d in (config.GEN_DIR, config.LOG_DIR):
-        d.mkdir(parents=True, exist_ok=True)
+#     # ensuring all the required folders exist so .save() or logging never crash
+#     for d in (config.GEN_DIR, config.LOG_DIR):
+#         d.mkdir(parents=True, exist_ok=True)
 
 
-    # --- heavy imports AFTER showing loading message --- (don't move them back up)
+#     # --- heavy imports AFTER showing loading message --- (don't move them back up)    
     
-    
-    embedder = vgg_similarity.get_vgg_embedder()
+#     embedder = vgg_similarity.get_vgg_embedder()
+#     # save once for reuse
+#     st.session_state.vgg_embedder = embedder
+#     st.session_state.vgg_loaded = True
 
-    # save once for reuse
-    st.session_state.vgg_embedder = embedder
-    st.session_state.vgg_loaded = True
+#     # let the screen be visible a moment
+#     time.sleep(0.5)
+#     st.rerun()
 
-    # let the screen be visible a moment
-    time.sleep(0.5)
-    st.rerun()
-
-# load_dotenv()
 # #load google drive api db:
 # if "google" in st.secrets:
 #     creds = service_account.Credentials.from_service_account_info(
