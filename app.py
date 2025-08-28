@@ -2,8 +2,8 @@
 # Note, that by default a user has to press ctrl+enter after filling in the text box to apply the text, count characters, send it to generation etc. 
 from pathlib import Path
 import config       
-from models.api_model import send_generation_request # the model API wrapper for Stability AI
-from models.gpt_model import send_gpt_request # the model API wrapper for open ai
+from models import api_model # the model API wrapper for Stability AI
+from models import gpt_model # the model API wrapper for open ai
 from similarity import vgg_similarity # the similarity function 
 from uuid import uuid4 # used to create session / user IDs
 # from drive_utils import get_drive_service, create_folder, upload_file, extract_folder_id_from_url
@@ -126,7 +126,7 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
     if config.API_CALL == "stability_ai":
         for i in range(4):  # generate 4 images
             params["seed"] = seed + i  # vary seed to get diversity
-            local_path = send_generation_request(
+            local_path = api_model.send_generation_request(
                 host="https://api.stability.ai/v2beta/stable-image/generate/sd3",
                 params=params,
                 iteration=attempt,
@@ -140,7 +140,7 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
             local_paths.append(local_path)
 
     elif config.API_CALL == "open_ai":  # it inherently generates 4 images
-        paths = send_gpt_request(
+        paths = gpt_model.send_gpt_request(
             prompt=prompt,
             iteration=attempt,
             session_num=session,
