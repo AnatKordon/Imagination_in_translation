@@ -110,15 +110,22 @@ st.markdown(
 #     unsafe_allow_html=True,
 # )
 
+#  handling resizing as a function
+def resize_inplace(p: Path, size=(512, 512)) -> None:
+    img = Image.open(p)
+    img = ImageOps.contain(img, size)  # preserves aspect ratio inside 512x512
+    img.save(p)
+
+
 #new generation of 4 images
 def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path, uid: str) -> list[Path]:
     params = config.params.copy()
     params["prompt"] = prompt
     local_paths = []
     #4 images generated
-    for i in range(4):  # generate 4 images
-        params["seed"] = seed + i  # vary seed to get diversity
-        if config.API_CALL == "stability_ai":
+    if config.API_CALL == "stability_ai":
+        for i in range(4):  # generate 4 images
+            params["seed"] = seed + i  # vary seed to get diversity
             local_path = send_generation_request(
                 host="https://api.stability.ai/v2beta/stable-image/generate/sd3",
                 params=params,
@@ -126,25 +133,31 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
                 session_num=session,
                 user_id=uid,
             )
-        elif config.API_CALL == "open_ai":  # if "open_ai"
-            local_path = send_gpt_request(
-                prompt=prompt,
-                iteration=attempt,
-                session_num=session,
-                user_id=uid,
-            )
-        else:
-            st.error(f"❌ Unknown API_CALL value: {config.API_CALL}, please contact experiment owner")
-        # Handle image resizing
-        try:
-            img = ImageOps.contain(Image.open(local_path), (512, 512))
-            img.save(local_path)
-        except Exception:
-            pass
+            try:
+                resize_inplace(local_path, (512, 512))
+            except Exception as e:
+                print(f"❌ Error resizing image {local_path}: {e}")
+            local_paths.append(local_path)
 
-        local_paths.append(local_path)
-
-    return local_paths 
+    elif config.API_CALL == "open_ai":  # it inherently generates 4 images
+        paths = send_gpt_request(
+            prompt=prompt,
+            iteration=attempt,
+            session_num=session,
+            user_id=uid,
+        )
+        for p in paths:
+            try:
+                resize_inplace(p, (512, 512))
+            except Exception as e:
+                print(f"❌ Error resizing image {p}: {e}")
+        local_paths.extend(paths)
+    else:
+        st.error(f"❌ Unknown API_CALL value: {config.API_CALL}, please contact experiment owner")
+    # Handle image resizing
+        return []
+    
+    return local_paths
 
 #similarity scores for all gen images
 def similarities(GT_path: Path, GEN_paths: list[Path]) -> list[float]:
