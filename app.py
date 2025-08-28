@@ -2,7 +2,8 @@
 # Note, that by default a user has to press ctrl+enter after filling in the text box to apply the text, count characters, send it to generation etc. 
 from pathlib import Path
 import config       
-from models import api_model # the model API wrapper
+from models.api_model import send_generation_request # the model API wrapper for Stability AI
+from models.gpt_model import send_gpt_request # the model API wrapper for open ai
 from similarity import vgg_similarity # the similarity function 
 from uuid import uuid4 # used to create session / user IDs
 # from drive_utils import get_drive_service, create_folder, upload_file, extract_folder_id_from_url
@@ -18,6 +19,7 @@ from PIL import Image, ImageOps # Pillow library to manipulate images
 # from mimetypes import guess_type # for uploading to google drive - png or csv
 
 # from dotenv import load_dotenv
+
 
 
 
@@ -54,7 +56,6 @@ if "vgg_loaded" not in st.session_state:
     time.sleep(0.5)
     st.rerun()
 
-# load_dotenv()
 # #load google drive api db:
 # if "google" in st.secrets:
 #     creds = service_account.Credentials.from_service_account_info(
@@ -109,24 +110,54 @@ st.markdown(
 #     unsafe_allow_html=True,
 # )
 
+#  handling resizing as a function
+def resize_inplace(p: Path, size=(512, 512)) -> None:
+    img = Image.open(p)
+    img = ImageOps.contain(img, size)  # preserves aspect ratio inside 512x512
+    img.save(p)
+
+
 #new generation of 4 images
 def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path, uid: str) -> list[Path]:
     params = config.params.copy()
     params["prompt"] = prompt
     local_paths = []
+    #4 images generated
+    if config.API_CALL == "stability_ai":
+        for i in range(4):  # generate 4 images
+            params["seed"] = seed + i  # vary seed to get diversity
+            local_path = send_generation_request(
+                host="https://api.stability.ai/v2beta/stable-image/generate/sd3",
+                params=params,
+                iteration=attempt,
+                session_num=session,
+                user_id=uid,
+            )
+            try:
+                resize_inplace(local_path, (512, 512))
+            except Exception as e:
+                print(f"❌ Error resizing image {local_path}: {e}")
+            local_paths.append(local_path)
 
-    for i in range(4):  # generate 4 images
-        params["seed"] = seed + i  # vary seed to get diversity
-        local_path = api_model.send_generation_request(
-            host="https://api.stability.ai/v2beta/stable-image/generate/sd3",
-            params=params,
+    elif config.API_CALL == "open_ai":  # it inherently generates 4 images
+        paths = send_gpt_request(
+            prompt=prompt,
             iteration=attempt,
             session_num=session,
             user_id=uid,
         )
-        ImageOps.contain(Image.open(local_path), (512, 512))
-        local_paths.append(local_path)
-    return local_paths  
+        for p in paths:
+            try:
+                resize_inplace(p, (512, 512))
+            except Exception as e:
+                print(f"❌ Error resizing image {p}: {e}")
+        local_paths.extend(paths)
+    else:
+        st.error(f"❌ Unknown API_CALL value: {config.API_CALL}, please contact experiment owner")
+    # Handle image resizing
+        return []
+    
+    return local_paths
 
 #similarity scores for all gen images
 def similarities(GT_path: Path, GEN_paths: list[Path]) -> list[float]:

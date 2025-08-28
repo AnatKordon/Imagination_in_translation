@@ -38,3 +38,5 @@ params = {
     "output_format": "png",
     "model": "sd3.5-large" # "sd3.5-large-turbo"
 }
+
+API_CALL = "open_ai"  # ["open_ai", "stability_ai"]
