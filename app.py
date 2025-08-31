@@ -4,7 +4,7 @@ from pathlib import Path
 import config       
 from models import api_model # the model API wrapper for Stability AI
 from models import gpt_model # the model API wrapper for open ai
-from similarity import vgg_similarity # the similarity function 
+# from similarity import vgg_similarity # the similarity function 
 from uuid import uuid4 # used to create session / user IDs
 # from drive_utils import get_drive_service, create_folder, upload_file, extract_folder_id_from_url
 import random, csv, time 
@@ -26,35 +26,35 @@ from PIL import Image, ImageOps # Pillow library to manipulate images
 st.set_page_config(page_title="Imagination in Translation", layout="wide")
 
 
-# --- Loading screen ---
-if "vgg_loaded" not in st.session_state:
-    placeholder = st.empty()
-    with placeholder.container():
-        st.markdown(
-            """
-            <div style='display: flex; flex-direction: column; align-items: center; 
-                        justify-content: center; height: 80vh;'>
-                <h1 style='font-size: 2.5rem;'>🔄 Experiment is loading…</h1>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+# # --- Loading screen ---
+# if "vgg_loaded" not in st.session_state:
+#     placeholder = st.empty()
+#     with placeholder.container():
+#         st.markdown(
+#             """
+#             <div style='display: flex; flex-direction: column; align-items: center; 
+#                         justify-content: center; height: 80vh;'>
+#                 <h1 style='font-size: 2.5rem;'>🔄 Experiment is loading…</h1>
+#             </div>
+#             """,
+#             unsafe_allow_html=True,
+#         )
 
-    # ensuring all the required folders exist so .save() or logging never crash
-    for d in (config.GEN_DIR, config.LOG_DIR):
-        d.mkdir(parents=True, exist_ok=True)
+#     # ensuring all the required folders exist so .save() or logging never crash
+#     for d in (config.GEN_DIR, config.LOG_DIR):
+#         d.mkdir(parents=True, exist_ok=True)
 
 
-    # --- heavy imports AFTER showing loading message --- (don't move them back up)
-    embedder = vgg_similarity.get_vgg_embedder()
+#     # --- heavy imports AFTER showing loading message --- (don't move them back up)
+#     embedder = vgg_similarity.get_vgg_embedder()
 
-    # save once for reuse
-    st.session_state.vgg_embedder = embedder
-    st.session_state.vgg_loaded = True
+#     # save once for reuse
+#     st.session_state.vgg_embedder = embedder
+#     st.session_state.vgg_loaded = True
 
-    # let the screen be visible a moment
-    time.sleep(0.5)
-    st.rerun()
+#     # let the screen be visible a moment
+#     time.sleep(0.5)
+#     st.rerun()
 
 # #load google drive api db:
 # if "google" in st.secrets:
@@ -160,15 +160,15 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
     return local_paths
 
 #similarity scores for all gen images
-def similarities(GT_path: Path, GEN_paths: list[Path]) -> list[float]:
-    embedder = st.session_state.vgg_embedder  # use cached model
-    GT_embedding = embedder.get_embedding(img_path=str(GT_path))
-    scores = []
-    for gen_path in GEN_paths:
-        GEN_embedding = embedder.get_embedding(img_path=str(gen_path))
-        score, _ = vgg_similarity.compute_similarity_score(GT_embedding, GEN_embedding)
-        scores.append(score)
-    return scores
+# def similarities(GT_path: Path, GEN_paths: list[Path]) -> list[float]:
+#     embedder = st.session_state.vgg_embedder  # use cached model
+#     GT_embedding = embedder.get_embedding(img_path=str(GT_path))
+#     scores = []
+#     for gen_path in GEN_paths:
+#         GEN_embedding = embedder.get_embedding(img_path=str(gen_path))
+#         score, _ = vgg_similarity.compute_similarity_score(GT_embedding, GEN_embedding)
+#         scores.append(score)
+#     return scores
 
 def log_row(**kw):
     f = config.LOG_DIR / f"{kw['uid']}.csv"
@@ -243,7 +243,7 @@ def next_gt():
     S.attempt = 1
     S.generated = False
     S.gen_path = None
-    S.last_score = 0.0
+    # S.last_score = 0.0
 
     S.text_key = fresh_key() # new widget key so the existing widget value is not overwritten
     rerun()
@@ -260,8 +260,8 @@ for k, v in {
     "generated": False, # TO BE CHANGED: telling whether we have a generated image to show or not
     "gen_path": None, # TO BE CHANGED: path to generated image
     "finished": False, # True when pool exhausted
-    "last_score": 0.0, # similarity of last generation
-    "cosine_distance": 0.0, # cosine distance of last generation
+    # "last_score": 0.0, # similarity of last generation
+    # "cosine_distance": 0.0, # cosine distance of last generation
     "text_key": fresh_key(), # widget key for the textbox
     "last_prompt": "", # stores the last image description
 }.items():
@@ -424,15 +424,16 @@ with left:
                 st.error("Invalid API key. Please check readme for more details.")
             else:
                 st.error(f"Unexpected error: {msg}")
-                
-        try:
-            S.last_scores = similarities(S.gt_path, S.gen_paths)
-        except Exception as e:
-            print(e)
-            st.error(f"Error calculating similarity: {e}")
-            S.last_scores = [0.0] * len(S.gen_paths)
+        
+        #  I removed calculating vgg similarity score
+        # try:
+        #     S.last_scores = similarities(S.gt_path, S.gen_paths)
+        # except Exception as e:
+        #     print(e)
+        #     st.error(f"Error calculating similarity: {e}")
+        #     S.last_scores = [0.0] * len(S.gen_paths)
 
-        for i, (gen_path, score) in enumerate(zip(S.gen_paths, S.last_scores), start=1):
+        for i, gen_path in enumerate(S.gen_paths, start=1):
             log_row(
                 uid=S.uid,
                 participant_age=S.participant_age,
@@ -444,7 +445,7 @@ with left:
                 seed=S.seed + i,
                 prompt=S.prompt,
                 gen=gen_path.name,
-                similarity=score,
+                # similarity=score,
                 subjective_score=S.subjective_score if "subjective_score" in S else None,
                 ts=int(time.time()),
             )
@@ -499,7 +500,7 @@ with right:
                         if idx < len(S.gen_paths):
                             c.image(
                                 ImageOps.contain(Image.open(S.gen_paths[idx]), (int(config.IMG_H * 1.2), config.IMG_H)),
-                                caption=f"Similarity to original — {S.last_scores[idx]:.1f}%",
+                                # caption=f"Similarity to original — {S.last_scores[idx]:.1f}%",
                                 clamp=True,
                             )
                             idx += 1

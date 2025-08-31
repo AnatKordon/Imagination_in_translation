@@ -1,25 +1,25 @@
 #to iinstall all: pip install -r requirements_dev.txt
 #for testing
-pytest==6.2.4
+# pytest==6.2.4
 
 #core packages for Data analysis
-numpy
+# numpy
 pandas
-scipy
-scikit-learn
+# scipy
+# scikit-learn
 #ML and DL
-torch
-torchvision
-transformers
+# torch
+# torchvision
+# transformers
 openai
 # lpips
 
 #UI packages
 streamlit
-langdetect
+# langdetect
 Pillow
 # Data visualization
-matplotlib
+# matplotlib
 altair
 
 # API requests and environment variables
