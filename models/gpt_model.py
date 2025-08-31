@@ -14,7 +14,7 @@ def send_gpt_request(prompt, iteration, session_num, user_id):
     img = client.images.generate(
         model="gpt-image-1",
         prompt=prompt,
-        n=4,
+        n=2,
         size="1024x1024" # I changed from default 1024x1024
     )
     GEN_DIR.mkdir(parents=True, exist_ok=True)
