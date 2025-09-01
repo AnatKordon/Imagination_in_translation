@@ -11,6 +11,7 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
+# when we get back to it: add fallback for mujltiple generations~!
 #  for now i am just printing revised prompts as in generation mode (not edit or responses) - it's supposed to be null
 def send_gpt_request(prompt, iteration, session_num, user_id):
     img_data = client.images.generate(
@@ -49,6 +50,3 @@ def send_gpt_request(prompt, iteration, session_num, user_id):
 
     return local_paths, revised_prompts
 
-def here():
-    print(gpt_model)
-    #upload it
