@@ -37,6 +37,7 @@ params = {
     "aspect_ratio": "1:1", 
     "output_format": "png",
     "model": "sd3.5-large" # "sd3.5-large-turbo"
+    "revised_prompt": None  # this is for openai api - to assure that no revision of prompt is done
 }
 
 API_CALL = "open_ai"  # ["open_ai", "stability_ai"]

@@ -141,6 +141,7 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
 
     elif config.API_CALL == "open_ai":  # it inherently generates 4 images
         paths = gpt_model.send_gpt_request(
+            #I should add loging of the revised prompt of selected image...
             prompt=prompt,
             iteration=attempt,
             session_num=session,
@@ -157,7 +158,7 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
     # Handle image resizing
         return []
     
-    return local_paths
+    return local_paths, revised_prompts
 
 #similarity scores for all gen images
 # def similarities(GT_path: Path, GEN_paths: list[Path]) -> list[float]:
