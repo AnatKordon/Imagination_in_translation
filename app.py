@@ -501,22 +501,20 @@ with right:
             clamp=True,
         )
 # the generated picture is shown together with the similarity score and "accept" and "try again" buttons
-    if S.generated and S.gen_paths:
+    if S.generated and len(S.gen_paths) == 2:
         with gen_c:
-            try:
-                for idx, p in enumerate(S.gen_paths):
-                   c.image(
-                       ImageOps.contain(Image.open(p), (int(config.IMG_H * 1.2), config.IMG_H)),
-                       # caption=f"Similarity to original — {S.last_scores[idx]:.1f}%",
-                       clamp=True,
-                   )
-                   idx += 1
-            except (FileNotFoundError, AttributeError, ValueError) as e:
-                st.error("Generated images cannot be displayed: Try again later")
-                S.generated = False
-                S.gen_paths = []
-                st.stop()
-
+            col1, col2 = st.columns(2, gap="large")
+            with col1:
+                st.image(
+                    ImageOps.contain(Image.open(S.gen_paths[0]), (int(config.IMG_H * 1.2), config.IMG_H)),
+                    clamp=True
+                )
+            with col2:
+                st.image(
+                    ImageOps.contain(Image.open(S.gen_paths[1]), (int(config.IMG_H * 1.2), config.IMG_H)),
+                    clamp=True,
+                )
+    
         #removing the single similarity score
         # st.caption("Similarity:")
         # st.progress(int(S.last_score))
