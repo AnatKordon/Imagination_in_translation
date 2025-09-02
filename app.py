@@ -162,8 +162,6 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
         local_paths.extend(paths)
     else:
         st.error(f"❌ Unknown API_CALL value: {config.API_CALL}, please contact experiment owner")
-    # Handle image resizing
-        return []
     
     return local_paths
 #similarity scores for all gen images
@@ -250,6 +248,7 @@ def next_gt():
     S.attempt = 1
     S.generated = False
     S.gen_path = None
+    S.gen_paths = [] # clear list on a new target
     # S.last_score = 0.0
 
     S.text_key = fresh_key() # new widget key so the existing widget value is not overwritten
@@ -265,7 +264,8 @@ for k, v in {
     "attempt": 1, # current attempt counter (from 1 to 5),
     "seed": np.random.randint(1,4000000), # seed for the image generation - randomized
     "generated": False, # TO BE CHANGED: telling whether we have a generated image to show or not
-    "gen_path": None, # TO BE CHANGED: path to generated image
+    "gen_path": None, #for only a single image
+    "gen_paths": [], # used to be initialized as None, but now therre are multiple images
     "finished": False, # True when pool exhausted
     # "last_score": 0.0, # similarity of last generation
     # "cosine_distance": 0.0, # cosine distance of last generation
@@ -411,7 +411,7 @@ with left:
     if st.button("Generate", type="primary", disabled=gen_disabled):
         try:
             S.gen_paths = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image
-            print(f"Generated images saved to {S.gen_path}")
+            print(f"Generated images saved: {[Path(p).name for p in S.gen_paths]}")
             # trying to upload
             for p in S.gen_paths:
                 upload_path_to_folder(service, Path(p), FOLDER_ID)
@@ -501,21 +501,16 @@ with right:
             clamp=True,
         )
 # the generated picture is shown together with the similarity score and "accept" and "try again" buttons
-    if S.generated:
+    if S.generated and S.gen_paths:
         with gen_c:
             try:
-                # create 2x2 layout
-                rows = [st.columns(2), st.columns(2)]
-                idx = 0
-                for r in rows:
-                    for c in r:
-                        if idx < len(S.gen_paths):
-                            c.image(
-                                ImageOps.contain(Image.open(S.gen_paths[idx]), (int(config.IMG_H * 1.2), config.IMG_H)),
-                                # caption=f"Similarity to original — {S.last_scores[idx]:.1f}%",
-                                clamp=True,
-                            )
-                            idx += 1
+                for idx, p in enumerate(S.gen_paths):
+                   c.image(
+                       ImageOps.contain(Image.open(p), (int(config.IMG_H * 1.2), config.IMG_H)),
+                       # caption=f"Similarity to original — {S.last_scores[idx]:.1f}%",
+                       clamp=True,
+                   )
+                   idx += 1
             except (FileNotFoundError, AttributeError, ValueError) as e:
                 st.error("Generated images cannot be displayed: Try again later")
                 S.generated = False
