@@ -5,7 +5,7 @@ import config
 from models import api_model # the model API wrapper for Stability AI
 # removed it for now as we are not using it and i don't wantit to be imported
 #from models import gpt_model # the model API wrapper for open ai
-from drive_utils import build_drive_from_token_dict, upload_path_to_folder, extract_folder_id, get_token_dict_from_secrets_or_env
+from drive_utils import build_drive_from_token_dict, ensure_folder, ensure_path, update_or_insert_file, extract_folder_id, get_token_dict_from_secrets_or_env
 # from similarity import vgg_similarity # the similarity function 
 from uuid import uuid4 # used to create session / user IDs
 # from drive_utils import get_drive_service, create_folder, upload_file, extract_folder_id_from_url
@@ -26,58 +26,62 @@ load_dotenv()
 
 token_dict = get_token_dict_from_secrets_or_env(st)
 service = build_drive_from_token_dict(token_dict)
-FOLDER_ID = extract_folder_id(config.DRIVE_FOLDER)
+FOLDER_ID = extract_folder_id(config.DRIVE_FOLDER) # main drive folder
+
+# creates a folder and image root for every ppt in google drive
+def init_drive_tree_for_participant():
+    """
+    Ensure Drive folders:
+    <DRIVE_FOLDER>/participants_data/<UID>/gen_images/
+    Save their ids in session so we don't repeat list/create calls.
+    """
+    root = ensure_folder(service, "participants_data", FOLDER_ID)
+    participant = ensure_folder(service, S.uid, root)
+    images_root = ensure_folder(service, "gen_images", participant)
+
+    S.drive_root_id = root
+    S.participant_folder_id = participant
+    S.images_root_id = images_root
+    # session folder is created per target in update_session_folder()
 
 
+def update_session_folder():
+    """Ensure session_<nn> folder exists under .../gen_images/ and store id."""
+    if "images_root_id" not in S:
+        init_drive_tree_for_participant()
+    session_name = f"session_{S.session:02d}"
+    S.session_drive_folder_id = ensure_folder(service, session_name, S.images_root_id)
+
+def image_dest_name(uid: str, session: int, attempt: int, idx: int, suffix: str) -> str:
+    # idx is 1-based for readability
+    return f"{uid}_session{session:02d}_attempt{attempt:02d}_img{idx:02d}{suffix}"
+
+def info_csv_name(uid: str) -> str:
+    return f"participant_{uid}_info.csv"
+
+def log_csv_name(uid: str) -> str:
+    return f"participant_{uid}_log.csv"
+
+def upload_participant_info(uid: str, info_csv_path: Path):
+    init_drive_tree_for_participant()
+    update_or_insert_file(
+        service, info_csv_path, S.participant_folder_id,
+        dest_name=info_csv_name(uid), mime_type="text/csv"
+    )
+
+def upload_participant_log(uid: str):
+    log_csv = config.LOG_DIR / f"{uid}.csv"
+    update_or_insert_file(
+        service, log_csv, S.participant_folder_id,
+        dest_name=log_csv_name(uid), mime_type="text/csv"
+    )
+
+def on_saved(path: Path, seed: str):
+    dest = image_dest_name(S.uid, S.session, S.attempt, idx=1, suffix=path.suffix)  # set idx appropriately
+    update_or_insert_file(service, path, S.session_drive_folder_id, dest_name=dest)
 
 st.set_page_config(page_title="Imagination in Translation", layout="wide")
 
-
-# # --- Loading screen ---
-# if "vgg_loaded" not in st.session_state:
-#     placeholder = st.empty()
-#     with placeholder.container():
-#         st.markdown(
-#             """
-#             <div style='display: flex; flex-direction: column; align-items: center; 
-#                         justify-content: center; height: 80vh;'>
-#                 <h1 style='font-size: 2.5rem;'>🔄 Experiment is loading…</h1>
-#             </div>
-#             """,
-#             unsafe_allow_html=True,
-#         )
-
-#     # ensuring all the required folders exist so .save() or logging never crash
-#     for d in (config.GEN_DIR, config.LOG_DIR):
-#         d.mkdir(parents=True, exist_ok=True)
-
-
-#     # --- heavy imports AFTER showing loading message --- (don't move them back up)
-#     embedder = vgg_similarity.get_vgg_embedder()
-
-#     # save once for reuse
-#     st.session_state.vgg_embedder = embedder
-#     st.session_state.vgg_loaded = True
-
-#     # let the screen be visible a moment
-#     time.sleep(0.5)
-#     st.rerun()
-
-# #load google drive api db:
-# if "google" in st.secrets:
-#     creds = service_account.Credentials.from_service_account_info(
-#         st.secrets["google"],
-#         scopes=["https://www.googleapis.com/auth/drive"]
-#     )
-#     #for local host
-# elif os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
-#     creds = service_account.Credentials.from_service_account_file(
-#         Path(os.getenv("GOOGLE_APPLICATION_CREDENTIALS")),
-#         scopes=["https://www.googleapis.com/auth/drive"]
-#     )
-# else:
-#     creds = None
-#     print("❌ Error, No Google Drive credentials found. contact experiment host")
 
 # Customising the buttons
 st.markdown(
@@ -89,33 +93,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-
-
-# st.markdown(
-#     """
-#     <style>
-#     /* Thicker slider track */
-#     div[data-baseweb="slider"] > div {
-#         height: 12px !important;
-#     }
-
-#     /* Make the filled-in blue part thicker */
-#     div[data-baseweb="slider"] > div > div {
-#         background: #1E90FF !important;
-#     }
-
-#     /* Make the slider handle (knob) blue & bigger */
-#     div[role="slider"] {
-#         background-color: #1E90FF !important;
-#         border: 2px solid #1E90FF !important;
-#         height: 28px !important;
-#         width: 28px !important;
-#         border-radius: 50% !important;
-#     }
-#     </style>
-#     """,
-#     unsafe_allow_html=True,
-# )
 
 #  handling resizing as a function
 def resize_inplace(p: Path, size=(512, 512)) -> None:
@@ -129,24 +106,30 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
     params = config.params.copy()
     params["prompt"] = prompt
     local_paths = []
-    #4 images generated
+    returned_seeds = []
+    N_OUT = 2 #multiple images generation
+    
     if config.API_CALL == "stability_ai":
-        for i in range(2):  # generate 4 images
-            params["seed"] = seed + i  # vary seed to get diversity
-            local_path = api_model.send_generation_request(
+        for i in range(N_OUT):  # generate 4 images
+            params["seed"] = seed + i  # vary seed to get diversity - this is the requested seed
+            local_path, returned_seed = api_model.send_generation_request(
                 host="https://api.stability.ai/v2beta/stable-image/generate/sd3",
                 params=params,
                 iteration=attempt,
                 session_num=session,
                 user_id=uid,
+                img_index=i+1,
+                on_image_saved=on_saved
             )
             try:
                 resize_inplace(local_path, (512, 512))
             except Exception as e:
                 print(f"❌ Error resizing image {local_path}: {e}")
             local_paths.append(local_path)
+            returned_seeds.append(returned_seed)
 
     elif config.API_CALL == "open_ai":  # it inherently generates 4 images
+        #currently unavailable - i commented out the import and the installation in requirements.txt
         paths = gpt_model.send_gpt_request(
             #I should add loging of the revised prompt of selected image...
             prompt=prompt,
@@ -163,7 +146,8 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
     else:
         st.error(f"❌ Unknown API_CALL value: {config.API_CALL}, please contact experiment owner")
     
-    return local_paths
+    return local_paths, returned_seeds
+
 #similarity scores for all gen images
 # def similarities(GT_path: Path, GEN_paths: list[Path]) -> list[float]:
 #     embedder = st.session_state.vgg_embedder  # use cached model
@@ -185,6 +169,7 @@ def log_row(**kw):
             w.writeheader()
         w.writerow(kw)
     # f = str(f)   # remove unused line
+
 
 
 def log_participant_info(uid: str, age: int, gender: str, native: str) -> Path:
@@ -210,22 +195,6 @@ def log_participant_info(uid: str, age: int, gender: str, native: str) -> Path:
 
     return path
 
-# def update_gen_folder():
-#     """Update generation folder for new session and create in Drive if available"""
-#     if "drive_service" in S and S.drive_service and "gen_images_root_id" in S:
-#         try:
-#             # Create new session folder in Drive
-#             session_folder_id = create_folder(
-#                 S.drive_service, 
-#                 f"session_{S.session:02d}", 
-#                 S.gen_images_root_id
-#             )
-#             S.gen_drive_folder_id = session_folder_id
-#             print(f"✅ Created Drive session folder: session_{S.session:02d}")
-#         except Exception as e:
-#             print(f"❌ Failed to create session folder in Drive: {e}")
-#             S.gen_drive_folder_id = None
-
 # A helper for st.rerun() function in Steamlit. It is named differently in different versions of Steamlit, so we just make sure that we have something of this kind.
 rerun = st.rerun if hasattr(st, "rerun") else st.experimental_rerun
 
@@ -240,8 +209,10 @@ def next_gt():
         S.finished = True
         rerun()
 
+    # if a new session starts (still same gt_image): 
     S.gt_path = random.choice(remaining)
-    S.used.add(S.gt_path.name)
+    S.used.add(S.gt_path.name) # keep same gt
+
     S.session += 1 # increase session counter
     # update_gen_folder()
     S.seed = np.random.randint(1, 4000000) # randomise the seed for the next generation
@@ -250,6 +221,9 @@ def next_gt():
     S.gen_path = None
     S.gen_paths = [] # clear list on a new target
     # S.last_score = 0.0
+
+    # creating a new sussion folder for next session:
+    update_session_folder()
 
     S.text_key = fresh_key() # new widget key so the existing widget value is not overwritten
     rerun()
@@ -275,39 +249,6 @@ for k, v in {
     st.session_state.setdefault(k, v)
 S = st.session_state
 
-#store the google drive service in the session state
-# if creds and "drive_service" not in S:
-#     service = get_drive_service(creds)
-#     S.drive_service = service
-#     SHARED_FOLDER_ID = extract_folder_id_from_url(config.DRIVE_FOLDER)
-
-#     try:
-    #     shared_folder_info = service.files().get(fileId=SHARED_FOLDER_ID).execute()
-    #     print(f"✅ Successfully accessed shared folder: {shared_folder_info.get('name')}")
-            
-    #     # Create root folder once
-    #     root_folder_id = create_folder(service, "participants_data", SHARED_FOLDER_ID)
-    #     print(f"Root folder created with ID: {root_folder_id}")
-    #     # Create participant folder once and store its ID
-    #     timestamp = time.strftime("%Y%m%d-%H%M%S")  # e.g., 20250817-134512
-    #     folder_name = f"{timestamp}_{S.uid}"
-        
-    #     #  create folder per participant
-    #     participant_folder_id = create_folder(service, folder_name, root_folder_id)
-    #     print(f"Participant folder created with ID: {participant_folder_id}")
-    #     S.participant_drive_folder_id = participant_folder_id
-
-    #     # Create subfolders for generated images
-    #     gen_images_root = create_folder(service, "gen_images", participant_folder_id)
-    #     S.gen_images_root_id = gen_images_root
-    #     S.gen_drive_folder_id = create_folder(service, f"session_{S.session:02d}", gen_images_root)
-
-    #     print("🎉 All Drive folders created successfully!")
-    # except Exception as e:
-    #     print(f"❌ Drive setup failed: {e}")
-    #     S.drive_service = None  # Disable drive if setup fails
-
-
 if "participant_info_submitted" not in S:
     S.participant_info_submitted = False
 if not S.participant_info_submitted:
@@ -327,19 +268,11 @@ if not S.participant_info_submitted:
             # Save locally first
             info_path = log_participant_info(S.uid, age, gender, native)
             print(f"Participant info saved to {info_path}")
-            #upload to drive
-            upload_path_to_folder(service, info_path, FOLDER_ID)
-            # # Upload to Google Drive
-            # if "drive_service" in S and "participant_drive_folder_id" in S:
-            #     try:
-            #         file_id = upload_file(S.drive_service, info_path, "text/csv", S.participant_drive_folder_id)
-            #         print(f"✅ Participant info uploaded to Drive: {file_id}")
-            #         st.success("✅ Thank you! Information saved to cloud.")
-            #     except Exception as upload_error:
-            #         print(f"❌ Failed to upload participant info: {upload_error}")
-            #         st.success("✅ Thank you! Information saved locally.")
-            # else:
-            #     st.success("✅ Thank you! Information saved locally.")
+            # upload to drive pipeline
+            # make sure participant's tree exists
+            init_drive_tree_for_participant() 
+            # upload the participant info (one-time, overwrite-safe by name)
+            upload_participant_info(S.uid, info_path)
             st.rerun()
     st.stop()
 if S.gt_path is None:      
@@ -410,12 +343,53 @@ with left:
 
     if st.button("Generate", type="primary", disabled=gen_disabled):
         try:
-            S.gen_paths = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image
+            S.gen_paths, returned_seeds = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image
             print(f"Generated images saved: {[Path(p).name for p in S.gen_paths]}")
+            
             # trying to upload
-            for p in S.gen_paths:
-                upload_path_to_folder(service, Path(p), FOLDER_ID)
+            update_session_folder() # ensure session folder id
+            
+        #  I removed calculating vgg similarity score
+        # try:
+        #     S.last_scores = similarities(S.gt_path, S.gen_paths)
+        # except Exception as e:
+        #     print(e)
+        #     st.error(f"Error calculating similarity: {e}")
+        #     S.last_scores = [0.0] * len(S.gen_paths)
 
+            # Upload each generated image to Drive (names already include attempt/img index)
+            for i, gen_path in enumerate(S.gen_paths, start=1):
+                gen_path = Path(gen_path)
+                # uploading to google drive:
+                dest = image_dest_name(S.uid, S.session, S.attempt, i, gen_path.suffix) # including index
+                update_or_insert_file(service, gen_path, S.session_drive_folder_id, dest_name=dest)
+
+            # Log locally (now with index + true/returned seed)
+            for i, gen_path in enumerate(S.gen_paths, start=1):
+                gen_path = Path(gen_path)
+                log_row(
+                    uid=S.uid,
+                    participant_age=S.participant_age,
+                    participant_gender=S.participant_gender,
+                    participant_native=S.participant_native,
+                    gt=S.gt_path.name,
+                    session=S.session,
+                    attempt=S.attempt,
+                    img_index=i,  # for multiple image generation
+                    request_seed=S.seed + i if config.API_CALL == "stability_ai" else "",
+                    returned_seed=str(returned_seeds[i - 1]) if returned_seeds else "",  # because openai doesn't return a seed
+                    prompt=S.prompt,
+                    gen=gen_path.name,
+                    # similarity=score,
+                    subjective_score=S.subjective_score if "subjective_score" in S else None,
+                    ts=int(time.time())
+                )
+           
+            upload_participant_log(S.uid)  # outside the image loop, uploading the participant log
+                
+            S.generated = True
+            S.last_prompt = S.prompt.strip()  # save the last prompt to check if it is the same as the current one
+            rerun()
         except Exception as e:
             msg = str(e)
             print(e)
@@ -436,55 +410,9 @@ with left:
                 st.error("Invalid API key. Please check readme for more details.")
             else:
                 st.error(f"Unexpected error: {msg}")
-        
-        #  I removed calculating vgg similarity score
-        # try:
-        #     S.last_scores = similarities(S.gt_path, S.gen_paths)
-        # except Exception as e:
-        #     print(e)
-        #     st.error(f"Error calculating similarity: {e}")
-        #     S.last_scores = [0.0] * len(S.gen_paths)
+                S.generated = False
+                S.gen_paths = []
 
-        for i, gen_path in enumerate(S.gen_paths, start=1):
-            log_row(
-                uid=S.uid,
-                participant_age=S.participant_age,
-                participant_gender=S.participant_gender,
-                participant_native=S.participant_native,
-                gt=S.gt_path.name,
-                session=S.session,
-                attempt=S.attempt,
-                seed=S.seed + i,
-                prompt=S.prompt,
-                gen=gen_path.name,
-                # similarity=score,
-                subjective_score=S.subjective_score if "subjective_score" in S else None,
-                ts=int(time.time()),
-            )
-
-        
-        S.generated = True
-        S.last_prompt = S.prompt.strip()  # save the last prompt to check if it is the same as the current one
-        rerun()
-
-    # if creds and "drive_service" in S:
-        #     # Upload image
-        #     img_mime = guess_type(S.gen_path)[0] or "image/png"
-        #     upload_file(S.drive_service, Path(S.gen_path), img_mime, S.gen_drive_folder_id)
-
-        #     # Upload CSV log file with official MIME type for CSV files.
-        #     csv_path = config.LOG_DIR / f"{S.uid}.csv"
-
-        #     upload_file(S.drive_service, csv_path, "text/csv", S.participant_drive_folder_id)
-
-        # # Upload info if not uploaded yet
-        # if not getattr(S, "info_uploaded", False):
-        #     info_path = config.LOG_DIR / f"participant_{S.uid}_info.csv"
-        #     assert info_path.exists(), f"Participant info file does not exist: {info_path}"
-        #     # if info_path.exists():
-        #     #     upload_file(S.drive_service, info_path, "text/csv", S.participant_drive_folder_id)
-        #     S.info_uploaded = True
-        
         # flags session as finished and rerun
     if st.button("Exit"):
         S.finished = True
@@ -492,52 +420,52 @@ with left:
 
 # Right column displays the ground truth (target) image and the generated one (next to each other) together with similarity scores, "accept" and "try again" buttons.
 with right:
-    gt_c, gen_c = st.columns(2, gap="medium")
-  # always shows ground truth picture
-    with gt_c:
-        st.image(
-            ImageOps.contain(Image.open(S.gt_path), (int(config.IMG_H * 1.8), config.IMG_H)),
-            caption="Target image",
-            clamp=True,
-        )
-# the generated picture is shown together with the similarity score and "accept" and "try again" buttons
+    st.markdown("#### Target image:")
+
+    # Make GT roughly half-width responsively:
+    # - Only use the first column; leave the second empty.
+    # - Tweak the ratio to change the GT size:
+    #   [1,1]  -> ~50% of the container
+    #   [2,1]  -> ~66%
+    #   [1,2]  -> ~33%
+    col_gt, _ = st.columns([1, 1], gap="medium")  # ~50%
+    with col_gt:
+        st.image(Image.open(S.gt_path), use_container_width=True, clamp=True, caption="")
+
+    st.markdown("---")
+    # st.subheader("Generated images")
+
     if S.generated and len(S.gen_paths) == 2:
-        with gen_c:
-            col1, col2 = st.columns(2, gap="large")
-            with col1:
-                st.image(
-                    ImageOps.contain(Image.open(S.gen_paths[0]), (int(config.IMG_H * 1.2), config.IMG_H)),
-                    clamp=True
-                )
-            with col2:
-                st.image(
-                    ImageOps.contain(Image.open(S.gen_paths[1]), (int(config.IMG_H * 1.2), config.IMG_H)),
-                    clamp=True,
-                )
-    
-        #removing the single similarity score
-        # st.caption("Similarity:")
-        # st.progress(int(S.last_score))
-        # st.write(f"**{S.last_score:.1f}%**")
+        c1, c2 = st.columns(2, gap="large")
+        with c1:
+            st.image(Image.open(S.gen_paths[0]), use_container_width=True, clamp=True)
+        with c2:
+            st.image(Image.open(S.gen_paths[1]), use_container_width=True, clamp=True)
 
-        S.subjective_score = st.slider(
-            "Subjective Similarity (0 = not similar, 100 = very similar)",
-            min_value=0,
-            max_value=100,
-            value=50,  # default position
-            step=1,
-            key=f"subjective_score_{S.session}_{S.attempt}",
-        )
+            #removing the single similarity score
+            # st.caption("Similarity:")
+            # st.progress(int(S.last_score))
+            # st.write(f"**{S.last_score:.1f}%**")
 
-        a_col, t_col = st.columns(2)
+            S.subjective_score = st.slider(
+                "Subjective Similarity (0 = not similar, 100 = very similar)",
+                min_value=0,
+                max_value=100,
+                value=50,  # default position
+                step=1,
+                key=f"subjective_score_{S.session}_{S.attempt}",
+            )
+        
+            a_col, t_col = st.columns(2)
+            if a_col.button("DONE : Next image"):
+                next_gt()
 
-        if a_col.button("DONE : Next image"):
-            next_gt()
-# "Try again" button is disabled on 5th attempt
-        if t_col.button("Another try", disabled=S.attempt >= config.MAX_ATTEMPTS):
-            S.seed = np.random.randint(1, 4000000) 
-            S.generated = False
-            S.attempt += 1
-            rerun()
+            # "Try again" button is disabled on 5th attempt
+            if t_col.button("Another try", disabled=S.attempt >= config.MAX_ATTEMPTS):
+                S.seed = np.random.randint(1, 4000000) 
+                S.generated = False
+                S.gen_paths = []
+                S.attempt += 1
+                rerun()
     else:
-        gen_c.empty() # keeps column widths
+        st.caption("Click **Generate** to view images.")

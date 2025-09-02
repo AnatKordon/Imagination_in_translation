@@ -17,10 +17,9 @@ def send_generation_request(
     user_id: str,
     iteration: int,
     session_num: int,
-    true_image_path: Optional[str] = None,
-    drive_service=None,  # Add this parameter
-    drive_folder_id: Optional[str] = None
-) -> str:
+    img_index: Optional[int] = None,
+    on_image_saved = None  # for google drive upload
+) -> tuple[Path, str]:
     """
     Generates an image using Stability AI API and saves it locally with a flat filename structure.
 
@@ -50,7 +49,7 @@ def send_generation_request(
         "aspect_ratio": (None, params["aspect_ratio"]),
         "output_format": (None, params["output_format"]),
         "model": (None, params["model"]),
-        "seed": (None, str(params["seed"]))
+        "seed": (None, str(params["seed"])) # not sure...
         #"style_preset": (None, "photographic") # try "analog-film", "photographic"
     }
     # ------- Handle optional image and mask files -------
@@ -79,21 +78,23 @@ def send_generation_request(
 
     GEN_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Save image using flat structure
-    filename = f"{user_id}_session{session_num:02d}_iter{iteration:02d}_seed{returned_seed}.png"
+    # Canonical filename: uid_sessionXX_attemptYY_imgZZ[_seedSSS].png
+    parts = [f"{user_id}_session{session_num:02d}", f"attempt{iteration:02d}"] # this is structure of image name
+    if img_index is not None:
+        parts.append(f"img{img_index:02d}") # include index in structure
+    if returned_seed:
+        parts.append(f"seed{returned_seed}")
+    filename   = "_".join(parts) + ".png"
     image_path = GEN_DIR / filename
 
     with open(image_path, "wb") as f:
         f.write(output_image)
 
-    # if drive_service and drive_folder_id:
-    #     try:
-    #         from drive_utils import upload_file  # Import your upload function
-    #         file_id = upload_file(drive_service, image_path, "image/png", drive_folder_id)
-    #         print(f"✅ Image uploaded to Drive: {filename} -> {file_id}")
-    #     except Exception as upload_error:
-    #         print(f"❌ Drive upload failed for {filename}: {upload_error}")
-    #         # Continue anyway - local file is still available
+    if on_image_saved:
+        try:
+            on_image_saved(image_path, returned_seed)
+        except Exception as e:
+            print(f"Upload callback failed: {e}")
 
-    return image_path
+    return image_path, returned_seed
 
