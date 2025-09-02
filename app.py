@@ -4,6 +4,7 @@ from pathlib import Path
 import config       
 from models import api_model # the model API wrapper for Stability AI
 from models import gpt_model # the model API wrapper for open ai
+from drive_utils import build_drive_from_token_dict, upload_path_to_folder, extract_folder_id, get_token_dict_from_secrets_or_env
 # from similarity import vgg_similarity # the similarity function 
 from uuid import uuid4 # used to create session / user IDs
 # from drive_utils import get_drive_service, create_folder, upload_file, extract_folder_id_from_url
@@ -18,8 +19,13 @@ from PIL import Image, ImageOps # Pillow library to manipulate images
 # from google.oauth2 import service_account
 # from mimetypes import guess_type # for uploading to google drive - png or csv
 
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
+load_dotenv()
 
+
+token_dict = get_token_dict_from_secrets_or_env(st)
+service = build_drive_from_token_dict(token_dict)
+FOLDER_ID = extract_folder_id(config.DRIVE_FOLDER)
 
 
 
@@ -320,7 +326,8 @@ if not S.participant_info_submitted:
             # Save locally first
             info_path = log_participant_info(S.uid, age, gender, native)
             print(f"Participant info saved to {info_path}")
-            
+            #upload to drive
+            upload_path_to_folder(service, info_path, FOLDER_ID)
             # # Upload to Google Drive
             # if "drive_service" in S and "participant_drive_folder_id" in S:
             #     try:
@@ -404,6 +411,10 @@ with left:
         try:
             S.gen_paths = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image
             print(f"Generated images saved to {S.gen_path}")
+            # trying to upload
+            for p in S.gen_paths:
+                upload_path_to_folder(service, Path(p), FOLDER_ID)
+
         except Exception as e:
             msg = str(e)
             print(e)

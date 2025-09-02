@@ -11,7 +11,7 @@ pandas
 # torch
 # torchvision
 # transformers
-openai
+#openai
 # lpips
 
 #UI packages
@@ -30,11 +30,14 @@ Pillow
 #path
 Pathlib
 
+#DB
+supabase==2.3.4
+
 #google drive authentication
-google-api-python-client
-google-auth
-google-auth-oauthlib
-google-auth-httplib2
+# google-api-python-client
+# google-auth
+# google-auth-oauthlib
+# google-auth-httplib2
 # #analysis
 # tabulate
 
