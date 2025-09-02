@@ -40,4 +40,4 @@ params = {
     "revised_prompt": None  # this is for openai api - to assure that no revision of prompt is done
 }
 
-API_CALL = "open_ai"  # ["open_ai", "stability_ai"]
+API_CALL = "stability_ai"  # ["open_ai", "stability_ai"]

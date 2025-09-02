@@ -158,8 +158,7 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
     # Handle image resizing
         return []
     
-    return local_paths, revised_prompts
-
+    return local_paths
 #similarity scores for all gen images
 # def similarities(GT_path: Path, GEN_paths: list[Path]) -> list[float]:
 #     embedder = st.session_state.vgg_embedder  # use cached model

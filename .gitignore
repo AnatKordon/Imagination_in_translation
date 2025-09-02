@@ -156,3 +156,9 @@ __pycache__/
 # Large model files (if any)
 *.pkl
 *.joblib
+
+/logs
+
+/client_secret_181198445839-k3o9vkqnv48n8anojc9mp7m8qrpld62k.apps.googleusercontent.com.json
+/token.json
+/service_account.json
