@@ -420,7 +420,7 @@ with left:
 
 # Right column displays the ground truth (target) image and the generated one (next to each other) together with similarity scores, "accept" and "try again" buttons.
 with right:
-    st.markdown("#### Target image:")
+    st.markdown("##### Target image:")
 
     # Make GT roughly half-width responsively:
     # - Only use the first column; leave the second empty.
@@ -428,7 +428,7 @@ with right:
     #   [1,1]  -> ~50% of the container
     #   [2,1]  -> ~66%
     #   [1,2]  -> ~33%
-    col_gt, _ = st.columns([1, 1], gap="medium")  # ~50%
+    col_gt, _ = st.columns([1, 1], gap="medium")  
     with col_gt:
         st.image(Image.open(S.gt_path), use_container_width=True, clamp=True, caption="")
 
@@ -446,26 +446,27 @@ with right:
             # st.caption("Similarity:")
             # st.progress(int(S.last_score))
             # st.write(f"**{S.last_score:.1f}%**")
-
-            S.subjective_score = st.slider(
-                "Subjective Similarity (0 = not similar, 100 = very similar)",
-                min_value=0,
-                max_value=100,
-                value=50,  # default position
-                step=1,
-                key=f"subjective_score_{S.session}_{S.attempt}",
-            )
+            
+        st.markdown(" ")  # spacer
+        S.subjective_score = st.slider(
+            "Subjective Similarity (0 = not similar, 100 = very similar)",
+            min_value=0,
+            max_value=100,
+            value=50,  # default position
+            step=1,
+            key=f"subjective_score_{S.session}_{S.attempt}",
+        )
         
-            a_col, t_col = st.columns(2)
-            if a_col.button("DONE : Next image"):
-                next_gt()
+        a_col, t_col = st.columns(2)
+        if a_col.button("DONE : Next image"):
+            next_gt()
 
-            # "Try again" button is disabled on 5th attempt
-            if t_col.button("Another try", disabled=S.attempt >= config.MAX_ATTEMPTS):
-                S.seed = np.random.randint(1, 4000000) 
-                S.generated = False
-                S.gen_paths = []
-                S.attempt += 1
-                rerun()
+        # "Try again" button is disabled on 5th attempt
+        if t_col.button("Another try", disabled=S.attempt >= config.MAX_ATTEMPTS):
+            S.seed = np.random.randint(1, 4000000) 
+            S.generated = False
+            S.gen_paths = []
+            S.attempt += 1
+            rerun()
     else:
         st.caption("Click **Generate** to view images.")
