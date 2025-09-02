@@ -3,7 +3,8 @@
 from pathlib import Path
 import config       
 from models import api_model # the model API wrapper for Stability AI
-from models import gpt_model # the model API wrapper for open ai
+# removed it for now as we are not using it and i don't wantit to be imported
+#from models import gpt_model # the model API wrapper for open ai
 from drive_utils import build_drive_from_token_dict, upload_path_to_folder, extract_folder_id, get_token_dict_from_secrets_or_env
 # from similarity import vgg_similarity # the similarity function 
 from uuid import uuid4 # used to create session / user IDs
