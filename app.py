@@ -83,8 +83,8 @@ def on_saved(path: Path, seed: str):
 
 
 # Fixed bounding boxes (tweak if you like)
-GT_BOX  = (420, 420)   # target image size
-GEN_BOX = (300, 300)   # each generated image
+GT_BOX  = (370, 370)   # target image size
+GEN_BOX = (370, 370)   # each generated image
 
 def show_img_fixed(path, box, caption=None):
     """Open, bound to box while preserving aspect, and render at a fixed width."""
@@ -441,20 +441,21 @@ with left:
 
 # Right column displays the ground truth (target) image and the generated one (next to each other) together with similarity scores, "accept" and "try again" buttons.
 with right:
-    st.markdown("### Target image")
-    show_img_fixed(S.gt_path, GT_BOX)
-
-    st.markdown("---")
-    st.markdown("### Generated images")
-    if S.generated and len(S.gen_paths) >= 1:
-        c1, c2 = st.columns(2, gap="large")
-        with c1:
-            show_img_fixed(S.gen_paths[0], GEN_BOX)
-        with c2:
-            if len(S.gen_paths) > 1:
-                show_img_fixed(S.gen_paths[1], GEN_BOX)
-            else:
-                st.caption("Waiting for second image…")
+    gt_display, gen_display = st.columns([1, 1], gap="medium")
+    with gt_display:
+        st.markdown("### Target image")
+        show_img_fixed(S.gt_path, GT_BOX)
+    with gen_display:
+        st.markdown("### Generated images")
+        if S.generated and len(S.gen_paths) >= 1:
+            c1, c2 = st.columns(2, gap="large")
+            with c1:
+                show_img_fixed(S.gen_paths[0], GEN_BOX)
+            with c2:
+                if len(S.gen_paths) > 1:
+                    show_img_fixed(S.gen_paths[1], GEN_BOX)
+                else:
+                    st.caption("Waiting for second image…")
 
     # st.markdown("###### Target image:")
 
@@ -483,26 +484,26 @@ with right:
             # st.progress(int(S.last_score))
             # st.write(f"**{S.last_score:.1f}%**")
             
-        st.markdown(" ")  # spacer
-        S.subjective_score = st.slider(
-            "Subjective Similarity (0 = not similar, 100 = very similar)",
-            min_value=0,
-            max_value=100,
-            value=50,  # default position
-            step=1,
-            key=f"subjective_score_{S.session}_{S.attempt}",
-        )
-        
-        a_col, t_col = st.columns(2)
-        if a_col.button("DONE : Next image"):
-            next_gt()
+    st.markdown(" ")  # spacer
+    S.subjective_score = st.slider(
+        "Subjective Similarity (0 = not similar, 100 = very similar)",
+        min_value=0,
+        max_value=100,
+        value=50,  # default position
+        step=1,
+        key=f"subjective_score_{S.session}_{S.attempt}",
+    )
+    
+    a_col, t_col = st.columns(2)
+    if a_col.button("DONE : Next image"):
+        next_gt()
 
-        # "Try again" button is disabled on 5th attempt
-        if t_col.button("Another try", disabled=S.attempt >= config.MAX_ATTEMPTS):
-            S.seed = np.random.randint(1, 4000000) 
-            S.generated = False
-            S.gen_paths = []
-            S.attempt += 1
-            rerun()
+    # "Try again" button is disabled on 5th attempt
+    if t_col.button("Another try", disabled=S.attempt >= config.MAX_ATTEMPTS):
+        S.seed = np.random.randint(1, 4000000) 
+        S.generated = False
+        S.gen_paths = []
+        S.attempt += 1
+        rerun()
     else:
         st.caption("Click **Generate** to view images.")
