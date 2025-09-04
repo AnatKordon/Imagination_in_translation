@@ -12,7 +12,10 @@ MAX_ATTEMPTS = 4  # Attempts to improve the description are limited to 4
 IMG_H = 260  # The height of images is limited to 260 px so the user doesn't need to scroll
 MAX_LENGTH = 10000  # Maximum length of the prompt text
 N_OUT = 1  # Number of images to generate per prompt (1 or 4)
-##  Params for image generation
+MAX_SESSIONS = 10             # total sessions per participant
+REQUIRED_ATTEMPTS = 4         # exactly 4 attempts per session
+
+
 
 
 ## for error handling

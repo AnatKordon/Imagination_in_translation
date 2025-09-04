@@ -17,6 +17,7 @@ import re
 import streamlit as st # Streamlit UI framework
 from PIL import Image, ImageOps # Pillow library to manipulate images
 import hashlib
+from datetime import datetime, timezone
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -110,7 +111,7 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
 
     if config.API_CALL == "stability_ai":
         for i in range(N_OUT):  # generate 4 images
-            params["seed"] = seed + i  # vary seed to get diversity - this is the requested seed
+            params["seed"] = seed  # keep seed same, not changing it
             local_path, returned_seed = api_model.send_generation_request(
                 host="https://api.stability.ai/v2beta/stable-image/control/structure", # chagne from sd3 to structure
                 params=params,
@@ -192,6 +193,11 @@ def fresh_key() -> str:
 
 # Function that loads a new ground-truth image (or finish the whole thing if none left in the folder) and reset all per-target variables. Then force an immediate rerun.
 def next_gt():
+    # Stop after MAX_SESSIONS
+    if S.session >= config.MAX_SESSIONS:
+        S.finished = True
+        rerun()
+
     remaining = [p for p in config.GT_DIR.glob("*.[pj][pn]g") if p.name not in S.used]
     if not remaining:
         S.finished = True
@@ -202,19 +208,17 @@ def next_gt():
     S.used.add(S.gt_path.name) # keep same gt
 
     S.session += 1 # increase session counter
-    # update_gen_folder()
     S.seed = seed_from(S.gt_path.name)# instead of random - fixed per gt image: np.random.randint(1, 0, 2**32 - 1) # randomise the seed for the next generation
     S.attempt = 1
     S.generated = False
     S.gen_path = None
     S.gen_paths = [] # clear list on a new target
+    S.last_prompt = ""
     # S.last_score = 0.0
 
     # creating a new sussion folder for next session:
     update_session_folder()
 
-     # 🔹 Reset prompt-related state so the text area is empty
-    S.last_prompt = ""
     # st.session_state["prompt_text"] = ""  # because your text_area uses key="prompt_text"
 
     S.text_key = fresh_key() # new widget key so the existing widget value is not overwritten
@@ -380,8 +384,8 @@ with left:
             st.error("Fix invalid characters before generating.")
         elif http:
             st.error("Remove links before generating.")
-        elif S.attempt > 1 and same_prompt:
-            st.warning("Image can not be generated. Please modify your description.")
+        elif S.attempt > 1 and prompt_used.strip() == S.last_prompt.strip():
+            st.warning("Please modify your description.")
         else:
             # OK to generate
             S.prompt = prompt_used.strip()   # if it was submitted, than prompt is logged
@@ -413,7 +417,7 @@ with left:
                         session=S.session,
                         attempt=S.attempt,
                         img_index=i,  # for multiple image generation
-                        request_seed=S.seed + i if config.API_CALL == "stability_ai" else "",
+                        request_seed=S.seed if config.API_CALL == "stability_ai" else "",
                         returned_seed=str(returned_seeds[i - 1]) if returned_seeds else "",  # because openai doesn't return a seed
                         prompt=S.prompt,
                         gen=gen_path.name,
@@ -515,12 +519,15 @@ with right:
         key=f"subjective_score_{S.session}_{S.attempt}",
     )
     
-    a_col, t_col = st.columns(2)
-    if a_col.button("DONE : Next image"):
+    # After displaying images / slider...
+    done_disabled = (S.attempt < config.REQUIRED_ATTEMPTS) or not S.generated
+
+    done_col, try_col = st.columns(2)
+    if done_col.button("DONE : Next image", disabled=done_disabled):
         next_gt()
 
     # "Try again" button is disabled on 5th attempt
-    if t_col.button("Another try", disabled=S.attempt >= config.MAX_ATTEMPTS):
+    if try_col.button("Another try", disabled=S.attempt >= config.MAX_ATTEMPTS):
         # S.seed = np.random.randint(1, 4000000) - I don't want randomization per attempts
         S.generated = False
         S.gen_paths = []
