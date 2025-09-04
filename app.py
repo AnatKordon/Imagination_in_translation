@@ -289,59 +289,66 @@ if S.finished:
 # Layout of the textbox and pictures (next to each other)
 left, right = st.columns([1, 2])
 
+# st.markdown(
+#     "**Please, describe the picture as precisely as possible. You have up to 5 attempts to improve your description. \n'Press ctrl + enter buttons after you are done typing to apply the text. Note that you cannot use the same description twice.**"
+# )
 # left column: textbox for descriptive prompt and "generate" and "exit" buttons.
 with left:
-    # st.write(f"**Your ID:** `{S.uid}`")
-    st.markdown("**Please, describe the picture as precisely as possible. You have up to 5 attempts to improve your description. Press ctrl + enter buttons after you are done typing to apply the text. Note that you cannot use the same description twice.**")
-
-# Textbox (unique key per target)
-    S.prompt = st.text_area(
-        "The picture shows...",
-        key=S.text_key,
-        height=140,
-        placeholder="Type an accurate description of the target image. After finished press ctrl+enter to apply the text.",
+    st.markdown(
+        "**Please, describe the picture as precisely as possible. "
+        "You have up to 5 attempts to improve your description.**"
     )
 
-    ## ERROR HANDLING for the prompt text
-    
-    ## checks whether the user has changed the description since the last attempt
-    same_prompt = S.prompt.strip() == S.last_prompt.strip()
+    # --- FORM: text + submit button live inside the same form ---
+    with st.form("gen_form", clear_on_submit=False):
+        prompt_val = st.text_area(
+            "The picture shows...",
+            key="prompt_text",
+            height=140,
+            placeholder="Type an accurate description of the target image.",
+        )
+        submitted = st.form_submit_button("Generate", type="primary")  # <-- always enabled
+        # ---- validations run on the current text value ----
+        # Trim to max length (but show a warning)
+        if len(prompt_val) > config.MAX_LENGTH - 1:
+            st.warning(
+                f"Your description is too long. Only the first {config.MAX_LENGTH} characters will be used."
+            )
+        prompt_used = prompt_val[: config.MAX_LENGTH - 1]
 
-    ##check for symbols##
-    symbols = bool(re.search(r"[^a-zA-Z0-9\s.,!?'\"\()-]", S.prompt))
-    if symbols:
-        st.error("Please, use only letters, numbers, spaces and punctuation marks (.,!?') in your description. Other symbols are not allowed.")
+        same_prompt = prompt_used.strip() == S.last_prompt.strip()
+        symbols = bool(re.search(r"[^a-zA-Z0-9\s.,!?'\"\()-]", prompt_used))
+        if symbols:
+            st.error("Please use only letters, numbers, spaces and punctuation (.,!?').")
 
-    ## Check for https links ##
-    http = any(i in S.prompt for i in config.websites)
-    if http:
-        st.error("Please, do not use links in your description. Only text is allowed.")
+        http = any(i in prompt_used for i in config.websites)
+        if http:
+            st.error("Please, do not use links in your description. Only text is allowed.")
 
-    ##Check for legth##
-    if len(S.prompt) > config.MAX_LENGTH-1:
-        st.error(f"Your description is too long. Only the first {config.MAX_LENGTH} characters will be used.")
-        S.prompt = S.prompt[:config.MAX_LENGTH-1]
+        c1, c2 = st.columns(2)
+        c1.caption(f"{len(prompt_used)} characters")
+        c2.caption(f"{S.attempt} / {config.MAX_ATTEMPTS}")
 
+        if same_prompt and not S.generated and S.attempt > 1:
+            st.info("Please modify your description before generating again.")
 
+        gen_disabled = (
+            S.generated
+            or not prompt_used.strip()
+            or S.attempt > config.MAX_ATTEMPTS
+            or symbols
+            or http
+            or (same_prompt and S.attempt > 1)
+        )
 
-# Character counters (below the box)
-    c1, c2 = st.columns(2)
-    c1.caption(f"{len(S.prompt)} characters")
-    c2.caption(f"{S.attempt} / {config.MAX_ATTEMPTS}")
-   
-    if same_prompt and not S.generated and S.attempt > 1:
-        st.info("Please modify your description before generating again.")
+        # submitted = st.form_submit_button("Generate", type="primary")
 
-    gen_disabled = (
-        S.generated
-        or not str(S.prompt).strip()
-        or S.attempt > config.MAX_ATTEMPTS
-        or symbols
-        or http
-        or same_prompt
-    )
+    # --- Handle submit OUTSIDE the form block ---
+    if submitted:
+        S.prompt = prompt_used.strip()         # <-- set it now (after submit)
+        S.gen_paths = []
+        S.generated = False
 
-    if st.button("Generate", type="primary", disabled=gen_disabled):
         try:
             S.gen_paths, returned_seeds = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image
             print(f"Generated images saved: {[Path(p).name for p in S.gen_paths]}")
@@ -349,13 +356,13 @@ with left:
             # trying to upload
             update_session_folder() # ensure session folder id
             
-        #  I removed calculating vgg similarity score
-        # try:
-        #     S.last_scores = similarities(S.gt_path, S.gen_paths)
-        # except Exception as e:
-        #     print(e)
-        #     st.error(f"Error calculating similarity: {e}")
-        #     S.last_scores = [0.0] * len(S.gen_paths)
+            #  I removed calculating vgg similarity score
+            # try:
+            #     S.last_scores = similarities(S.gt_path, S.gen_paths)
+            # except Exception as e:
+            #     print(e)
+            #     st.error(f"Error calculating similarity: {e}")
+            #     S.last_scores = [0.0] * len(S.gen_paths)
 
             # Upload each generated image to Drive (names already include attempt/img index)
             for i, gen_path in enumerate(S.gen_paths, start=1):
@@ -384,7 +391,7 @@ with left:
                     subjective_score=S.subjective_score if "subjective_score" in S else None,
                     ts=int(time.time())
                 )
-           
+            
             upload_participant_log(S.uid)  # outside the image loop, uploading the participant log
                 
             S.generated = True
@@ -420,7 +427,7 @@ with left:
 
 # Right column displays the ground truth (target) image and the generated one (next to each other) together with similarity scores, "accept" and "try again" buttons.
 with right:
-    st.markdown("##### Target image:")
+    st.markdown("###### Target image:")
 
     # Make GT roughly half-width responsively:
     # - Only use the first column; leave the second empty.
