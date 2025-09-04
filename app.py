@@ -95,7 +95,8 @@ def resize_inplace(p: Path, size=(512, 512)) -> None:
 
 #generate a unique seed per image
 def seed_from(gt_filename: str) -> int:
-    return int(hashlib.sha1(gt_filename.encode()).hexdigest()[:8], 16)  # 32-bit
+    # Deterministic 32-bit seed from any string
+    return int(hashlib.sha256(gt_filename.encode("utf-8")).hexdigest(), 16) % (2**32)  # 32-bit
 
 #new generation of 4 images
 def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path, uid: str) -> list[Path]:
@@ -242,15 +243,29 @@ st.set_page_config(page_title="Imagination in Translation", layout="wide")
 
 
 # Customising the buttons
-st.markdown(
-    """
+# st.markdown(
+#     """
+#     <style>
+#         button[kind="primary"]{background:#8B0000;color:white}
+#         button[kind="primary"]:hover{background:#A80000;color:white}
+#     </style>
+#     """,
+#     unsafe_allow_html=True,
+# )
+
+# Hide the built-in fullscreen control on media (images, charts, etc.)
+st.markdown("""
     <style>
-        button[kind="primary"]{background:#8B0000;color:white}
-        button[kind="primary"]:hover{background:#A80000;color:white}
+     button[kind="primary"]{background:#8B0000;color:white}
+    button[kind="primary"]:hover{background:#A80000;color:white}
+    /* Streamlit uses a dedicated button for fullscreen */
+    [data-testid="StyledFullScreenButton"] { display: none !important; }
+    /* Older builds expose a title attr */
+    button[title="View fullscreen"] { display: none !important; }
     </style>
-    """,
-    unsafe_allow_html=True,
-)
+    """, 
+unsafe_allow_html=True)
+
 # Participant info form (shown only once at the start of the session) - makes sure there's a button
 if "participant_info_submitted" not in S:
     S.participant_info_submitted = False
@@ -294,12 +309,12 @@ if S.finished:
 left, right = st.columns([1, 3], gap="large")
 
 # st.markdown(
-#     "**Please, describe the picture as precisely as possible. You have up to 5 attempts to improve your description. \n'Press ctrl + enter buttons after you are done typing to apply the text. Note that you cannot use the same description twice.**"
+#     "**Please, describe the picture as precisely as possible in English only. You have 4 attempts to improve your description. \n'Press ctrl + enter buttons after you are done typing to apply the text. Note that you cannot use the same description twice.**"
 # )
 # left column: textbox for descriptive prompt and "generate" and "exit" buttons.
 with left:
     st.markdown(
-        "**Please, describe the picture as precisely as possible. "
+        "**Please, describe the picture as precisely as possible in English only. "
         "You have 4 attempts to improve your description for every image.**"
     )
 
@@ -364,7 +379,7 @@ with left:
         elif http:
             st.error("Remove links before generating.")
         elif S.attempt > 1 and same_prompt:
-            st.error("Image can not be generated. Please modify your description.")
+            st.warning("Image can not be generated. Please modify your description.")
         else:
             # OK to generate
             S.prompt = prompt_used.strip()   # if it was submitted, than prompt is logged
@@ -443,23 +458,27 @@ with left:
 with right:
     gt_display, gen_display = st.columns([1, 1], gap="medium")
     with gt_display:
-        st.markdown("### Target image")
+        st.markdown("#### Target image")
         show_img_fixed(S.gt_path, GT_BOX)
     with gen_display:
-        if S.generated:
-            if config.N_OUT >= 1:
+        if not S.generated:
+            st.markdown("#### Generated image")
+            st.caption("Click **Generate** to view the image.")
+        elif not S.gen_paths:
+            st.markdown("### Generated image")
+            st.warning("No image was produced. Please try again.")
+        else:
+            if len(S.gen_paths) == 1:
+                st.markdown("#### Generated image")
+                show_img_fixed(S.gen_paths[0], GEN_BOX)
+            else:  # 2 images
                 st.markdown("### Generated images")
                 c1, c2 = st.columns(2, gap="large")
                 with c1:
                     show_img_fixed(S.gen_paths[0], GEN_BOX)
                 with c2:
-                    if len(S.gen_paths) > 1:
-                        show_img_fixed(S.gen_paths[1], GEN_BOX)
-                    else:
-                        st.caption("Waiting for second image…")
-            else: # if there is only  a signle image
-                st.markdown("### Generated image:")
-                show_img_fixed(S.gen_paths[0], GEN_BOX)
+                    show_img_fixed(S.gen_paths[1], GEN_BOX)
+
 
     # st.markdown("###### Target image:")
 
