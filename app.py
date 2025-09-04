@@ -79,8 +79,8 @@ def on_saved(path: Path, idx: int, seed: str):
 
 
 # Image size setup - Fixed bounding boxes (size should change if a single image or 2)
-GT_BOX  = (370, 370)   # target image size
-GEN_BOX = (370, 370)   # each generated image
+GT_BOX  = (340, 340)   # target image size
+GEN_BOX = (340, 340)   # each generated image
 
 def show_img_fixed(path, box, caption=None):
     """Open, bound to box while preserving aspect, and render at a fixed width."""
@@ -102,6 +102,8 @@ def seed_from(gt_filename: str) -> int:
 def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path, uid: str) -> list[Path]:
     params = config.params.copy()
     params["prompt"] = prompt
+    params["gt"] = str(gt)
+    # initialize collecting paths
     local_paths = []
     returned_seeds = []
     N_OUT = config.N_OUT  # wither single or multiple images generation
@@ -110,7 +112,7 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
         for i in range(N_OUT):  # generate 4 images
             params["seed"] = seed + i  # vary seed to get diversity - this is the requested seed
             local_path, returned_seed = api_model.send_generation_request(
-                host="https://api.stability.ai/v2beta/stable-image/generate/sd3",
+                host="https://api.stability.ai/v2beta/stable-image/control/structure", # chagne from sd3 to structure
                 params=params,
                 iteration=attempt,
                 session_num=session,

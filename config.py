@@ -33,11 +33,11 @@ KNOWN_ERRORS = {
 ## Params
 
 params = {
-    "prompt": "a playground with ",
+    "prompt": "",
     #  "image": str(GT_DIR /"sample_image"/"bridge_l.jpg"),  # Path to the style image
     "aspect_ratio": "1:1", 
     "output_format": "png",
-    "model": "sd3.5-large-turbo", # , "sd3.5-large", "sd3.5-large-turbo"
+    # "model": "sd3.5-large-turbo", # , "sd3.5-large", "sd3.5-large-turbo"
     "revised_prompt": None  # this is for openai api - to assure that no revision of prompt is done
 }
 
