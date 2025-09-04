@@ -11,6 +11,7 @@ STYLE_IMAGE = GT_DIR / "sample_image" / "bridge_l.jpg"  # Path to the style imag
 MAX_ATTEMPTS = 4  # Attempts to improve the description are limited to 4
 IMG_H = 260  # The height of images is limited to 260 px so the user doesn't need to scroll
 MAX_LENGTH = 10000  # Maximum length of the prompt text
+N_OUT = 1 # Number of images to generate per prompt (1 or 4)
 ##  Params for image generation
 
 

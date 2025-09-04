@@ -16,6 +16,7 @@ import numpy as np
 import re
 import streamlit as st # Streamlit UI framework
 from PIL import Image, ImageOps # Pillow library to manipulate images
+import hashlib
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -92,13 +93,17 @@ def resize_inplace(p: Path, size=(512, 512)) -> None:
     img = ImageOps.contain(img, size)  # preserves aspect ratio inside 512x512
     img.save(p)
 
+#generate a unique seed per image
+def seed_from(gt_filename: str) -> int:
+    return int(hashlib.sha1(gt_filename.encode()).hexdigest()[:8], 16)  # 32-bit
+
 #new generation of 4 images
 def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path, uid: str) -> list[Path]:
     params = config.params.copy()
     params["prompt"] = prompt
     local_paths = []
     returned_seeds = []
-    N_OUT = 1  # wither single or multiple images generation
+    N_OUT = config.N_OUT  # wither single or multiple images generation
 
     if config.API_CALL == "stability_ai":
         for i in range(N_OUT):  # generate 4 images
@@ -175,6 +180,7 @@ def log_participant_info(uid: str, age: int, gender: str, native: str) -> Path:
     return path
 
 # A helper for st.rerun() function in Steamlit. It is named differently in different versions of Steamlit, so we just make sure that we have something of this kind.
+# It restarts your script from the top, keeping st.session_state intact. Use it after state changes that should immediately update the UI (e.g., after generating images, after moving to the next GT).
 rerun = st.rerun if hasattr(st, "rerun") else st.experimental_rerun
 
 # Function returning a new widget key for the textbox every time we load a new target (e.g. a new ground truth image is presented)
@@ -194,7 +200,7 @@ def next_gt():
 
     S.session += 1 # increase session counter
     # update_gen_folder()
-    S.seed = np.random.randint(1, 4000000) # randomise the seed for the next generation
+    S.seed = seed_from(S.gt_path.name)# instead of random - fixed per gt image: np.random.randint(1, 0, 2**32 - 1) # randomise the seed for the next generation
     S.attempt = 1
     S.generated = False
     S.gen_path = None
@@ -245,9 +251,10 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-# Participant info form (shown only once at the start of the session)
+# Participant info form (shown only once at the start of the session) - makes sure there's a button
 if "participant_info_submitted" not in S:
     S.participant_info_submitted = False
+# if form didn't appear yet, show it 
 if not S.participant_info_submitted:
     with st.form("participant_info_form"):
         st.header("Participant Information")
@@ -332,21 +339,22 @@ with left:
         c1.caption(f"{len(prompt_used)} characters")
         c2.caption(f"{S.attempt} / {config.MAX_ATTEMPTS}")
 
-        # forcing to changed prompt if it's the same for a new attempt
-        if same_prompt and not S.generated and S.attempt > 1:
-            st.info("Please modify your description before generating again.")
+        # # forcing to changed prompt if it's the same for a new attempt
+        # if same_prompt and not S.generated and S.attempt > 1:
+        #     st.info("Please modify your description before generating again.")
 
-        # not allowing generation if:
-        gen_disabled = (
-            S.generated
-            or not prompt_used.strip()
-            or S.attempt > config.MAX_ATTEMPTS
-            or symbols
-            or http
-            or (same_prompt and S.attempt > 1)
-        )
+        # This isn't relevant with forms
+        # # not allowing generation if:
+        # gen_disabled = (
+        #     S.generated
+        #     or not prompt_used.strip()
+        #     or S.attempt > config.MAX_ATTEMPTS
+        #     or symbols
+        #     or http
+        #     or (same_prompt and S.attempt > 1)
+        # )
 
-    # --- Handle submit OUTSIDE the form block ---
+    # --- Handle submit - what happens after participant presses "Generate" ---
     if submitted:
         # gate by validation here
         if not prompt_used.strip():
@@ -356,7 +364,7 @@ with left:
         elif http:
             st.error("Remove links before generating.")
         elif S.attempt > 1 and same_prompt:
-            st.error("Please modify your description before generating again.")
+            st.error("Image can not be generated. Please modify your description.")
         else:
             # OK to generate
             S.prompt = prompt_used.strip()   # if it was submitted, than prompt is logged
@@ -438,16 +446,20 @@ with right:
         st.markdown("### Target image")
         show_img_fixed(S.gt_path, GT_BOX)
     with gen_display:
-        st.markdown("### Generated images")
-        if S.generated and len(S.gen_paths) >= 1:
-            c1, c2 = st.columns(2, gap="large")
-            with c1:
+        if S.generated:
+            if config.N_OUT >= 1:
+                st.markdown("### Generated images")
+                c1, c2 = st.columns(2, gap="large")
+                with c1:
+                    show_img_fixed(S.gen_paths[0], GEN_BOX)
+                with c2:
+                    if len(S.gen_paths) > 1:
+                        show_img_fixed(S.gen_paths[1], GEN_BOX)
+                    else:
+                        st.caption("Waiting for second image…")
+            else: # if there is only  a signle image
+                st.markdown("### Generated image:")
                 show_img_fixed(S.gen_paths[0], GEN_BOX)
-            with c2:
-                if len(S.gen_paths) > 1:
-                    show_img_fixed(S.gen_paths[1], GEN_BOX)
-                else:
-                    st.caption("Waiting for second image…")
 
     # st.markdown("###### Target image:")
 
@@ -471,11 +483,7 @@ with right:
     #     with c2:
     #         st.image(Image.open(S.gen_paths[1]), use_container_width=True, clamp=True)
 
-            #removing the single similarity score
-            # st.caption("Similarity:")
-            # st.progress(int(S.last_score))
-            # st.write(f"**{S.last_score:.1f}%**")
-            
+
     st.markdown(" ")  # spacer
     S.subjective_score = st.slider(
         "Subjective Similarity (0 = not similar, 100 = very similar)",
@@ -492,7 +500,7 @@ with right:
 
     # "Try again" button is disabled on 5th attempt
     if t_col.button("Another try", disabled=S.attempt >= config.MAX_ATTEMPTS):
-        S.seed = np.random.randint(1, 4000000) 
+        # S.seed = np.random.randint(1, 4000000) - I don't want randomization per attempts
         S.generated = False
         S.gen_paths = []
         S.attempt += 1
