@@ -113,7 +113,7 @@ venv311
 
 #images
 *.png
-*.jpg
+# *.jpg
 *.jpeg
 *.csv
 client_secrets.json
