@@ -23,7 +23,7 @@ from PIL import Image, ImageOps # Pillow library to manipulate images
 from dotenv import load_dotenv
 load_dotenv()
 
-
+# Google Drive setup
 token_dict = get_token_dict_from_secrets_or_env(st)
 service = build_drive_from_token_dict(token_dict)
 FOLDER_ID = extract_folder_id(config.DRIVE_FOLDER) # main drive folder
@@ -79,6 +79,17 @@ def upload_participant_log(uid: str):
 def on_saved(path: Path, seed: str):
     dest = image_dest_name(S.uid, S.session, S.attempt, idx=1, suffix=path.suffix)  # set idx appropriately
     update_or_insert_file(service, path, S.session_drive_folder_id, dest_name=dest)
+
+
+
+# Fixed bounding boxes (tweak if you like)
+GT_BOX  = (420, 420)   # target image size
+GEN_BOX = (300, 300)   # each generated image
+
+def show_img_fixed(path, box, caption=None):
+    """Open, bound to box while preserving aspect, and render at a fixed width."""
+    img = ImageOps.contain(Image.open(path), box)
+    st.image(img, width=box[0], clamp=True, caption=caption)
 
 st.set_page_config(page_title="Imagination in Translation", layout="wide")
 
@@ -287,7 +298,7 @@ if S.finished:
     st.stop()
 
 # Layout of the textbox and pictures (next to each other)
-left, right = st.columns([1, 2])
+left, right = st.columns([1, 3], gap="large")
 
 # st.markdown(
 #     "**Please, describe the picture as precisely as possible. You have up to 5 attempts to improve your description. \n'Press ctrl + enter buttons after you are done typing to apply the text. Note that you cannot use the same description twice.**"
@@ -308,6 +319,9 @@ with left:
             placeholder="Type an accurate description of the target image.",
         )
         submitted = st.form_submit_button("Generate", type="primary")  # <-- always enabled
+        # st.markdown("#### Target image")
+        # show_img_fixed(S.gt_path, GT_BOX)
+
         # ---- validations run on the current text value ----
         # Trim to max length (but show a warning)
         if len(prompt_val) > config.MAX_LENGTH - 1:
@@ -427,27 +441,42 @@ with left:
 
 # Right column displays the ground truth (target) image and the generated one (next to each other) together with similarity scores, "accept" and "try again" buttons.
 with right:
-    st.markdown("###### Target image:")
-
-    # Make GT roughly half-width responsively:
-    # - Only use the first column; leave the second empty.
-    # - Tweak the ratio to change the GT size:
-    #   [1,1]  -> ~50% of the container
-    #   [2,1]  -> ~66%
-    #   [1,2]  -> ~33%
-    col_gt, _ = st.columns([1, 1], gap="medium")  
-    with col_gt:
-        st.image(Image.open(S.gt_path), use_container_width=True, clamp=True, caption="")
+    st.markdown("### Target image")
+    show_img_fixed(S.gt_path, GT_BOX)
 
     st.markdown("---")
-    # st.subheader("Generated images")
-
-    if S.generated and len(S.gen_paths) == 2:
+    st.markdown("### Generated images")
+    if S.generated and len(S.gen_paths) >= 1:
         c1, c2 = st.columns(2, gap="large")
         with c1:
-            st.image(Image.open(S.gen_paths[0]), use_container_width=True, clamp=True)
+            show_img_fixed(S.gen_paths[0], GEN_BOX)
         with c2:
-            st.image(Image.open(S.gen_paths[1]), use_container_width=True, clamp=True)
+            if len(S.gen_paths) > 1:
+                show_img_fixed(S.gen_paths[1], GEN_BOX)
+            else:
+                st.caption("Waiting for second image…")
+
+    # st.markdown("###### Target image:")
+
+    # # Make GT roughly half-width responsively:
+    # # - Only use the first column; leave the second empty.
+    # # - Tweak the ratio to change the GT size:
+    # #   [1,1]  -> ~50% of the container
+    # #   [2,1]  -> ~66%
+    # #   [1,2]  -> ~33%
+    # col_gt, _ = st.columns([1, 1], gap="medium")  
+    # with col_gt:
+    #     st.image(Image.open(S.gt_path), use_container_width=True, clamp=True, caption="")
+
+    # st.markdown("---")
+    # # st.subheader("Generated images")
+
+    # if S.generated and len(S.gen_paths) == 2:
+    #     c1, c2 = st.columns(2, gap="large")
+    #     with c1:
+    #         st.image(Image.open(S.gen_paths[0]), use_container_width=True, clamp=True)
+    #     with c2:
+    #         st.image(Image.open(S.gen_paths[1]), use_container_width=True, clamp=True)
 
             #removing the single similarity score
             # st.caption("Similarity:")
