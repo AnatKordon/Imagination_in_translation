@@ -3,12 +3,12 @@ from pathlib import Path
 
 # Directories (MIGHT NEED TO BE CHANGED)
 ROOT = Path(__file__).resolve().parent  # root of the project, where this file is located
-GT_DIR = ROOT / "GT_images" / "wilma_ground_truth" # folder with target images
+GT_DIR = ROOT / "GT_images" / "wilma_ground_truth" / "chosen" # folder with target images
 LOG_DIR = ROOT / "logs" / "users_data" # folder with CSV log files per user/session
 GEN_DIR = ROOT / "logs"/"gen_images"  # folder where generated images are saved
 DRIVE_FOLDER = "https://drive.google.com/drive/folders/1bbDtQ7WrDTyaoMTJfIlgix7QUG3is78U?usp=drive_link"
 STYLE_IMAGE = GT_DIR / "sample_image" / "bridge_l.jpg"  # Path to the style image
-MAX_ATTEMPTS = 5 # Attempts to improve the description are limited to 5
+MAX_ATTEMPTS = 4  # Attempts to improve the description are limited to 4
 IMG_H = 260  # The height of images is limited to 260 px so the user doesn't need to scroll
 MAX_LENGTH = 10000  # Maximum length of the prompt text
 ##  Params for image generation

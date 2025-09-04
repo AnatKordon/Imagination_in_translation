@@ -18,7 +18,7 @@ def send_generation_request(
     iteration: int,
     session_num: int,
     img_index: Optional[int] = None,
-    on_image_saved = None  # for google drive upload
+    on_image_saved = None  # for google drive upload - to save the idx
 ) -> tuple[Path, str]:
     """
     Generates an image using Stability AI API and saves it locally with a flat filename structure.
@@ -90,11 +90,11 @@ def send_generation_request(
     with open(image_path, "wb") as f:
         f.write(output_image)
 
-    if on_image_saved:
+    if on_image_saved is not None:
         try:
-            on_image_saved(image_path, returned_seed)
-        except Exception as e:
-            print(f"Upload callback failed: {e}")
+            on_image_saved(image_path, img_index, returned_seed)
+        except Exception as cb_err:
+            print(f"⚠️ on_image_saved failed: {cb_err}")
 
     return image_path, returned_seed
 

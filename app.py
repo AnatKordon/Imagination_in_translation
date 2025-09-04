@@ -17,9 +17,6 @@ import re
 import streamlit as st # Streamlit UI framework
 from PIL import Image, ImageOps # Pillow library to manipulate images
 
-# from google.oauth2 import service_account
-# from mimetypes import guess_type # for uploading to google drive - png or csv
-
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -43,7 +40,6 @@ def init_drive_tree_for_participant():
     S.participant_folder_id = participant
     S.images_root_id = images_root
     # session folder is created per target in update_session_folder()
-
 
 def update_session_folder():
     """Ensure session_<nn> folder exists under .../gen_images/ and store id."""
@@ -76,13 +72,12 @@ def upload_participant_log(uid: str):
         dest_name=log_csv_name(uid), mime_type="text/csv"
     )
 
-def on_saved(path: Path, seed: str):
-    dest = image_dest_name(S.uid, S.session, S.attempt, idx=1, suffix=path.suffix)  # set idx appropriately
+def on_saved(path: Path, idx: int, seed: str):
+    dest = image_dest_name(S.uid, S.session, S.attempt, idx=idx, suffix=path.suffix)  # set idx appropriately
     update_or_insert_file(service, path, S.session_drive_folder_id, dest_name=dest)
 
 
-
-# Fixed bounding boxes (tweak if you like)
+# Image size setup - Fixed bounding boxes (size should change if a single image or 2)
 GT_BOX  = (370, 370)   # target image size
 GEN_BOX = (370, 370)   # each generated image
 
@@ -91,26 +86,11 @@ def show_img_fixed(path, box, caption=None):
     img = ImageOps.contain(Image.open(path), box)
     st.image(img, width=box[0], clamp=True, caption=caption)
 
-st.set_page_config(page_title="Imagination in Translation", layout="wide")
-
-
-# Customising the buttons
-st.markdown(
-    """
-    <style>
-        button[kind="primary"]{background:#8B0000;color:white}
-        button[kind="primary"]:hover{background:#A80000;color:white}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
 #  handling resizing as a function
 def resize_inplace(p: Path, size=(512, 512)) -> None:
     img = Image.open(p)
     img = ImageOps.contain(img, size)  # preserves aspect ratio inside 512x512
     img.save(p)
-
 
 #new generation of 4 images
 def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path, uid: str) -> list[Path]:
@@ -118,8 +98,8 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
     params["prompt"] = prompt
     local_paths = []
     returned_seeds = []
-    N_OUT = 2 #multiple images generation
-    
+    N_OUT = 1  # wither single or multiple images generation
+
     if config.API_CALL == "stability_ai":
         for i in range(N_OUT):  # generate 4 images
             params["seed"] = seed + i  # vary seed to get diversity - this is the requested seed
@@ -131,6 +111,7 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
                 user_id=uid,
                 img_index=i+1,
                 on_image_saved=on_saved
+                # on_image_saved=on_saved(local_path, i+1, params["seed"])
             )
             try:
                 resize_inplace(local_path, (512, 512))
@@ -159,17 +140,6 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
     
     return local_paths, returned_seeds
 
-#similarity scores for all gen images
-# def similarities(GT_path: Path, GEN_paths: list[Path]) -> list[float]:
-#     embedder = st.session_state.vgg_embedder  # use cached model
-#     GT_embedding = embedder.get_embedding(img_path=str(GT_path))
-#     scores = []
-#     for gen_path in GEN_paths:
-#         GEN_embedding = embedder.get_embedding(img_path=str(gen_path))
-#         score, _ = vgg_similarity.compute_similarity_score(GT_embedding, GEN_embedding)
-#         scores.append(score)
-#     return scores
-
 def log_row(**kw):
     f = config.LOG_DIR / f"{kw['uid']}.csv"
     
@@ -180,8 +150,6 @@ def log_row(**kw):
             w.writeheader()
         w.writerow(kw)
     # f = str(f)   # remove unused line
-
-
 
 def log_participant_info(uid: str, age: int, gender: str, native: str) -> Path:
     """
@@ -220,7 +188,7 @@ def next_gt():
         S.finished = True
         rerun()
 
-    # if a new session starts (still same gt_image): 
+    # if a new session starts pick a new gt image: 
     S.gt_path = random.choice(remaining)
     S.used.add(S.gt_path.name) # keep same gt
 
@@ -236,11 +204,15 @@ def next_gt():
     # creating a new sussion folder for next session:
     update_session_folder()
 
+     # 🔹 Reset prompt-related state so the text area is empty
+    S.last_prompt = ""
+    # st.session_state["prompt_text"] = ""  # because your text_area uses key="prompt_text"
+
     S.text_key = fresh_key() # new widget key so the existing widget value is not overwritten
     rerun()
 
-
-# Defining a st.session_state, which is Streamlit’s dictionary like place for keeping data between reruns during a single session (for a given user). 
+# Defining a **st.session_state** - which is Streamlit’s dictionary like place for keeping data between reruns during a single session (for a given user). 
+#this is a Session state init - sets values the first time the app runs
 for k, v in {
     "uid": uuid4().hex, # user/session ID
     "used": set(), # set of ground-truth images already shown
@@ -260,6 +232,20 @@ for k, v in {
     st.session_state.setdefault(k, v)
 S = st.session_state
 
+st.set_page_config(page_title="Imagination in Translation", layout="wide")
+
+
+# Customising the buttons
+st.markdown(
+    """
+    <style>
+        button[kind="primary"]{background:#8B0000;color:white}
+        button[kind="primary"]:hover{background:#A80000;color:white}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+# Participant info form (shown only once at the start of the session)
 if "participant_info_submitted" not in S:
     S.participant_info_submitted = False
 if not S.participant_info_submitted:
@@ -307,7 +293,7 @@ left, right = st.columns([1, 3], gap="large")
 with left:
     st.markdown(
         "**Please, describe the picture as precisely as possible. "
-        "You have up to 5 attempts to improve your description.**"
+        "You have 4 attempts to improve your description for every image.**"
     )
 
     # --- FORM: text + submit button live inside the same form ---
@@ -318,6 +304,8 @@ with left:
             height=140,
             placeholder="Type an accurate description of the target image.",
         )
+
+        #allowing to clicl generation for next command
         submitted = st.form_submit_button("Generate", type="primary")  # <-- always enabled
         # st.markdown("#### Target image")
         # show_img_fixed(S.gt_path, GT_BOX)
@@ -328,10 +316,11 @@ with left:
             st.warning(
                 f"Your description is too long. Only the first {config.MAX_LENGTH} characters will be used."
             )
-        prompt_used = prompt_val[: config.MAX_LENGTH - 1]
+        prompt_used = prompt_val[: config.MAX_LENGTH - 1] # logging the prompt that was used (upto max length)
 
         same_prompt = prompt_used.strip() == S.last_prompt.strip()
-        symbols = bool(re.search(r"[^a-zA-Z0-9\s.,!?'\"\()-]", prompt_used))
+        # error handling inside the form:
+        symbols = bool(re.search(r"[^a-zA-Z0-9\s.,!?'\"\()-]", prompt_used)) 
         if symbols:
             st.error("Please use only letters, numbers, spaces and punctuation (.,!?').")
 
@@ -339,13 +328,15 @@ with left:
         if http:
             st.error("Please, do not use links in your description. Only text is allowed.")
 
-        c1, c2 = st.columns(2)
+        c1, c2 = st.columns(2) # add count for characters and attempt number
         c1.caption(f"{len(prompt_used)} characters")
         c2.caption(f"{S.attempt} / {config.MAX_ATTEMPTS}")
 
+        # forcing to changed prompt if it's the same for a new attempt
         if same_prompt and not S.generated and S.attempt > 1:
             st.info("Please modify your description before generating again.")
 
+        # not allowing generation if:
         gen_disabled = (
             S.generated
             or not prompt_used.strip()
@@ -355,82 +346,83 @@ with left:
             or (same_prompt and S.attempt > 1)
         )
 
-        # submitted = st.form_submit_button("Generate", type="primary")
-
     # --- Handle submit OUTSIDE the form block ---
     if submitted:
-        S.prompt = prompt_used.strip()         # <-- set it now (after submit)
-        S.gen_paths = []
-        S.generated = False
-
-        try:
-            S.gen_paths, returned_seeds = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image
-            print(f"Generated images saved: {[Path(p).name for p in S.gen_paths]}")
-            
-            # trying to upload
-            update_session_folder() # ensure session folder id
-            
-            #  I removed calculating vgg similarity score
-            # try:
-            #     S.last_scores = similarities(S.gt_path, S.gen_paths)
-            # except Exception as e:
-            #     print(e)
-            #     st.error(f"Error calculating similarity: {e}")
-            #     S.last_scores = [0.0] * len(S.gen_paths)
-
-            # Upload each generated image to Drive (names already include attempt/img index)
-            for i, gen_path in enumerate(S.gen_paths, start=1):
-                gen_path = Path(gen_path)
-                # uploading to google drive:
-                dest = image_dest_name(S.uid, S.session, S.attempt, i, gen_path.suffix) # including index
-                update_or_insert_file(service, gen_path, S.session_drive_folder_id, dest_name=dest)
-
-            # Log locally (now with index + true/returned seed)
-            for i, gen_path in enumerate(S.gen_paths, start=1):
-                gen_path = Path(gen_path)
-                log_row(
-                    uid=S.uid,
-                    participant_age=S.participant_age,
-                    participant_gender=S.participant_gender,
-                    participant_native=S.participant_native,
-                    gt=S.gt_path.name,
-                    session=S.session,
-                    attempt=S.attempt,
-                    img_index=i,  # for multiple image generation
-                    request_seed=S.seed + i if config.API_CALL == "stability_ai" else "",
-                    returned_seed=str(returned_seeds[i - 1]) if returned_seeds else "",  # because openai doesn't return a seed
-                    prompt=S.prompt,
-                    gen=gen_path.name,
-                    # similarity=score,
-                    subjective_score=S.subjective_score if "subjective_score" in S else None,
-                    ts=int(time.time())
-                )
-            
-            upload_participant_log(S.uid)  # outside the image loop, uploading the participant log
+        # gate by validation here
+        if not prompt_used.strip():
+            st.error("Please enter a description.")
+        elif symbols:
+            st.error("Fix invalid characters before generating.")
+        elif http:
+            st.error("Remove links before generating.")
+        elif S.attempt > 1 and same_prompt:
+            st.error("Please modify your description before generating again.")
+        else:
+            # OK to generate
+            S.prompt = prompt_used.strip()   # if it was submitted, than prompt is logged
+            S.gen_paths = []
+            S.generated = False # because it's before generation
+            try:
+                #  ensure session folder exists BEFORE calling api (in case a callback uploads)
+                update_session_folder() 
+                # API call
+                S.gen_paths, returned_seeds = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image
+                print(f"Generated image/images saved: {[Path(p).name for p in S.gen_paths]}")
                 
-            S.generated = True
-            S.last_prompt = S.prompt.strip()  # save the last prompt to check if it is the same as the current one
-            rerun()
-        except Exception as e:
-            msg = str(e)
-            print(e)
-            KNOWN_ERRORS = config.KNOWN_ERRORS
-            if KNOWN_ERRORS["required_field"] in msg:
-                st.error("Some required field is missing. Please check the inputs.")
-            elif KNOWN_ERRORS["content_moderation"] in msg:
-                st.error("Your request was flagged for unsafe content. Please rephrase.")
-            elif KNOWN_ERRORS["payload_too_large"] in msg:
-                st.error("Your prompt is too large. Try shortening it.")
-            elif KNOWN_ERRORS["language_not_supported"] in msg:
-                st.error("Only English is supported. Please write in English.")
-            elif KNOWN_ERRORS["rate_limit"] in msg:
-                st.error("Too many requests. Please wait a moment and try again.")
-            elif KNOWN_ERRORS["server_error"] in msg:
-                st.error("Server error. Please try again shortly.")
-            elif KNOWN_ERRORS["Invalid_Api"] in msg:
-                st.error("Invalid API key. Please check readme for more details.")
-            else:
-                st.error(f"Unexpected error: {msg}")
+                # Upload each generated image to Drive (names already include attempt/img index)
+                for i, gen_path in enumerate(S.gen_paths, start=1):
+                    gen_path = Path(gen_path)
+                    # uploading to google drive:
+                    dest = image_dest_name(S.uid, S.session, S.attempt, i, gen_path.suffix) # including index
+                    update_or_insert_file(service, gen_path, S.session_drive_folder_id, dest_name=dest)
+
+                # Log locally (now with index + true/returned seed)
+                for i, gen_path in enumerate(S.gen_paths, start=1):
+                    gen_path = Path(gen_path)
+                    log_row(
+                        uid=S.uid,
+                        participant_age=S.participant_age,
+                        participant_gender=S.participant_gender,
+                        participant_native=S.participant_native,
+                        gt=S.gt_path.name,
+                        session=S.session,
+                        attempt=S.attempt,
+                        img_index=i,  # for multiple image generation
+                        request_seed=S.seed + i if config.API_CALL == "stability_ai" else "",
+                        returned_seed=str(returned_seeds[i - 1]) if returned_seeds else "",  # because openai doesn't return a seed
+                        prompt=S.prompt,
+                        gen=gen_path.name,
+                        # similarity=score,
+                        subjective_score=S.subjective_score if "subjective_score" in S else None,
+                        ts=int(time.time())
+                    )
+                
+                upload_participant_log(S.uid)  # outside the image loop, uploading the participant log
+                    
+                S.generated = True
+                S.last_prompt = S.prompt.strip()  # save the last prompt to check if it is the same as the current one
+                rerun()
+                # except errors regarding generation!
+            except Exception as e:
+                msg = str(e)
+                print(e)
+                KNOWN_ERRORS = config.KNOWN_ERRORS
+                if KNOWN_ERRORS["required_field"] in msg:
+                    st.error("Some required field is missing. Please check the inputs.")
+                elif KNOWN_ERRORS["content_moderation"] in msg:
+                    st.error("Your request was flagged for unsafe content. Please rephrase.")
+                elif KNOWN_ERRORS["payload_too_large"] in msg:
+                    st.error("Your prompt is too large. Try shortening it.")
+                elif KNOWN_ERRORS["language_not_supported"] in msg:
+                    st.error("Only English is supported. Please write in English.")
+                elif KNOWN_ERRORS["rate_limit"] in msg:
+                    st.error("Too many requests. Please wait a moment and try again.")
+                elif KNOWN_ERRORS["server_error"] in msg:
+                    st.error("Server error. Please try again shortly.")
+                elif KNOWN_ERRORS["Invalid_Api"] in msg:
+                    st.error("Invalid API key. Please check readme for more details.")
+                else:
+                    st.error(f"Unexpected error: {msg}")
                 S.generated = False
                 S.gen_paths = []
 
