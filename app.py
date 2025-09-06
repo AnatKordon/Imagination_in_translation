@@ -364,10 +364,10 @@ if not S.consent_given:
                 """)
         agree = st.checkbox("I have read the study information and **I consent** to participate.")
         submit = st.form_submit_button("I agree and continue")
-        if not agree:
-            st.warning("You must agree to the consent form to proceed.")
+        
         if submit:
             if not agree:
+                st.warning("You must agree to the consent form to proceed.")
                 S.finished = True
             else:
                 S.consent_given = True
