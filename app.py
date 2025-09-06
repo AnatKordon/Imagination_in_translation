@@ -215,6 +215,31 @@ def mark_rated():
 def is_rated() -> bool:
     return st.session_state.get(f"rated_{S.session}_{S.attempt}", False)
 
+def commit_attempt_log():
+    # Read the slider’s value from session (see the slider key below)
+    rating_key = f"subjective_{S.session}_{S.attempt}"
+    rating = st.session_state.get(rating_key, None)
+
+    for meta in S.last_gen_meta:
+        p = Path(meta["path"])
+        log_row(
+            uid=S.uid,
+            participant_age=S.participant_age,
+            participant_gender=S.participant_gender,
+            participant_native=S.participant_native,
+            gt=S.gt_path.name,
+            session=S.session,
+            attempt=S.attempt,
+            img_index=meta["img_index"],
+            request_seed=meta["request_seed"] if config.API_CALL == "stability_ai" else "",
+            returned_seed=meta["returned_seed"],
+            prompt=S.prompt,
+            gen=p.name,
+            subjective_score=rating,
+            ts=int(time.time()),
+        )
+    upload_participant_log(S.uid)
+
 # Function that loads a new ground-truth image (or finish the whole thing if none left in the folder) and reset all per-target variables. Then force an immediate rerun.
 def next_gt():
     # Stop after MAX_SESSIONS
@@ -290,7 +315,7 @@ if S.get("transition_loading", False):
     rerun()
 
 st.set_page_config(page_title="Imagination in Translation", layout="wide")
-
+S.setdefault("last_gen_meta", []) # list of dicts with metadata of last generation (one dict per image)
 st.markdown("""
 <style>
 .small-ital-grey { font-size:0.95rem; color:#666; font-style: italic; margin:.25rem 0 .4rem 0; }
@@ -347,7 +372,7 @@ if not S.consent_given:
                 S.consent_given = True
 
                 #(Optional) Log consent
-                log_row(uid=S.uid, event="consent")  # add 'event' to your CSV writer if you like
+                # log_row(uid=S.uid, event="consent")  # add 'event' to your CSV writer if you like
 
                 st.rerun()
     st.stop()
@@ -493,29 +518,35 @@ with left:
                     # uploading to google drive:
                     dest = image_dest_name(S.uid, S.session, S.attempt, i, gen_path.suffix) # including index
                     update_or_insert_file(service, gen_path, S.session_drive_folder_id, dest_name=dest)
-
-                # Log locally (now with index + true/returned seed)
+                S.last_gen_meta = []
+                # log only relevant parts locally (wait for full ogging after similarity ratins)
                 for i, gen_path in enumerate(S.gen_paths, start=1):
                     gen_path = Path(gen_path)
-                    log_row(
-                        uid=S.uid,
-                        participant_age=S.participant_age,
-                        participant_gender=S.participant_gender,
-                        participant_native=S.participant_native,
-                        gt=S.gt_path.name,
-                        session=S.session,
-                        attempt=S.attempt,
-                        img_index=i,  # for multiple image generation
-                        request_seed=S.seed if config.API_CALL == "stability_ai" else "",
-                        returned_seed=str(returned_seeds[i - 1]) if returned_seeds else "",  # because openai doesn't return a seed
-                        prompt=S.prompt,
-                        gen=gen_path.name,
-                        # similarity=score,
-                        subjective_score=S.subjective_score if "subjective_score" in S else None,
-                        ts=int(time.time())
-                    )
+                    S.last_gen_meta.append({
+                        "path": str(gen_path),   # safe to stringify
+                        "img_index": i,
+                        "request_seed": S.seed if config.API_CALL == "stability_ai" else "",
+                        "returned_seed": str(returned_seeds[i - 1]) if returned_seeds else ""
+                        })
+                #     log_row(
+                #         uid=S.uid,
+                #         participant_age=S.participant_age,
+                #         participant_gender=S.participant_gender,
+                #         participant_native=S.participant_native,
+                #         gt=S.gt_path.name,
+                #         session=S.session,
+                #         attempt=S.attempt,
+                #         img_index=i,  # for multiple image generation
+                #         request_seed=S.seed if config.API_CALL == "stability_ai" else "",
+                #         returned_seed=str(returned_seeds[i - 1]) if returned_seeds else "",  # because openai doesn't return a seed
+                #         prompt=S.prompt,
+                #         gen=gen_path.name,
+                #         # similarity=score,
+                #         # subjective_score=S.subjective_score if "subjective_score" in S else None,
+                #         ts=int(time.time())
+                #     )
                 
-                upload_participant_log(S.uid)  # outside the image loop, uploading the participant log
+                # upload_participant_log(S.uid)  # outside the image loop, uploading the participant log
                     
                 S.generated = True
                 S.last_prompt = S.prompt.strip()  # save the last prompt to check if it is the same as the current one
@@ -599,7 +630,8 @@ with right:
     st.markdown(" ")  # spacer
     if S.generated:
         st.caption("_Rate similarity_")
-        S.subjective_score = st.slider(
+        # S.subjective_score = 
+        st.slider(
             "Please, rate the Similarity between the **Generated Image** and **Target Image** (0 = not similar, 100 = very similar)",
             min_value=0,
             max_value=100,
@@ -611,31 +643,35 @@ with right:
         )
     
     # After displaying images / slider...
-    # rated = is_rated()
-
-    # done_disabled = (not S.generated) or (not rated) or (S.attempt < config.REQUIRED_ATTEMPTS)
-    # try_disabled  = (not S.generated) or (not rated) or (S.attempt >= config.MAX_ATTEMPTS)
-
     rated = is_rated()
-    done_disabled = (S.attempt < config.REQUIRED_ATTEMPTS) or not S.generated
-    try_disabled = S.attempt >= config.REQUIRED_ATTEMPTS or not S.subjective_score
+
+    done_disabled = (not S.generated) or (not rated) or (S.attempt < config.REQUIRED_ATTEMPTS)
+    try_disabled  = (not S.generated) or (not rated) or (S.attempt >= config.REQUIRED_ATTEMPTS)
+
+    # done_disabled = (S.attempt < config.REQUIRED_ATTEMPTS) or not S.generated
+    # try_disabled = S.attempt >= config.REQUIRED_ATTEMPTS or not S.subjective_score
     try_col, done_col = st.columns(2)
     # "Try again" button is disabled on 5th attempt
     if try_col.button("Another try", disabled=try_disabled):
-        if not S.generated or not rated:
-            st.warning("Rate similarity of the generated image to the original image first.")
-            st.stop()
+        # if not S.generated or not rated:
+        #     st.warning("Rate similarity of the generated image to the original image first.")
+            # st.stop()
+        commit_attempt_log()  # log the attempt before changing state
         # S.seed = np.random.randint(1, 4000000) - I don't want randomization per attempts
         S.generated = False
         st.session_state.pop(f"rated_{S.session}_{S.attempt}", None)
         S.gen_paths = []
+        S.last_gen_meta = []
         S.attempt += 1
+
         rerun()
     else:
         st.caption("Click **Generate** to view images.")
 
     if done_col.button("DONE : Next image", disabled=done_disabled):
-        if not S.generated or not rated or (S.attempt < config.REQUIRED_ATTEMPTS):
-            st.warning("Rate similarity of the generated image to the original image first.")
-            st.stop()
+        commit_attempt_log()  # <-- log with the slider’s value
+        # if not S.generated or not rated or (S.attempt < config.REQUIRED_ATTEMPTS):
+        #     # st.warning("Rate similarity of the generated image to the original image first.")
+        #     # st.stop()
+        
         next_gt()
