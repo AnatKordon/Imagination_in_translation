@@ -227,9 +227,6 @@ def commit_attempt_log():
         p = Path(meta["path"])
         log_row(
             uid=S.uid,
-            participant_age=S.participant_age,
-            participant_gender=S.participant_gender,
-            participant_native=S.participant_native,
             gt=S.gt_path.name,
             session=S.session,
             attempt=S.attempt,
