@@ -281,6 +281,13 @@ for k, v in {
     st.session_state.setdefault(k, v)
 S = st.session_state
 
+# One-shot transition spinner (if set on form submit)
+if S.get("transition_loading", False):
+    with st.spinner("Loading experiment…"):
+        import time as _t
+        _t.sleep(1.0)
+    S.transition_loading = False
+    rerun()
 
 st.set_page_config(page_title="Imagination in Translation", layout="wide")
 
@@ -339,8 +346,8 @@ if not S.consent_given:
             else:
                 S.consent_given = True
 
-                # (Optional) Log consent
-                # log_row(uid=S.uid, event="consent")  # add 'event' to your CSV writer if you like
+                #(Optional) Log consent
+                log_row(uid=S.uid, event="consent")  # add 'event' to your CSV writer if you like
 
                 st.rerun()
     st.stop()
@@ -358,6 +365,7 @@ if not S.participant_info_submitted:
 
         submit = st.form_submit_button("Submit")
         if submit:
+            S.transition_loading = True  
             S.participant_age = age
             S.participant_gender = gender
             S.participant_native = native
@@ -371,6 +379,7 @@ if not S.participant_info_submitted:
             init_drive_tree_for_participant() 
             # upload the participant info (one-time, overwrite-safe by name)
             upload_participant_info(S.uid, info_path)
+        # <-- add this
             st.rerun()
     st.stop()
 if S.gt_path is None:      
@@ -472,7 +481,10 @@ with left:
                 #  ensure session folder exists BEFORE calling api (in case a callback uploads)
                 update_session_folder() 
                 # API call
-                S.gen_paths, returned_seeds = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image
+                S.is_generating = True
+                with st.spinner("Generating image…"):
+                    S.gen_paths, returned_seeds = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image
+                    S.is_generating = False
                 print(f"Generated image/images saved: {[Path(p).name for p in S.gen_paths]}")
                 
                 # Upload each generated image to Drive (names already include attempt/img index)
