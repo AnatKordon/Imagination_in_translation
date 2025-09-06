@@ -206,6 +206,15 @@ rerun = st.rerun if hasattr(st, "rerun") else st.experimental_rerun
 def fresh_key() -> str:
     return f"prompt_{uuid4().hex}"
 
+#marking that image was rated
+def mark_rated():
+    # Use a per-session/attempt key so it resets automatically each attempt
+    rated_key = f"rated_{S.session}_{S.attempt}"
+    st.session_state[rated_key] = True
+
+def is_rated() -> bool:
+    return st.session_state.get(f"rated_{S.session}_{S.attempt}", False)
+
 # Function that loads a new ground-truth image (or finish the whole thing if none left in the folder) and reset all per-target variables. Then force an immediate rerun.
 def next_gt():
     # Stop after MAX_SESSIONS
@@ -271,6 +280,7 @@ for k, v in {
 }.items():
     st.session_state.setdefault(k, v)
 S = st.session_state
+
 
 st.set_page_config(page_title="Imagination in Translation", layout="wide")
 
@@ -397,8 +407,8 @@ with left:
             placeholder="Type an accurate description of the target image.",
             disabled=text_disabled
         )
-        if text_disabled:
-            st.caption("Please rate similarity of the generated image to the original first.")
+        # if text_disabled:
+        #     st.caption("Please rate similarity of the generated image to the original first.")
             
         #allowing to clicl generation for next command
         submitted = st.form_submit_button("Generate", type="primary")  # <-- always enabled
@@ -575,24 +585,37 @@ with right:
 
 
     st.markdown(" ")  # spacer
-    S.subjective_score = st.slider(
-        "Please, rate the Similarity between the **Generated Image** and **Target Image** (0 = not similar, 100 = very similar)",
-        min_value=0,
-        max_value=100,
-        value=50,  # default position
-        step=1,
-        key=f"subjective_score_{S.session}_{S.attempt}", 
-        disabled=not S.generated,
-    )
+    if S.generated:
+        st.caption("_Rate similarity_")
+        S.subjective_score = st.slider(
+            "Please, rate the Similarity between the **Generated Image** and **Target Image** (0 = not similar, 100 = very similar)",
+            min_value=0,
+            max_value=100,
+            value=50,  # default position
+            step=1,
+            key=f"subjective_score_{S.session}_{S.attempt}", 
+            disabled=not S.generated,
+            on_change=mark_rated
+        )
     
     # After displaying images / slider...
+    # rated = is_rated()
+
+    # done_disabled = (not S.generated) or (not rated) or (S.attempt < config.REQUIRED_ATTEMPTS)
+    # try_disabled  = (not S.generated) or (not rated) or (S.attempt >= config.MAX_ATTEMPTS)
+
+    rated = is_rated()
     done_disabled = (S.attempt < config.REQUIRED_ATTEMPTS) or not S.generated
     try_disabled = S.attempt >= config.REQUIRED_ATTEMPTS or not S.subjective_score
     try_col, done_col = st.columns(2)
     # "Try again" button is disabled on 5th attempt
     if try_col.button("Another try", disabled=try_disabled):
+        if not S.generated or not rated:
+            st.warning("Rate similarity of the generated image to the original image first.")
+            st.stop()
         # S.seed = np.random.randint(1, 4000000) - I don't want randomization per attempts
         S.generated = False
+        st.session_state.pop(f"rated_{S.session}_{S.attempt}", None)
         S.gen_paths = []
         S.attempt += 1
         rerun()
@@ -600,4 +623,7 @@ with right:
         st.caption("Click **Generate** to view images.")
 
     if done_col.button("DONE : Next image", disabled=done_disabled):
+        if not S.generated or not rated or (S.attempt < config.REQUIRED_ATTEMPTS):
+            st.warning("Rate similarity of the generated image to the original image first.")
+            st.stop()
         next_gt()
