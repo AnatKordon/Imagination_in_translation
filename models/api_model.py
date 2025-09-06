@@ -49,7 +49,7 @@ def send_generation_request(
         }
     data = {
         "prompt": (None, params["prompt"]), # 
-        "control_strength": 0.2, # high control means high adherence to structure
+        "control_strength": 0.3, # high control means high adherence to structure
         "aspect_ratio": (None, params["aspect_ratio"]),
         "output_format": (None, params["output_format"]),
         "seed": (None, str(params["seed"]))

@@ -43,6 +43,21 @@ def init_drive_tree_for_participant():
     S.images_root_id = images_root
     # session folder is created per target in update_session_folder()
 
+    # Write created-at timestamp once (UTC)
+    if not getattr(S, "participant_created_at_uploaded", False):
+        ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        meta = config.LOG_DIR / f"{S.uid}_created_at_utc.txt"
+        meta.parent.mkdir(parents=True, exist_ok=True)
+        meta.write_text(ts, encoding="utf-8")
+        update_or_insert_file(
+            service,
+            meta,
+            S.participant_folder_id,
+            dest_name="created_at_utc.txt",
+            mime_type="text/plain",
+        )
+        S.participant_created_at_uploaded = True
+
 def update_session_folder():
     """Ensure session_<nn> folder exists under .../gen_images/ and store id."""
     if "images_root_id" not in S:
@@ -80,8 +95,8 @@ def on_saved(path: Path, idx: int, seed: str):
 
 
 # Image size setup - Fixed bounding boxes (size should change if a single image or 2)
-GT_BOX  = (340, 340)   # target image size
-GEN_BOX = (340, 340)   # each generated image
+GT_BOX  = (300, 300)   # target image size
+GEN_BOX = (300, 300)   # each generated image
 
 def show_img_fixed(path, box, caption=None):
     """Open, bound to box while preserving aspect, and render at a fixed width."""
@@ -194,9 +209,19 @@ def fresh_key() -> str:
 # Function that loads a new ground-truth image (or finish the whole thing if none left in the folder) and reset all per-target variables. Then force an immediate rerun.
 def next_gt():
     # Stop after MAX_SESSIONS
-    if S.session >= config.MAX_SESSIONS:
-        S.finished = True
-        rerun()
+    if S.finished == True:
+        st.success("All sessions complete! Redirecting you to Prolific…")
+        st.markdown(
+            f"""
+            <script>
+                setTimeout(function() {{
+                    window.location.href = "a{config.PROLIFIC_URL}";
+                }}, 1500);
+            </script>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.stop()
 
     remaining = [p for p in config.GT_DIR.glob("*.[pj][pn]g") if p.name not in S.used]
     if not remaining:
@@ -207,13 +232,14 @@ def next_gt():
     S.gt_path = random.choice(remaining)
     S.used.add(S.gt_path.name) # keep same gt
 
+    # New session setup:
     S.session += 1 # increase session counter
     S.seed = seed_from(S.gt_path.name)# instead of random - fixed per gt image: np.random.randint(1, 0, 2**32 - 1) # randomise the seed for the next generation
     S.attempt = 1
     S.generated = False
     S.gen_path = None
     S.gen_paths = [] # clear list on a new target
-    S.last_prompt = ""
+    S.last_prompt = "" # reset for new session - somehow doesn't work 
     # S.last_score = 0.0
 
     # creating a new sussion folder for next session:
@@ -241,11 +267,18 @@ for k, v in {
     # "cosine_distance": 0.0, # cosine distance of last generation
     "text_key": fresh_key(), # widget key for the textbox
     "last_prompt": "", # stores the last image description
+    "subjective_score": None, # stores the last subjective score
 }.items():
     st.session_state.setdefault(k, v)
 S = st.session_state
 
 st.set_page_config(page_title="Imagination in Translation", layout="wide")
+
+st.markdown("""
+<style>
+.small-ital-grey { font-size:0.95rem; color:#666; font-style: italic; margin:.25rem 0 .4rem 0; }
+</style>
+""", unsafe_allow_html=True)
 
 
 # Customising the buttons
@@ -269,8 +302,38 @@ st.markdown("""
     /* Older builds expose a title attr */
     button[title="View fullscreen"] { display: none !important; }
     </style>
-    """, 
-unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+
+# --- Consent gate (shown once) ---
+if "consent_given" not in S:
+    S.consent_given = False
+
+if not S.consent_given:
+    with st.form("consent_form", clear_on_submit=False):
+        st.subheader("Participant Information & Consent")
+        st.markdown("""
+                    In this study you will be asked to describe images in English, in the most accurate way possible. You will 3 attempts, in each you shall attempt to improve your description.
+                    \nOnce you finish and click "generate", an image will appear based on your generation. 
+                    \nYou will have to rate it's similarity to the original image you were shown on a scale of 1 (least similar) to 100 (most similar).
+                    \nAfter you will finish the three attempts, a new image will show up and you will repeat the process.
+                    \nThis study is not supposed to contain any graphic or unpleasent images. If for some reason you wish to stop, you can stop at any time by exisiting the screen.
+                    \nFor any inquiries about the experiment, please contact anat.korol@mail.tau.ac.il
+                    
+                """)
+        agree = st.checkbox("I have read the study information and **I consent** to participate.")
+        submit = st.form_submit_button("I agree and continue")
+
+        if submit:
+            if not agree:
+                S.finished = True
+            else:
+                S.consent_given = True
+
+                # (Optional) Log consent
+                # log_row(uid=S.uid, event="consent")  # add 'event' to your CSV writer if you like
+
+                st.rerun()
+    st.stop()
 
 # Participant info form (shown only once at the start of the session) - makes sure there's a button
 if "participant_info_submitted" not in S:
@@ -304,12 +367,12 @@ if S.gt_path is None:
     next_gt()
 
 # The finish screen (appears when the user presses "exit" button or there are no more ground truth pictures).
-if S.finished:
-    st.markdown(
-        "<h2 style='text-align:center'>The session is finished.<br>Thank you for participating!</h2>",
-        unsafe_allow_html=True,
-    )
-    st.stop()
+# if S.finished:
+    # st.markdown(
+    #     "<h2 style='text-align:center'>The session is finished.<br>Thank you for participating!</h2>",
+    #     unsafe_allow_html=True,
+    # )
+    # st.stop()
 
 # Layout of the textbox and pictures (next to each other)
 left, right = st.columns([1, 3], gap="large")
@@ -326,13 +389,17 @@ with left:
 
     # --- FORM: text + submit button live inside the same form ---
     with st.form("gen_form", clear_on_submit=False):
+        text_disabled = S.generated
         prompt_val = st.text_area(
             "The picture shows...",
-            key="prompt_text",
+            key=S.text_key, # I think this shoulld be S.text_key
             height=140,
             placeholder="Type an accurate description of the target image.",
+            disabled=text_disabled
         )
-
+        if text_disabled:
+            st.caption("Please rate similarity of the generated image to the original first.")
+            
         #allowing to clicl generation for next command
         submitted = st.form_submit_button("Generate", type="primary")  # <-- always enabled
         # st.markdown("#### Target image")
@@ -358,7 +425,7 @@ with left:
 
         c1, c2 = st.columns(2) # add count for characters and attempt number
         c1.caption(f"{len(prompt_used)} characters")
-        c2.caption(f"{S.attempt} / {config.MAX_ATTEMPTS}")
+        c2.caption(f"{S.attempt} / {config.REQUIRED_ATTEMPTS}")
 
         # # forcing to changed prompt if it's the same for a new attempt
         # if same_prompt and not S.generated and S.attempt > 1:
@@ -455,30 +522,28 @@ with left:
                 S.generated = False
                 S.gen_paths = []
 
-        # flags session as finished and rerun
-    if st.button("Exit"):
-        S.finished = True
-        rerun()
+      
+  
 
 # Right column displays the ground truth (target) image and the generated one (next to each other) together with similarity scores, "accept" and "try again" buttons.
 with right:
     gt_display, gen_display = st.columns([1, 1], gap="medium")
     with gt_display:
-        st.markdown("#### Target image")
+        st.markdown('<div class="small-ital-grey">Target image</div>', unsafe_allow_html=True)
         show_img_fixed(S.gt_path, GT_BOX)
     with gen_display:
         if not S.generated:
-            st.markdown("#### Generated image")
-            st.caption("Click **Generate** to view the image.")
+            st.caption("_Generated image_")
+            st.markdown('<div class="small-ital-grey">Click **Generate** to view the image.</div>', unsafe_allow_html=True)
         elif not S.gen_paths:
-            st.markdown("### Generated image")
+            st.markdown('<div class="small-ital-grey">Generated image</div>', unsafe_allow_html=True)
             st.warning("No image was produced. Please try again.")
         else:
             if len(S.gen_paths) == 1:
-                st.markdown("#### Generated image")
+                st.markdown('<div class="small-ital-grey">Generated image</div>', unsafe_allow_html=True)
                 show_img_fixed(S.gen_paths[0], GEN_BOX)
             else:  # 2 images
-                st.markdown("### Generated images")
+                st.markdown("### Generated images", unsafe_allow_html=True)
                 c1, c2 = st.columns(2, gap="large")
                 with c1:
                     show_img_fixed(S.gen_paths[0], GEN_BOX)
@@ -511,23 +576,21 @@ with right:
 
     st.markdown(" ")  # spacer
     S.subjective_score = st.slider(
-        "Subjective Similarity (0 = not similar, 100 = very similar)",
+        "Please, rate the Similarity between the **Generated Image** and **Target Image** (0 = not similar, 100 = very similar)",
         min_value=0,
         max_value=100,
         value=50,  # default position
         step=1,
-        key=f"subjective_score_{S.session}_{S.attempt}",
+        key=f"subjective_score_{S.session}_{S.attempt}", 
+        disabled=not S.generated,
     )
     
     # After displaying images / slider...
     done_disabled = (S.attempt < config.REQUIRED_ATTEMPTS) or not S.generated
-
-    done_col, try_col = st.columns(2)
-    if done_col.button("DONE : Next image", disabled=done_disabled):
-        next_gt()
-
+    try_disabled = S.attempt >= config.REQUIRED_ATTEMPTS or not S.subjective_score
+    try_col, done_col = st.columns(2)
     # "Try again" button is disabled on 5th attempt
-    if try_col.button("Another try", disabled=S.attempt >= config.MAX_ATTEMPTS):
+    if try_col.button("Another try", disabled=try_disabled):
         # S.seed = np.random.randint(1, 4000000) - I don't want randomization per attempts
         S.generated = False
         S.gen_paths = []
@@ -535,3 +598,6 @@ with right:
         rerun()
     else:
         st.caption("Click **Generate** to view images.")
+
+    if done_col.button("DONE : Next image", disabled=done_disabled):
+        next_gt()
