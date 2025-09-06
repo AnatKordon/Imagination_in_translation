@@ -367,8 +367,8 @@ if not S.consent_given:
         
         if submit:
             if not agree:
-                st.warning("You must agree to the consent form to proceed.")
-                S.finished = True
+                st.warning("Please, consent to participate in the study in order to proceed, or exit.")
+
             else:
                 S.consent_given = True
 
