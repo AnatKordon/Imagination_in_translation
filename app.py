@@ -217,9 +217,12 @@ def is_rated() -> bool:
 
 def commit_attempt_log():
     # Read the slider’s value from session (see the slider key below)
-    rating_key = f"subjective_{S.session}_{S.attempt}"
+    rating_key = f"subjective_score_{S.session}_{S.attempt}"
     rating = st.session_state.get(rating_key, None)
 
+    if rating is None:
+        st.warning("No similarity rating found for this attempt. Please move the slider before continuing.")
+        return
     for meta in S.last_gen_meta:
         p = Path(meta["path"])
         log_row(

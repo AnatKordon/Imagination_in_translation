@@ -13,9 +13,8 @@ MAX_LENGTH = 10000  # Maximum length of the prompt text
 N_OUT = 1  # Number of images to generate per prompt (1 or 4)
 MAX_SESSIONS = 10             # total sessions per participant
 REQUIRED_ATTEMPTS = 3         # exactly 3 attempts per session
-PROLIFIC_URL = "https://app.prolific.com/submissions/complete?cc=CTPUE7C0"  # Prolific completion URL
-
-
+# PROLIFIC_URL = "https://app.prolific.com/submissions/complete?cc=CTPUE7C0"  # Prolific completion URL
+                
 
 ## for error handling
 websites = [".com", ".net", ".org", ".edu", ".gov", ".io", ".co", ".uk", ".de", ".fr", ".jp", ".ru","https", "http", "www."]
