@@ -345,6 +345,7 @@ for k, v in {
     "text_key": fresh_key(), # widget key for the textbox
     "last_prompt": "", # stores the last image description
     "subjective_score": None, # stores the last subjective score
+    "is_generating": False # Adds a deafult state - True when waiting for the model to generate
 }.items():
     st.session_state.setdefault(k, v)
 S = st.session_state
@@ -498,38 +499,40 @@ with left:
 
         # ---- validations run on the current text value ----
         # Trim to max length (but show a warning)
-        if len(prompt_val) > config.MAX_LENGTH - 1:
-            st.warning(
-                f"Your description is too long. Only the first {config.MAX_LENGTH} characters will be used."
-            )
-        prompt_used = prompt_val[: config.MAX_LENGTH - 1] # logging the prompt that was used (upto max length)
+        # if len(prompt_val) > config.MAX_LENGTH - 1:
+        #     st.warning(
+        #         f"Your description is too long. Only the first {config.MAX_LENGTH} characters will be used."
+        #     )
+        # prompt_used = prompt_val[: config.MAX_LENGTH - 1] # logging the prompt that was used (upto max length)
 
-        same_prompt = prompt_used.strip() == S.last_prompt.strip()
-        # error handling inside the form:
-        symbols = bool(re.search(r"[^a-zA-Z0-9\s\.\,\!\?\:\;\'\"\-\(\)]", prompt_used))
-        if symbols:
-            st.error("Please use only letters, numbers, spaces, and . , ! ? : ; ' \" - ( ).")
+        # same_prompt = prompt_used.strip() == S.last_prompt.strip()
+        # # error handling inside the form:
+        # symbols = bool(re.search(r"[^a-zA-Z0-9\s\.\,\!\?\:\;\'\"\-\(\)]", prompt_used))
+        # if symbols:
+        #     st.error("Please use only letters, numbers, spaces, and . , ! ? : ; ' \" - ( ).")
 
-        http = any(i in prompt_used for i in config.websites)
-        if http:
-            st.error("Please, do not use links in your description. Only text is allowed.")
+        # http = any(i in prompt_used for i in config.websites)
+        # if http:
+        #     st.error("Please, do not use links in your description. Only text is allowed.")
 
         c1, c2 = st.columns(2) # add count for characters and attempt number
-        c1.caption(f"{len(prompt_used)} characters")
+        c1.caption(f"{len(prompt_val)} characters")
         c2.caption(f"{S.attempt} / {config.REQUIRED_ATTEMPTS}")
 
         # ---- two side-by-side form submit buttons - generate or another try/done ----
         gen_button, next_button = st.columns([1, 1])
         
+        #because it's form, gen is disabled when image is generated (not for wrong text inputs because character counter doesn't update so it locks it in generation
+        gen_disabled = S.generated or S.is_generating
         # disabling generate button if already generated, or empty prompt, or bad chars, or same prompt on later attempts
-        gen_disabled = (
-            S.generated                # already generated; wait for rating + next action
-            or not prompt_used.strip() # empty
-            or symbols                 # bad chars
-            or http                    # links
-            or (S.attempt > 1 and same_prompt)
-            # or (S.attempt > 1 and same_prompt)  # force changed text on later attempts
-        )
+        # gen_disabled = (
+        #     S.generated                # already generated; wait for rating + next action
+        #     or not prompt_used.strip() # empty
+        #     or symbols                 # bad chars
+        #     or http                    # links
+        #     or (S.attempt > 1 and same_prompt)
+        #     # or (S.attempt > 1 and same_prompt)  # force changed text on later attempts
+        # )
         #generate button:
         gen_clicked = gen_button.form_submit_button("Generate", type="primary", disabled=gen_disabled, use_container_width=True)
 
@@ -542,23 +545,7 @@ with left:
         #Anoter try or done button:
         next_clicked = next_button.form_submit_button(next_label, disabled=next_disabled, use_container_width=True)
 
-        # explain why disabled
-        reasons = []
-    if S.generated:
-        reasons.append("an image is already generated (rate it first)")
-    if not prompt_used.strip():
-        reasons.append("description is empty")
-    if symbols:
-        reasons.append("invalid characters in the description")
-    if http:
-        reasons.append("links are not allowed")
-    if (S.attempt > 1 and same_prompt):
-        reasons.append("must change the text on later attempts")
-
-    if gen_disabled and reasons:
-        st.caption("Generate is disabled: " + "; ".join(reasons))
-    # ---------- handle which submit was clicked ----------
-    
+         
     # # --- Handle submit - what happens after participant presses "Generate" ---
     # if submitted:
     #     # gate by validation here
@@ -573,10 +560,30 @@ with left:
     #     else:
             # OK to generate
     if gen_clicked:
+        raw_text = st.session_state.get(S.text_key, "")
+        raw_stripped = raw_text.strip()
+
+        # All validation happens here (now the form has submitted, so values are fresh)
+        if not raw_stripped:
+            st.error("Please enter a description.")
+            st.stop()
+
+        if re.search(r"[^a-zA-Z0-9\s\.\,\!\?\:\;\'\"\-\(\)]", raw_text):
+            st.error("Please use only letters, numbers, spaces, and . , ! ? : ; ' \" - ( ).")
+            st.stop()
+
+        if any(i in raw_text for i in config.websites):
+            st.error("Please, do not use links in your description. Only text is allowed.")
+            st.stop()
+
+        if S.attempt > 1 and raw_stripped == S.last_prompt.strip():
+            st.warning("Please modify your description before generating again.")
+            st.stop()
         if S.attempt > 1 and same_prompt:
             st.warning("Please modify your description before generating again.")
             st.stop()  # do NOT proceed to generation
 
+        prompt_used = raw_text[: config.MAX_LENGTH - 1]
         S.prompt = prompt_used.strip()   # if it was submitted, than prompt is logged
         S.gen_paths = []
         S.generated = False # because it's before generation
@@ -587,9 +594,10 @@ with left:
             S.is_generating = True
             with st.spinner("Generating image might take 10-20 seconds…"):
                 S.gen_paths, returned_seeds, bytes_image = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image ## Note: i only return one image bytes
-                S.is_generating = False
+            S.is_generating = False
             print(f"Generated image/images saved: {[Path(p).name for p in S.gen_paths]}")
             
+
             # Upload each generated image to Drive (names already include attempt/img index)
             for i, gen_path in enumerate(S.gen_paths, start=1):
                 gen_path = Path(gen_path)
@@ -650,6 +658,7 @@ with left:
                 st.error("Invalid API key. Please check readme for more details.")
             else:
                 st.error(f"Unexpected error: {msg}")
+            S.is_generating = False
             S.generated = False
             S.gen_paths = []
 
