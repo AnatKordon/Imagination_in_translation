@@ -585,104 +585,105 @@ with left:
         raw_text = st.session_state.get(S.text_key, "")
         raw_stripped = raw_text.strip()
 
-        # All validation happens here (now the form has submitted, so values are fresh)
+        # --- collect validation errors without st.stop() ---
+        errors = []
         if not raw_stripped:
-            st.error("Please enter a description.")
-            st.stop()
-
+            errors.append("Please enter a description.")
         if re.search(r"[^a-zA-Z0-9\s\.\,\!\?\:\;\'\"\-\(\)]", raw_text):
-            st.error("Please use only letters, numbers, spaces, and . , ! ? : ; ' \" - ( ).")
-            st.stop()
-
+            errors.append("Please use only letters, numbers, spaces, and . , ! ? : ; ' \" - ( ).")
         if any(i in raw_text for i in config.websites):
-            st.error("Please, do not use links in your description. Only text is allowed.")
-            st.stop()
-
+            errors.append("Please, do not use links in your description. Only text is allowed.")
         if S.attempt > 1 and raw_stripped == S.last_prompt.strip():
-            st.warning("Please modify your description before generating again.")
-            st.stop()
-     
-        prompt_used = raw_text[: config.MAX_LENGTH - 1]
-        S.prompt = prompt_used.strip()   # if it was submitted, than prompt is logged
-        S.gen_paths = []
-        S.generated = False # because it's before generation
-        try:
-            #  ensure session folder exists BEFORE calling api (in case a callback uploads)
-            update_session_folder() 
-            # API call
-            S.is_generating = True
-            with st.spinner("Generating the image may take 20-30 seconds…"):
-                S.gen_paths, returned_seeds, images_bytes = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image ## Note: i only return one image bytes
-            S.images_bytes = images_bytes 
-            S.is_generating = False
-            
-            print(f"Generated image/images saved: {[Path(p).name for p in S.gen_paths]}")
-            
+            errors.append("Please modify your description before generating again.")
 
-            # Upload each generated image to Drive (names already include attempt/img index)
-            for i, gen_path in enumerate(S.gen_paths, start=1):
-                gen_path = Path(gen_path)
-                # uploading to google drive:
-                dest = image_dest_name(S.uid, S.session, S.attempt, i, gen_path.suffix) # including index
-                update_or_insert_file(service, gen_path, S.session_drive_folder_id, dest_name=dest)
-            S.last_gen_meta = []
-            # log only relevant parts locally (wait for full ogging after similarity ratins)
-            for i, gen_path in enumerate(S.gen_paths, start=1):
-                gen_path = Path(gen_path)
-                S.last_gen_meta.append({
-                    "path": str(gen_path),   # safe to stringify
-                    "img_index": i,
-                    "request_seed": S.seed if config.API_CALL == "stability_ai" else "",
-                    "returned_seed": str(returned_seeds[i - 1]) if returned_seeds else "",
-                    "image_bytes": images_bytes[i - 1] if images_bytes else None
-                    })
-            #     log_row(
-            #         uid=S.uid,
-            #         participant_age=S.participant_age,
-            #         participant_gender=S.participant_gender,
-            #         participant_native=S.participant_native,
-            #         gt=S.gt_path.name,
-            #         session=S.session,
-            #         attempt=S.attempt,
-            #         img_index=i,  # for multiple image generation
-            #         request_seed=S.seed if config.API_CALL == "stability_ai" else "",
-            #         returned_seed=str(returned_seeds[i - 1]) if returned_seeds else "",  # because openai doesn't return a seed
-            #         prompt=S.prompt,
-            #         gen=gen_path.name,
-            #         # similarity=score,
-            #         # subjective_score=S.subjective_score if "subjective_score" in S else None,
-            #         ts=int(time.time())
-            #     )
-            
-            # upload_participant_log(S.uid)  # outside the image loop, uploading the participant log
-                
-            S.generated = True
-            S.last_prompt = S.prompt.strip()  # save the last prompt to check if it is the same as the current one
-            rerun()
-            # except errors regarding generation!
-        except Exception as e:
-            msg = str(e)
-            print(e)
-            KNOWN_ERRORS = config.KNOWN_ERRORS
-            if KNOWN_ERRORS["required_field"] in msg:
-                st.error("Some required field is missing. Please check the inputs.")
-            elif KNOWN_ERRORS["content_moderation"] in msg:
-                st.error("Your request was flagged for unsafe content. Please rephrase.")
-            elif KNOWN_ERRORS["payload_too_large"] in msg:
-                st.error("Your prompt is too large. Try shortening it.")
-            elif KNOWN_ERRORS["language_not_supported"] in msg:
-                st.error("Only English is supported. Please write in English.")
-            elif KNOWN_ERRORS["rate_limit"] in msg:
-                st.error("Too many requests. Please wait a moment and try again.")
-            elif KNOWN_ERRORS["server_error"] in msg:
-                st.error("Server error. Please try again shortly.")
-            elif KNOWN_ERRORS["Invalid_Api"] in msg:
-                st.error("Invalid API key. Please check readme for more details.")
-            else:
-                st.error(f"Unexpected error: {msg}")
-            S.is_generating = False
-            S.generated = False
+        if errors:
+            for e in errors:
+                st.error(e)            # show messages
+            # IMPORTANT: do not st.stop(), do not generate, simply fall through
+        else:
+
+            # --- proceed to generation ---
+            prompt_used = raw_text[: config.MAX_LENGTH - 1]
+            S.prompt = prompt_used.strip()   # if it was submitted, than prompt is logged
             S.gen_paths = []
+            S.generated = False # because it's before generation
+            try:
+                #  ensure session folder exists BEFORE calling api (in case a callback uploads)
+                update_session_folder() 
+                # API call
+                S.is_generating = True
+                with st.spinner("Generating the image may take 20-30 seconds…"):
+                    S.gen_paths, returned_seeds, images_bytes = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image ## Note: i only return one image bytes
+                S.images_bytes = images_bytes 
+                S.is_generating = False
+                
+                print(f"Generated image/images saved: {[Path(p).name for p in S.gen_paths]}")
+                
+
+                # Upload each generated image to Drive (names already include attempt/img index)
+                for i, gen_path in enumerate(S.gen_paths, start=1):
+                    gen_path = Path(gen_path)
+                    # uploading to google drive:
+                    dest = image_dest_name(S.uid, S.session, S.attempt, i, gen_path.suffix) # including index
+                    update_or_insert_file(service, gen_path, S.session_drive_folder_id, dest_name=dest)
+                S.last_gen_meta = []
+                # log only relevant parts locally (wait for full ogging after similarity ratins)
+                for i, gen_path in enumerate(S.gen_paths, start=1):
+                    gen_path = Path(gen_path)
+                    S.last_gen_meta.append({
+                        "path": str(gen_path),   # safe to stringify
+                        "img_index": i,
+                        "request_seed": S.seed if config.API_CALL == "stability_ai" else "",
+                        "returned_seed": str(returned_seeds[i - 1]) if returned_seeds else "",
+                        "image_bytes": images_bytes[i - 1] if images_bytes else None
+                        })
+                #     log_row(
+                #         uid=S.uid,
+                #         participant_age=S.participant_age,
+                #         participant_gender=S.participant_gender,
+                #         participant_native=S.participant_native,
+                #         gt=S.gt_path.name,
+                #         session=S.session,
+                #         attempt=S.attempt,
+                #         img_index=i,  # for multiple image generation
+                #         request_seed=S.seed if config.API_CALL == "stability_ai" else "",
+                #         returned_seed=str(returned_seeds[i - 1]) if returned_seeds else "",  # because openai doesn't return a seed
+                #         prompt=S.prompt,
+                #         gen=gen_path.name,
+                #         # similarity=score,
+                #         # subjective_score=S.subjective_score if "subjective_score" in S else None,
+                #         ts=int(time.time())
+                #     )
+                
+                # upload_participant_log(S.uid)  # outside the image loop, uploading the participant log
+                    
+                S.generated = True
+                S.last_prompt = S.prompt.strip()  # save the last prompt to check if it is the same as the current one
+                rerun()
+                # except errors regarding generation!
+            except Exception as e:
+                msg = str(e)
+                print(e)
+                KNOWN_ERRORS = config.KNOWN_ERRORS
+                if KNOWN_ERRORS["required_field"] in msg:
+                    st.error("Some required field is missing. Please check the inputs.")
+                elif KNOWN_ERRORS["content_moderation"] in msg:
+                    st.error("Your request was flagged for unsafe content. Please rephrase.")
+                elif KNOWN_ERRORS["payload_too_large"] in msg:
+                    st.error("Your prompt is too large. Try shortening it.")
+                elif KNOWN_ERRORS["language_not_supported"] in msg:
+                    st.error("Only English is supported. Please write in English.")
+                elif KNOWN_ERRORS["rate_limit"] in msg:
+                    st.error("Too many requests. Please wait a moment and try again.")
+                elif KNOWN_ERRORS["server_error"] in msg:
+                    st.error("Server error. Please try again shortly.")
+                elif KNOWN_ERRORS["Invalid_Api"] in msg:
+                    st.error("Invalid API key. Please check readme for more details.")
+                else:
+                    st.error(f"Unexpected error: {msg}")
+                S.is_generating = False
+                S.generated = False
+                S.gen_paths = []
 
     elif next_clicked:
         # log with rating then either another attempt or next GT
