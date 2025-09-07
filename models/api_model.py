@@ -71,7 +71,7 @@ def send_generation_request(
         raise Exception(f"HTTP {response.status_code}: {response.text}")
     
     # ------- Handle API response and content filtering -------
-    bytes_image = response.content #bytes of the image
+    image_bytes = response.content #bytes of the image
     returned_seed = response.headers.get("seed")
     finish_reason = response.headers.get("finish-reason")
 
@@ -92,8 +92,8 @@ def send_generation_request(
     filename = "_".join(parts) + ".png"
     image_path = GEN_DIR / filename
 
-    with open(bytes_image, "wb") as f:
-        f.write(output_image)
+    with open(image_path, "wb") as f:
+        f.write(image_bytes)
 
     if on_image_saved is not None:
         try:
@@ -101,5 +101,5 @@ def send_generation_request(
         except Exception as cb_err:
             print(f"⚠️ on_image_saved failed: {cb_err}")
 
-    return image_path, returned_seed, bytes_image
+    return image_path, returned_seed, image_bytes
 

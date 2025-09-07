@@ -95,6 +95,14 @@ def on_saved(path: Path, idx: int, seed: str):
     dest = image_dest_name(S.uid, S.session, S.attempt, idx=idx, suffix=path.suffix)  # set idx appropriately
     update_or_insert_file(service, path, S.session_drive_folder_id, dest_name=dest)
 
+# Load all gt image in images in base 64 (maybe should be handled before loading)
+def preload_gt_image(gt_path, box):
+    """Pre-convert GT image to base64 for faster display"""
+    img = ImageOps.contain(Image.open(gt_path), box)
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    return base64.b64encode(buffered.getvalue()).decode()
+
 
 # Image size setup - Fixed bounding boxes (size should change if a single image or 2)
 GT_BOX  = (300, 300)   # target image size
@@ -104,37 +112,49 @@ GEN_BOX = (300, 300)   # each generated image
 #     """Open, bound to box while preserving aspect, and render at a fixed width."""
 #     img = ImageOps.contain(Image.open(path), box)
 #     st.image(img, width=box[0], clamp=True, caption=caption)
-
-def show_img_fixed(path, box, caption=None):
-    """Open, bound to box while preserving aspect, and render as HTML (no fullscreen)."""
-    img = ImageOps.contain(Image.open(path), box)
-    
-    # Convert PIL image to base64
-    buffered = BytesIO()
-    img.save(buffered, format="PNG")
-    img_base64 = base64.b64encode(buffered.getvalue()).decode()
-    
-    html = f"""
-    <div style="text-align: center;">
-        <img src="data:image/png;base64,{img_base64}" 
-             style="width: {box[0]}px; height: auto; max-width: 100%;">
-    </div>
+def show_img_fixed(image_source, box, caption=None):
     """
-    if caption:
-        html += f'<p style="text-align: center; font-size: 14px; color: gray;">{caption}</p>'
-    
-    st.markdown(html, unsafe_allow_html=True)
+    Display image from either file path, bytes, or PIL Image object.
+    """
+    try:
+        # Handle different input types
+        if isinstance(image_source, (str, Path)):
+            if not image_source or not os.path.exists(image_source):
+                st.error("Image file not found")
+                return
+            img = Image.open(image_source)
+        elif isinstance(image_source, bytes):
+            img = Image.open(BytesIO(image_source))
+        elif isinstance(image_source, Image.Image):
+            img = image_source
+        else:
+            st.error("Invalid image source")
+            return
+        
+        # Resize to fit box
+        img = ImageOps.contain(img, box)
+        
+        # Convert to base64
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        img_base64 = base64.b64encode(buffered.getvalue()).decode()
+        
+        html = f"""
+        <div style="text-align: center;">
+            <img src="data:image/png;base64,{img_base64}" 
+                 style="width: {box[0]}px; height: auto; max-width: 100%;">
+        </div>
+        """
+        if caption:
+            html += f'<p style="text-align: center; font-size: 14px; color: gray;">{caption}</p>'
+        
+        st.markdown(html, unsafe_allow_html=True)
+        
+    except Exception as e:
+        st.error(f"Error displaying image: {e}")
 
-def show_img_from_bytes(img_bytes, box, caption=None):
-    """Display image from bytes without file I/O (faster for generated images)."""
-    img = Image.open(BytesIO(img_bytes))
-    img = ImageOps.contain(img, box)
-    
-    # Convert PIL image to base64
-    buffered = BytesIO()
-    img.save(buffered, format="PNG")
-    img_base64 = base64.b64encode(buffered.getvalue()).decode()
-    
+def show_img_base64(img_base64, box, caption=None):
+    """Display pre-converted base64 image (fastest)"""
     html = f"""
     <div style="text-align: center;">
         <img src="data:image/png;base64,{img_base64}" 
@@ -165,12 +185,13 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
     # initialize collecting paths
     local_paths = []
     returned_seeds = []
+    images_bytes = []
     N_OUT = config.N_OUT  # wither single or multiple images generation
 
     if config.API_CALL == "stability_ai":
         for i in range(N_OUT):  # generate 4 images
             params["seed"] = seed  # keep seed same, not changing it
-            local_path, returned_seed, bytes_image = api_model.send_generation_request(
+            local_path, returned_seed, image_bytes = api_model.send_generation_request(
                 host="https://api.stability.ai/v2beta/stable-image/control/structure", # chagne from sd3 to structure
                 params=params,
                 iteration=attempt,
@@ -186,6 +207,7 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
                 print(f"❌ Error resizing image {local_path}: {e}")
             local_paths.append(local_path)
             returned_seeds.append(returned_seed)
+            images_bytes.append(image_bytes)
 
     elif config.API_CALL == "open_ai":  # it inherently generates 4 images
         #currently unavailable - i commented out the import and the installation in requirements.txt
@@ -205,7 +227,7 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
     else:
         st.error(f"❌ Unknown API_CALL value: {config.API_CALL}, please contact experiment owner")
     
-    return local_paths, returned_seeds, bytes_image
+    return local_paths, returned_seeds, images_bytes
 
 def log_row(**kw):
     f = config.LOG_DIR / f"{kw['uid']}.csv"
@@ -435,7 +457,7 @@ if not S.participant_info_submitted:
         gender = st.selectbox("Gender", ["Prefer not to say", "Male", "Female", "Other"])
         native = st.radio("Are you a native English speaker?", ["No", "Yes"])
         submit = st.form_submit_button("Submit")
-        st.markdown("###### _Loading the experiment may take 20-40 seconds, please be patient..._")
+        st.markdown("##### _Note: Loading the experiment may take 10-20 seconds, please be patient..._")
 
         if submit:
             # S.transition_loading = True  
@@ -579,10 +601,7 @@ with left:
         if S.attempt > 1 and raw_stripped == S.last_prompt.strip():
             st.warning("Please modify your description before generating again.")
             st.stop()
-        if S.attempt > 1 and same_prompt:
-            st.warning("Please modify your description before generating again.")
-            st.stop()  # do NOT proceed to generation
-
+     
         prompt_used = raw_text[: config.MAX_LENGTH - 1]
         S.prompt = prompt_used.strip()   # if it was submitted, than prompt is logged
         S.gen_paths = []
@@ -592,9 +611,11 @@ with left:
             update_session_folder() 
             # API call
             S.is_generating = True
-            with st.spinner("Generating image might take 10-20 seconds…"):
-                S.gen_paths, returned_seeds, bytes_image = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image ## Note: i only return one image bytes
+            with st.spinner("Generating the image may take 20-30 seconds…"):
+                S.gen_paths, returned_seeds, images_bytes = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image ## Note: i only return one image bytes
+            S.images_bytes = images_bytes 
             S.is_generating = False
+            
             print(f"Generated image/images saved: {[Path(p).name for p in S.gen_paths]}")
             
 
@@ -612,7 +633,8 @@ with left:
                     "path": str(gen_path),   # safe to stringify
                     "img_index": i,
                     "request_seed": S.seed if config.API_CALL == "stability_ai" else "",
-                    "returned_seed": str(returned_seeds[i - 1]) if returned_seeds else ""
+                    "returned_seed": str(returned_seeds[i - 1]) if returned_seeds else "",
+                    "image_bytes": images_bytes[i - 1] if images_bytes else None
                     })
             #     log_row(
             #         uid=S.uid,
@@ -723,7 +745,7 @@ with right:
     gt_display, gen_display = st.columns([1, 1], gap="medium")
     with gt_display:
         st.markdown('<div class="small-ital-grey">Target image</div>', unsafe_allow_html=True)
-        show_img_fixed(S.gt_path, GT_BOX) # presenting as html to avoid fullscreen
+        show_img_fixed(S.gt_path, GT_BOX)  # presenting as html to avoid fullscreen
     with gen_display:
         if not S.generated:
             st.caption("_Generated image_")
@@ -734,14 +756,14 @@ with right:
         else:
             if len(S.gen_paths) == 1:
                 st.markdown('<div class="small-ital-grey">Generated image</div>', unsafe_allow_html=True)
-                show_img_from_bytes(bytes_image, GEN_BOX)
+                show_img_fixed(S.images_bytes[0], GEN_BOX)
             else:  # 2 images
                 st.markdown("### Generated images", unsafe_allow_html=True)
                 c1, c2 = st.columns(2, gap="large")
                 with c1:
-                    show_img_fixed(S.gen_paths[0], GEN_BOX)
+                    show_img_fixed(S.images_bytes[0], GEN_BOX)
                 with c2:
-                    show_img_fixed(S.gen_paths[1], GEN_BOX)
+                    show_img_fixed(S.images_bytes[1], GEN_BOX)
 
 
     # st.markdown("###### Target image:")
