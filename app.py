@@ -17,6 +17,8 @@ import re
 import streamlit as st # Streamlit UI framework
 from PIL import Image, ImageOps # Pillow library to manipulate images
 import hashlib
+import base64
+from io import BytesIO
 from datetime import datetime, timezone
 
 from dotenv import load_dotenv
@@ -98,10 +100,51 @@ def on_saved(path: Path, idx: int, seed: str):
 GT_BOX  = (300, 300)   # target image size
 GEN_BOX = (300, 300)   # each generated image
 
+# def show_img_fixed(path, box, caption=None):
+#     """Open, bound to box while preserving aspect, and render at a fixed width."""
+#     img = ImageOps.contain(Image.open(path), box)
+#     st.image(img, width=box[0], clamp=True, caption=caption)
+
 def show_img_fixed(path, box, caption=None):
-    """Open, bound to box while preserving aspect, and render at a fixed width."""
+    """Open, bound to box while preserving aspect, and render as HTML (no fullscreen)."""
     img = ImageOps.contain(Image.open(path), box)
-    st.image(img, width=box[0], clamp=True, caption=caption)
+    
+    # Convert PIL image to base64
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    img_base64 = base64.b64encode(buffered.getvalue()).decode()
+    
+    html = f"""
+    <div style="text-align: center;">
+        <img src="data:image/png;base64,{img_base64}" 
+             style="width: {box[0]}px; height: auto; max-width: 100%;">
+    </div>
+    """
+    if caption:
+        html += f'<p style="text-align: center; font-size: 14px; color: gray;">{caption}</p>'
+    
+    st.markdown(html, unsafe_allow_html=True)
+
+def show_img_from_bytes(img_bytes, box, caption=None):
+    """Display image from bytes without file I/O (faster for generated images)."""
+    img = Image.open(BytesIO(img_bytes))
+    img = ImageOps.contain(img, box)
+    
+    # Convert PIL image to base64
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    img_base64 = base64.b64encode(buffered.getvalue()).decode()
+    
+    html = f"""
+    <div style="text-align: center;">
+        <img src="data:image/png;base64,{img_base64}" 
+             style="width: {box[0]}px; height: auto; max-width: 100%;">
+    </div>
+    """
+    if caption:
+        html += f'<p style="text-align: center; font-size: 14px; color: gray;">{caption}</p>'
+    
+    st.markdown(html, unsafe_allow_html=True)
 
 #  handling resizing as a function
 def resize_inplace(p: Path, size=(512, 512)) -> None:
@@ -127,7 +170,7 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
     if config.API_CALL == "stability_ai":
         for i in range(N_OUT):  # generate 4 images
             params["seed"] = seed  # keep seed same, not changing it
-            local_path, returned_seed = api_model.send_generation_request(
+            local_path, returned_seed, bytes_image = api_model.send_generation_request(
                 host="https://api.stability.ai/v2beta/stable-image/control/structure", # chagne from sd3 to structure
                 params=params,
                 iteration=attempt,
@@ -162,7 +205,7 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
     else:
         st.error(f"❌ Unknown API_CALL value: {config.API_CALL}, please contact experiment owner")
     
-    return local_paths, returned_seeds
+    return local_paths, returned_seeds, bytes_image
 
 def log_row(**kw):
     f = config.LOG_DIR / f"{kw['uid']}.csv"
@@ -244,12 +287,12 @@ def commit_attempt_log():
 def next_gt():
     # Stop after MAX_SESSIONS
     if S.finished == True:
-        st.success("All sessions complete! Redirecting you to Prolific…")
+        st.success("All trials complete! Redirecting you to Prolific…")
         st.markdown(
             f"""
             <script>
                 setTimeout(function() {{
-                    window.location.href = "a{config.PROLIFIC_URL}";
+                    window.location.href = "{config.PROLIFIC_URL}";
                 }}, 1500);
             </script>
             """,
@@ -310,7 +353,7 @@ S = st.session_state
 if S.get("transition_loading", False):
     with st.spinner("Loading experiment…"):
         import time as _t
-        _t.sleep(1.0)
+        _t.sleep(3.0)
     S.transition_loading = False
     rerun()
 
@@ -354,10 +397,12 @@ if not S.consent_given:
     with st.form("consent_form", clear_on_submit=False):
         st.subheader("Participant Information & Consent")
         st.markdown("""
-                    In this study you will be asked to describe images in English, in the most accurate way possible. You will 3 attempts, in each you shall attempt to improve your description.
+                    In this study you will be asked to describe images verbally in English, in the most accurate way possible. 
+                    \nYou will get 3 attempts per image, in each you may change your previous description or add to it (you can't use an identical description).
                     \nOnce you finish and click "generate", an image will appear based on your generation. 
                     \nYou will have to rate it's similarity to the original image you were shown on a scale of 1 (least similar) to 100 (most similar).
                     \nAfter you will finish the three attempts, a new image will show up and you will repeat the process.
+                    \n **Duration**: The experiment should take about 30 minutes to complete.
                     \nThis study is not supposed to contain any graphic or unpleasent images. If for some reason you wish to stop, you can stop at any time by exisiting the screen.
                     \nFor any inquiries about the experiment, please contact anat.korol@mail.tau.ac.il
                     
@@ -385,13 +430,14 @@ if "participant_info_submitted" not in S:
 if not S.participant_info_submitted:
     with st.form("participant_info_form"):
         st.header("Participant Information")
-        age = st.number_input("Age", min_value=10, max_value=100, step=1)
+        age = st.number_input("Age", min_value=18, max_value=100, step=1)
         gender = st.selectbox("Gender", ["Prefer not to say", "Male", "Female", "Other"])
-        native = st.radio("Are you a native English speaker?", ["Yes", "No"])
-
+        native = st.radio("Are you a native English speaker?", ["No", "Yes"])
         submit = st.form_submit_button("Submit")
+        st.markdown("###### _Loading the experiment may take 20-40 seconds, please be patient..._")
+
         if submit:
-            S.transition_loading = True  
+            # S.transition_loading = True  
             S.participant_age = age
             S.participant_gender = gender
             S.participant_native = native
@@ -420,7 +466,7 @@ if S.gt_path is None:
     # st.stop()
 
 # Layout of the textbox and pictures (next to each other)
-left, right = st.columns([1, 3], gap="large")
+left, right = st.columns([1, 2], gap="large")
 
 # st.markdown(
 #     "**Please, describe the picture as precisely as possible in English only. You have 4 attempts to improve your description. \n'Press ctrl + enter buttons after you are done typing to apply the text. Note that you cannot use the same description twice.**"
@@ -429,7 +475,7 @@ left, right = st.columns([1, 3], gap="large")
 with left:
     st.markdown(
         "**Please, describe the picture as precisely as possible in English only. "
-        "You have 4 attempts to improve your description for every image.**"
+        "You have 3 attempts to describe every image, feel free to edit/change your description as you like.**"
     )
 
     # --- FORM: text + submit button live inside the same form ---
@@ -446,7 +492,7 @@ with left:
         #     st.caption("Please rate similarity of the generated image to the original first.")
             
         #allowing to clicl generation for next command
-        submitted = st.form_submit_button("Generate", type="primary")  # <-- always enabled
+        # submitted = st.form_submit_button("Generate", type="primary")  # <-- always enabled
         # st.markdown("#### Target image")
         # show_img_fixed(S.gt_path, GT_BOX)
 
@@ -460,9 +506,9 @@ with left:
 
         same_prompt = prompt_used.strip() == S.last_prompt.strip()
         # error handling inside the form:
-        symbols = bool(re.search(r"[^a-zA-Z0-9\s.,!?'\"\()-]", prompt_used)) 
+        symbols = bool(re.search(r"[^a-zA-Z0-9\s\.\,\!\?\:\;\'\"\-\(\)]", prompt_used))
         if symbols:
-            st.error("Please use only letters, numbers, spaces and punctuation (.,!?').")
+            st.error("Please use only letters, numbers, spaces, and . , ! ? : ; ' \" - ( ).")
 
         http = any(i in prompt_used for i in config.websites)
         if http:
@@ -472,119 +518,203 @@ with left:
         c1.caption(f"{len(prompt_used)} characters")
         c2.caption(f"{S.attempt} / {config.REQUIRED_ATTEMPTS}")
 
-        # # forcing to changed prompt if it's the same for a new attempt
-        # if same_prompt and not S.generated and S.attempt > 1:
-        #     st.info("Please modify your description before generating again.")
+        # ---- two side-by-side form submit buttons - generate or another try/done ----
+        gen_button, next_button = st.columns([1, 1])
+        
+        # disabling generate button if already generated, or empty prompt, or bad chars, or same prompt on later attempts
+        gen_disabled = (
+            S.generated                # already generated; wait for rating + next action
+            or not prompt_used.strip() # empty
+            or symbols                 # bad chars
+            or http                    # links
+            or (S.attempt > 1 and same_prompt)
+            # or (S.attempt > 1 and same_prompt)  # force changed text on later attempts
+        )
+        #generate button:
+        gen_clicked = gen_button.form_submit_button("Generate", type="primary", disabled=gen_disabled, use_container_width=True)
 
-        # This isn't relevant with forms
-        # # not allowing generation if:
-        # gen_disabled = (
-        #     S.generated
-        #     or not prompt_used.strip()
-        #     or S.attempt > config.MAX_ATTEMPTS
-        #     or symbols
-        #     or http
-        #     or (same_prompt and S.attempt > 1)
-        # )
+        # label toggles when last attempt reached
+        is_final   = (S.attempt >= config.REQUIRED_ATTEMPTS)
+        next_label = "Done: Next image" if is_final else "Another try"
 
-    # --- Handle submit - what happens after participant presses "Generate" ---
-    if submitted:
-        # gate by validation here
-        if not prompt_used.strip():
-            st.error("Please enter a description.")
-        elif symbols:
-            st.error("Fix invalid characters before generating.")
-        elif http:
-            st.error("Remove links before generating.")
-        elif S.attempt > 1 and prompt_used.strip() == S.last_prompt.strip():
-            st.warning("Please modify your description.")
-        else:
+        rated = is_rated()  # my helper
+        next_disabled = (not S.generated) or (not rated)
+        #Anoter try or done button:
+        next_clicked = next_button.form_submit_button(next_label, disabled=next_disabled, use_container_width=True)
+
+        # explain why disabled
+        reasons = []
+    if S.generated:
+        reasons.append("an image is already generated (rate it first)")
+    if not prompt_used.strip():
+        reasons.append("description is empty")
+    if symbols:
+        reasons.append("invalid characters in the description")
+    if http:
+        reasons.append("links are not allowed")
+    if (S.attempt > 1 and same_prompt):
+        reasons.append("must change the text on later attempts")
+
+    if gen_disabled and reasons:
+        st.caption("Generate is disabled: " + "; ".join(reasons))
+    # ---------- handle which submit was clicked ----------
+    
+    # # --- Handle submit - what happens after participant presses "Generate" ---
+    # if submitted:
+    #     # gate by validation here
+    #     if not prompt_used.strip():
+    #         st.error("Please enter a description.")
+    #     elif symbols:
+    #         st.error("Fix invalid characters before generating.")
+    #     elif http:
+    #         st.error("Remove links before generating.")
+    #     elif S.attempt > 1 and prompt_used.strip() == S.last_prompt.strip():
+    #         st.warning("Please modify your description.")
+    #     else:
             # OK to generate
-            S.prompt = prompt_used.strip()   # if it was submitted, than prompt is logged
-            S.gen_paths = []
-            S.generated = False # because it's before generation
-            try:
-                #  ensure session folder exists BEFORE calling api (in case a callback uploads)
-                update_session_folder() 
-                # API call
-                S.is_generating = True
-                with st.spinner("Generating image…"):
-                    S.gen_paths, returned_seeds = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image
-                    S.is_generating = False
-                print(f"Generated image/images saved: {[Path(p).name for p in S.gen_paths]}")
-                
-                # Upload each generated image to Drive (names already include attempt/img index)
-                for i, gen_path in enumerate(S.gen_paths, start=1):
-                    gen_path = Path(gen_path)
-                    # uploading to google drive:
-                    dest = image_dest_name(S.uid, S.session, S.attempt, i, gen_path.suffix) # including index
-                    update_or_insert_file(service, gen_path, S.session_drive_folder_id, dest_name=dest)
-                S.last_gen_meta = []
-                # log only relevant parts locally (wait for full ogging after similarity ratins)
-                for i, gen_path in enumerate(S.gen_paths, start=1):
-                    gen_path = Path(gen_path)
-                    S.last_gen_meta.append({
-                        "path": str(gen_path),   # safe to stringify
-                        "img_index": i,
-                        "request_seed": S.seed if config.API_CALL == "stability_ai" else "",
-                        "returned_seed": str(returned_seeds[i - 1]) if returned_seeds else ""
-                        })
-                #     log_row(
-                #         uid=S.uid,
-                #         participant_age=S.participant_age,
-                #         participant_gender=S.participant_gender,
-                #         participant_native=S.participant_native,
-                #         gt=S.gt_path.name,
-                #         session=S.session,
-                #         attempt=S.attempt,
-                #         img_index=i,  # for multiple image generation
-                #         request_seed=S.seed if config.API_CALL == "stability_ai" else "",
-                #         returned_seed=str(returned_seeds[i - 1]) if returned_seeds else "",  # because openai doesn't return a seed
-                #         prompt=S.prompt,
-                #         gen=gen_path.name,
-                #         # similarity=score,
-                #         # subjective_score=S.subjective_score if "subjective_score" in S else None,
-                #         ts=int(time.time())
-                #     )
-                
-                # upload_participant_log(S.uid)  # outside the image loop, uploading the participant log
-                    
-                S.generated = True
-                S.last_prompt = S.prompt.strip()  # save the last prompt to check if it is the same as the current one
-                rerun()
-                # except errors regarding generation!
-            except Exception as e:
-                msg = str(e)
-                print(e)
-                KNOWN_ERRORS = config.KNOWN_ERRORS
-                if KNOWN_ERRORS["required_field"] in msg:
-                    st.error("Some required field is missing. Please check the inputs.")
-                elif KNOWN_ERRORS["content_moderation"] in msg:
-                    st.error("Your request was flagged for unsafe content. Please rephrase.")
-                elif KNOWN_ERRORS["payload_too_large"] in msg:
-                    st.error("Your prompt is too large. Try shortening it.")
-                elif KNOWN_ERRORS["language_not_supported"] in msg:
-                    st.error("Only English is supported. Please write in English.")
-                elif KNOWN_ERRORS["rate_limit"] in msg:
-                    st.error("Too many requests. Please wait a moment and try again.")
-                elif KNOWN_ERRORS["server_error"] in msg:
-                    st.error("Server error. Please try again shortly.")
-                elif KNOWN_ERRORS["Invalid_Api"] in msg:
-                    st.error("Invalid API key. Please check readme for more details.")
-                else:
-                    st.error(f"Unexpected error: {msg}")
-                S.generated = False
-                S.gen_paths = []
+    if gen_clicked:
+        if S.attempt > 1 and same_prompt:
+            st.warning("Please modify your description before generating again.")
+            st.stop()  # do NOT proceed to generation
 
-      
-  
+        S.prompt = prompt_used.strip()   # if it was submitted, than prompt is logged
+        S.gen_paths = []
+        S.generated = False # because it's before generation
+        try:
+            #  ensure session folder exists BEFORE calling api (in case a callback uploads)
+            update_session_folder() 
+            # API call
+            S.is_generating = True
+            with st.spinner("Generating image might take 10-20 seconds…"):
+                S.gen_paths, returned_seeds, bytes_image = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image ## Note: i only return one image bytes
+                S.is_generating = False
+            print(f"Generated image/images saved: {[Path(p).name for p in S.gen_paths]}")
+            
+            # Upload each generated image to Drive (names already include attempt/img index)
+            for i, gen_path in enumerate(S.gen_paths, start=1):
+                gen_path = Path(gen_path)
+                # uploading to google drive:
+                dest = image_dest_name(S.uid, S.session, S.attempt, i, gen_path.suffix) # including index
+                update_or_insert_file(service, gen_path, S.session_drive_folder_id, dest_name=dest)
+            S.last_gen_meta = []
+            # log only relevant parts locally (wait for full ogging after similarity ratins)
+            for i, gen_path in enumerate(S.gen_paths, start=1):
+                gen_path = Path(gen_path)
+                S.last_gen_meta.append({
+                    "path": str(gen_path),   # safe to stringify
+                    "img_index": i,
+                    "request_seed": S.seed if config.API_CALL == "stability_ai" else "",
+                    "returned_seed": str(returned_seeds[i - 1]) if returned_seeds else ""
+                    })
+            #     log_row(
+            #         uid=S.uid,
+            #         participant_age=S.participant_age,
+            #         participant_gender=S.participant_gender,
+            #         participant_native=S.participant_native,
+            #         gt=S.gt_path.name,
+            #         session=S.session,
+            #         attempt=S.attempt,
+            #         img_index=i,  # for multiple image generation
+            #         request_seed=S.seed if config.API_CALL == "stability_ai" else "",
+            #         returned_seed=str(returned_seeds[i - 1]) if returned_seeds else "",  # because openai doesn't return a seed
+            #         prompt=S.prompt,
+            #         gen=gen_path.name,
+            #         # similarity=score,
+            #         # subjective_score=S.subjective_score if "subjective_score" in S else None,
+            #         ts=int(time.time())
+            #     )
+            
+            # upload_participant_log(S.uid)  # outside the image loop, uploading the participant log
+                
+            S.generated = True
+            S.last_prompt = S.prompt.strip()  # save the last prompt to check if it is the same as the current one
+            rerun()
+            # except errors regarding generation!
+        except Exception as e:
+            msg = str(e)
+            print(e)
+            KNOWN_ERRORS = config.KNOWN_ERRORS
+            if KNOWN_ERRORS["required_field"] in msg:
+                st.error("Some required field is missing. Please check the inputs.")
+            elif KNOWN_ERRORS["content_moderation"] in msg:
+                st.error("Your request was flagged for unsafe content. Please rephrase.")
+            elif KNOWN_ERRORS["payload_too_large"] in msg:
+                st.error("Your prompt is too large. Try shortening it.")
+            elif KNOWN_ERRORS["language_not_supported"] in msg:
+                st.error("Only English is supported. Please write in English.")
+            elif KNOWN_ERRORS["rate_limit"] in msg:
+                st.error("Too many requests. Please wait a moment and try again.")
+            elif KNOWN_ERRORS["server_error"] in msg:
+                st.error("Server error. Please try again shortly.")
+            elif KNOWN_ERRORS["Invalid_Api"] in msg:
+                st.error("Invalid API key. Please check readme for more details.")
+            else:
+                st.error(f"Unexpected error: {msg}")
+            S.generated = False
+            S.gen_paths = []
+
+    elif next_clicked:
+        # log with rating then either another attempt or next GT
+        commit_attempt_log()  # uses the slider key; we fixed that earlier
+        if is_final:
+            next_gt()
+            S.text_key = fresh_key()
+            # S.last_prompt = ""     # allow changed-text validation to work correctly
+        else:
+            # prepare next attempt and clear per-attempt artifacts
+            old_attempt = S.attempt
+            S.attempt += 1
+            S.generated = False
+            S.gen_paths = []
+            S.last_gen_meta = []
+            # clear rating state for the old attempt
+            st.session_state.pop(f"subjective_score_{S.session}_{old_attempt}", None)
+            st.session_state.pop(f"rated_{S.session}_{old_attempt}", None)
+            # blank the textbox by rotating the key
+            # S.text_key = fresh_key()
+            # S.last_prompt = ""     # allow changed-text validation to work correctly
+            rerun()
+
+#make stramlit not show the fullscreen option button!
+#make streamlit not show the fullscreen option button!
+st.markdown("""
+<style>
+/* Hide fullscreen button - multiple selectors for different Streamlit versions */
+[data-testid="StyledFullScreenButton"] {
+    display: none !important;
+}
+[data-testid="baseButton-header"] {
+    display: none !important;
+}
+[data-testid="fullScreenButton"] {
+    display: none !important;
+}
+button[title="View fullscreen"] {
+    display: none !important;
+}
+.element-container button[kind="secondary"] {
+    display: none !important;
+}
+/* Hide any button in the image container that has fullscreen-like properties */
+.stImage button {
+    display: none !important;
+}
+[data-testid="stImage"] button {
+    display: none !important;
+}
+/* Additional fallback */
+div[data-testid="stImage"] > button {
+    display: none !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # Right column displays the ground truth (target) image and the generated one (next to each other) together with similarity scores, "accept" and "try again" buttons.
 with right:
     gt_display, gen_display = st.columns([1, 1], gap="medium")
     with gt_display:
         st.markdown('<div class="small-ital-grey">Target image</div>', unsafe_allow_html=True)
-        show_img_fixed(S.gt_path, GT_BOX)
+        show_img_fixed(S.gt_path, GT_BOX) # presenting as html to avoid fullscreen
     with gen_display:
         if not S.generated:
             st.caption("_Generated image_")
@@ -595,7 +725,7 @@ with right:
         else:
             if len(S.gen_paths) == 1:
                 st.markdown('<div class="small-ital-grey">Generated image</div>', unsafe_allow_html=True)
-                show_img_fixed(S.gen_paths[0], GEN_BOX)
+                show_img_from_bytes(bytes_image, GEN_BOX)
             else:  # 2 images
                 st.markdown("### Generated images", unsafe_allow_html=True)
                 c1, c2 = st.columns(2, gap="large")
@@ -644,35 +774,35 @@ with right:
         )
     
     # After displaying images / slider...
-    rated = is_rated()
+    # rated = is_rated()
 
-    done_disabled = (not S.generated) or (not rated) or (S.attempt < config.REQUIRED_ATTEMPTS)
-    try_disabled  = (not S.generated) or (not rated) or (S.attempt >= config.REQUIRED_ATTEMPTS)
+    # done_disabled = (not S.generated) or (not rated) or (S.attempt < config.REQUIRED_ATTEMPTS)
+    # try_disabled  = (not S.generated) or (not rated) or (S.attempt >= config.REQUIRED_ATTEMPTS)
 
-    # done_disabled = (S.attempt < config.REQUIRED_ATTEMPTS) or not S.generated
-    # try_disabled = S.attempt >= config.REQUIRED_ATTEMPTS or not S.subjective_score
-    try_col, done_col = st.columns(2)
-    # "Try again" button is disabled on 5th attempt
-    if try_col.button("Another try", disabled=try_disabled):
-        # if not S.generated or not rated:
-        #     st.warning("Rate similarity of the generated image to the original image first.")
-            # st.stop()
-        commit_attempt_log()  # log the attempt before changing state
-        # S.seed = np.random.randint(1, 4000000) - I don't want randomization per attempts
-        S.generated = False
-        st.session_state.pop(f"rated_{S.session}_{S.attempt}", None)
-        S.gen_paths = []
-        S.last_gen_meta = []
-        S.attempt += 1
+    # # done_disabled = (S.attempt < config.REQUIRED_ATTEMPTS) or not S.generated
+    # # try_disabled = S.attempt >= config.REQUIRED_ATTEMPTS or not S.subjective_score
+    # try_col, done_col = st.columns(2)
+    # # "Try again" button is disabled on 5th attempt
+    # if try_col.button("Another try", disabled=try_disabled):
+    #     # if not S.generated or not rated:
+    #     #     st.warning("Rate similarity of the generated image to the original image first.")
+    #         # st.stop()
+    #     commit_attempt_log()  # log the attempt before changing state
+    #     # S.seed = np.random.randint(1, 4000000) - I don't want randomization per attempts
+    #     S.generated = False
+    #     st.session_state.pop(f"rated_{S.session}_{S.attempt}", None)
+    #     S.gen_paths = []
+    #     S.last_gen_meta = []
+    #     S.attempt += 1
 
-        rerun()
-    else:
-        st.caption("Click **Generate** to view images.")
+    #     rerun()
+    # else:
+    #     st.caption("Click **Generate** to view images.")
 
-    if done_col.button("DONE : Next image", disabled=done_disabled):
-        commit_attempt_log()  # <-- log with the slider’s value
-        # if not S.generated or not rated or (S.attempt < config.REQUIRED_ATTEMPTS):
-        #     # st.warning("Rate similarity of the generated image to the original image first.")
-        #     # st.stop()
+    # if done_col.button("DONE : Next image", disabled=done_disabled):
+    #     commit_attempt_log()  # <-- log with the slider’s value
+    #     # if not S.generated or not rated or (S.attempt < config.REQUIRED_ATTEMPTS):
+    #     #     # st.warning("Rate similarity of the generated image to the original image first.")
+    #     #     # st.stop()
         
-        next_gt()
+    #     next_gt()
