@@ -2,6 +2,7 @@
 # Note, that by default a user has to press ctrl+enter after filling in the text box to apply the text, count characters, send it to generation etc. 
 from pathlib import Path
 import config       
+import streamlit.components.v1 as components
 from models import api_model # the model API wrapper for Stability AI
 # removed it for now as we are not using it and i don't wantit to be imported
 #from models import gpt_model # the model API wrapper for open ai
@@ -308,19 +309,20 @@ def commit_attempt_log():
 # Function that loads a new ground-truth image (or finish the whole thing if none left in the folder) and reset all per-target variables. Then force an immediate rerun.
 def next_gt():
     # Stop after MAX_SESSIONS
-    if S.finished == True:
-        st.success("All trials complete! Redirecting you to Prolific…")
-        st.markdown(
-            f"""
-            <script>
-                setTimeout(function() {{
-                    window.location.href = "{config.PROLIFIC_URL}";
-                }}, 1500);
-            </script>
-            """,
-            unsafe_allow_html=True,
-        )
+    if S.finished and not S.feedback_submitted:
+        # Don't redirect yet, let the feedback screen show
+        return
+        
+    if S.finished and S.feedback_submitted:
+        # Now redirect after feedback is submitted
+        st.success("Thank you for your feedback!")
+        # Try JavaScript redirect
+        st.markdown(f"""
+        [**Click here** to get to back to Prolific and receive your credit]({config.PROLIFIC_URL}).
+        """)
+        st.caption("If the link doesn't work, please copy-paste the URL into your browser:\n https://app.prolific.com/submissions/complete?cc=C1OJX362 \n Or paste the following code directly inside prolific: C1OJX362")
         st.stop()
+        
 
     remaining = [p for p in config.GT_DIR.glob("*.[pj][pn]g") if p.name not in S.used]
     if not remaining:
@@ -367,7 +369,9 @@ for k, v in {
     "text_key": fresh_key(), # widget key for the textbox
     "last_prompt": "", # stores the last image description
     "subjective_score": None, # stores the last subjective score
-    "is_generating": False # Adds a deafult state - True when waiting for the model to generate
+    "is_generating": False, # Adds a deafult state - True when waiting for the model to generate
+    "finished": False,
+    "feedback_submitted": False,  # Add this new variable
 }.items():
     st.session_state.setdefault(k, v)
 S = st.session_state
@@ -425,7 +429,7 @@ if not S.consent_given:
                     \nOnce you finish and click "generate", an image will appear based on your generation. 
                     \nYou will have to rate it's similarity to the original image you were shown on a scale of 1 (least similar) to 100 (most similar).
                     \nAfter you will finish the three attempts, a new image will show up and you will repeat the process.
-                    \n **Duration**: The experiment should take about 30 minutes to complete.
+                    \n **Duration**: The experiment should take about 40 minutes to complete.
                     \nThis study is not supposed to contain any graphic or unpleasent images. If for some reason you wish to stop, you can stop at any time by exisiting the screen.
                     \nFor any inquiries about the experiment, please contact anat.korol@mail.tau.ac.il
                     
@@ -477,16 +481,92 @@ if not S.participant_info_submitted:
         # <-- add this
             st.rerun()
     st.stop()
+
+# --- Feedback screen (shown when experiment is complete) ---
+if S.finished and not S.feedback_submitted:
+    st.markdown("""
+    <div style="text-align: center; margin: 50px 0;">
+        <h2>Experiment Complete!</h2>
+        <p>Thank you for participating in our study.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    with st.form("feedback_form"):
+        st.subheader("Optional Feedback")
+        st.markdown("""
+        We would appreciate your thoughts about the experiment. 
+        Your feedback helps us improve future studies.
+        """)
+        
+        feedback = st.text_area(
+            "Please share any thoughts, observations, or suggestions about the experiment:",
+            height=150,
+            placeholder="How was your experience? Any technical issues? Suggestions for improvement?"
+        )
+        
+
+        difficulty = st.select_slider(
+            "How would you rate the overall difficulty of the task?",
+            options=["Very Easy", "Easy", "Moderate", "Difficult", "Very Difficult"],
+            value="Moderate"
+        )
+        
+        clarity = st.select_slider(
+            "How clear were the instructions?",
+            options=["Very Unclear", "Unclear", "Somewhat Clear", "Clear", "Very Clear"],
+            value="Somewhat Clear"
+        )
+    
+        # Buttons in columns like your other forms
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            skip = st.form_submit_button("Skip feedback", use_container_width=True)
+        with col2:
+            submit_feedback = st.form_submit_button("Submit feedback", type="primary", use_container_width=True)
+        
+        if submit_feedback or skip:
+            # Log the feedback if provided
+            if submit_feedback and feedback.strip():
+                feedback_data = {
+                    "uid": S.uid,
+                    "feedback": feedback.strip(),
+                    "difficulty": difficulty,
+                    "clarity": clarity,
+                    "ts": int(time.time())
+                }
+                
+                # Save feedback to CSV
+                feedback_file = config.LOG_DIR / f"{S.uid}_feedback.csv"
+                with feedback_file.open("w", newline="", encoding="utf-8") as f:
+                    writer = csv.DictWriter(f, fieldnames=feedback_data.keys())
+                    writer.writeheader()
+                    writer.writerow(feedback_data)
+                
+                # Upload to Drive
+                try:
+                    update_or_insert_file(
+                        service, feedback_file, S.participant_folder_id,
+                        dest_name=f"participant_{S.uid}_feedback.csv",
+                        mime_type="text/csv"
+                    )
+                except Exception as e:
+                    print(f"Failed to upload feedback: {e}")
+            
+            S.feedback_submitted = True
+            rerun()
+    
+    st.stop()
+
 if S.gt_path is None:      
     next_gt()
 
 # The finish screen (appears when the user presses "exit" button or there are no more ground truth pictures).
 # if S.finished:
-    # st.markdown(
-    #     "<h2 style='text-align:center'>The session is finished.<br>Thank you for participating!</h2>",
-    #     unsafe_allow_html=True,
-    # )
-    # st.stop()
+#     st.markdown(
+#         "<h2 style='text-align:center'>The session is finished.<br>Thank you for participating!</h2>",
+#         unsafe_allow_html=True,
+#     )
+#     st.stop()
 
 # Layout of the textbox and pictures (next to each other)
 left, right = st.columns([1, 2], gap="large")
