@@ -209,21 +209,21 @@ def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path
             returned_seeds.append(returned_seed)
             images_bytes.append(image_bytes)
 
-    elif config.API_CALL == "open_ai":  # it inherently generates 4 images
-        #currently unavailable - i commented out the import and the installation in requirements.txt
-        paths = gpt_model.send_gpt_request(
-            #I should add loging of the revised prompt of selected image...
-            prompt=prompt,
-            iteration=attempt,
-            session_num=session,
-            user_id=uid,
-        )
-        for p in paths:
-            try:
-                resize_inplace(p, (512, 512))
-            except Exception as e:
-                print(f"❌ Error resizing image {p}: {e}")
-        local_paths.extend(paths)
+    # elif config.API_CALL == "open_ai":  # it inherently generates 4 images
+    #     #currently unavailable - i commented out the import and the installation in requirements.txt
+    #     paths = gpt_model.send_gpt_request(
+    #         #I should add loging of the revised prompt of selected image...
+    #         prompt=prompt,
+    #         iteration=attempt,
+    #         session_num=session,
+    #         user_id=uid,
+    #     )
+    #     for p in paths:
+    #         try:
+    #             resize_inplace(p, (512, 512))
+    #         except Exception as e:
+    #             print(f"❌ Error resizing image {p}: {e}")
+    #     local_paths.extend(paths)
     else:
         st.error(f"❌ Unknown API_CALL value: {config.API_CALL}, please contact experiment owner")
     
