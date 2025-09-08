@@ -96,15 +96,6 @@ def on_saved(path: Path, idx: int, seed: str):
     dest = image_dest_name(S.uid, S.session, S.attempt, idx=idx, suffix=path.suffix)  # set idx appropriately
     update_or_insert_file(service, path, S.session_drive_folder_id, dest_name=dest)
 
-# Load all gt image in images in base 64 (maybe should be handled before loading)
-def preload_gt_image(gt_path, box):
-    """Pre-convert GT image to base64 for faster display"""
-    img = ImageOps.contain(Image.open(gt_path), box)
-    buffered = BytesIO()
-    img.save(buffered, format="PNG")
-    return base64.b64encode(buffered.getvalue()).decode()
-
-
 # Image size setup - Fixed bounding boxes (size should change if a single image or 2)
 GT_BOX  = (300, 300)   # target image size
 GEN_BOX = (300, 300)   # each generated image
@@ -264,9 +255,6 @@ def log_participant_info(uid: str, age: int, gender: str, native: str) -> Path:
 
     return path
 
-# A helper for st.rerun() function in Steamlit. It is named differently in different versions of Steamlit, so we just make sure that we have something of this kind.
-# It restarts your script from the top, keeping st.session_state intact. Use it after state changes that should immediately update the UI (e.g., after generating images, after moving to the next GT).
-rerun = st.rerun if hasattr(st, "rerun") else st.experimental_rerun
 
 # Function returning a new widget key for the textbox every time we load a new target (e.g. a new ground truth image is presented)
 def fresh_key() -> str:
@@ -277,6 +265,8 @@ def mark_rated():
     # Use a per-session/attempt key so it resets automatically each attempt
     rated_key = f"rated_{S.session}_{S.attempt}"
     st.session_state[rated_key] = True
+    # Log the time when the rating was made
+    st.session_state[f"rated_time_{S.session}_{S.attempt}"] = time.time()
 
 def is_rated() -> bool:
     return st.session_state.get(f"rated_{S.session}_{S.attempt}", False)
@@ -285,10 +275,18 @@ def commit_attempt_log():
     # Read the slider’s value from session (see the slider key below)
     rating_key = f"subjective_score_{S.session}_{S.attempt}"
     rating = st.session_state.get(rating_key, None)
-
     if rating is None:
         st.warning("No similarity rating found for this attempt. Please move the slider before continuing.")
         return
+    
+    #latency measures:
+    metrics = getattr(S, "attempt_metrics", {}) or {}
+    # compute rating latency if we have both times
+    rated_epoch = st.session_state.get(f"rated_time_{S.session}_{S.attempt}")
+    rating_latency = None
+    if rated_epoch and metrics.get("generated_epoch"):
+        rating_latency = round(rated_epoch - metrics["generated_epoch"], 3)
+
     for meta in S.last_gen_meta:
         p = Path(meta["path"])
         log_row(
@@ -302,9 +300,22 @@ def commit_attempt_log():
             prompt=S.prompt,
             gen=p.name,
             subjective_score=rating,
+            prompt_latency_secs=metrics.get("prompt_latency_secs"),
+            model_latency_secs=metrics.get("model_latency_secs"),
+            rating_latency_secs=rating_latency,
+            generated_at_utc=metrics.get("generated_at_utc"),
             ts=int(time.time()),
         )
     upload_participant_log(S.uid)
+
+
+# --- logging attempt timing helpers ---
+def start_attempt():
+    """Call whenever a new attempt becomes active (first attempt of a GT or after 'Another try')."""
+    S.attempt_started_at = time.time()
+    S.attempt_metrics = {}         # clear per-attempt metrics
+    # rotate textbox key only when you want the box cleared
+    # S.text_key = fresh_key()
 
 # Function that loads a new ground-truth image (or finish the whole thing if none left in the folder) and reset all per-target variables. Then force an immediate rerun.
 def next_gt():
@@ -335,6 +346,7 @@ def next_gt():
 
     # New session setup:
     S.session += 1 # increase session counter
+    start_attempt()
     S.seed = seed_from(S.gt_path.name)# instead of random - fixed per gt image: np.random.randint(1, 0, 2**32 - 1) # randomise the seed for the next generation
     S.attempt = 1
     S.generated = False
@@ -350,6 +362,11 @@ def next_gt():
 
     S.text_key = fresh_key() # new widget key so the existing widget value is not overwritten
     rerun()
+
+
+# A helper for st.rerun() function in Steamlit. It is named differently in different versions of Steamlit, so we just make sure that we have something of this kind.
+# It restarts your script from the top, keeping st.session_state intact. Use it after state changes that should immediately update the UI (e.g., after generating images, after moving to the next GT).
+rerun = st.rerun if hasattr(st, "rerun") else st.experimental_rerun
 
 # Defining a **st.session_state** - which is Streamlit’s dictionary like place for keeping data between reruns during a single session (for a given user). 
 #this is a Session state init - sets values the first time the app runs
@@ -370,8 +387,9 @@ for k, v in {
     "last_prompt": "", # stores the last image description
     "subjective_score": None, # stores the last subjective score
     "is_generating": False, # Adds a deafult state - True when waiting for the model to generate
-    "finished": False,
     "feedback_submitted": False,  # Add this new variable
+    "attempt_started_at": None, #when prompt writing started
+    "attempt_metrics": {},   # holds timings for the current attempt
 }.items():
     st.session_state.setdefault(k, v)
 S = st.session_state
@@ -393,17 +411,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# Customising the buttons
-# st.markdown(
-#     """
-#     <style>
-#         button[kind="primary"]{background:#8B0000;color:white}
-#         button[kind="primary"]:hover{background:#A80000;color:white}
-#     </style>
-#     """,
-#     unsafe_allow_html=True,
-# )
-
 # Hide the built-in fullscreen control on media (images, charts, etc.)
 st.markdown("""
     <style>
@@ -424,15 +431,16 @@ if not S.consent_given:
     with st.form("consent_form", clear_on_submit=False):
         st.subheader("Participant Information & Consent")
         st.markdown("""
-                    In this study you will be asked to describe images verbally in English, in the most accurate way possible. 
-                    \nYou will get 3 attempts per image, in each you may change your previous description or add to it (you can't use an identical description).
-                    \nOnce you finish and click "generate", an image will appear based on your generation. 
-                    \nYou will have to rate it's similarity to the original image you were shown on a scale of 1 (least similar) to 100 (most similar).
-                    \nAfter you will finish the three attempts, a new image will show up and you will repeat the process.
-                    \n **Duration**: The experiment should take about 40 minutes to complete.
-                    \nThis study is not supposed to contain any graphic or unpleasent images. If for some reason you wish to stop, you can stop at any time by exisiting the screen.
+                    In this study you will be asked to describe images in the most accurate way possible. 
+                    \nOnce you finish and click "generate", an image will appear based on your description.
+                    \nIt may take up to 30 seconds to generate an image. Please wait patiently.
+                    \nOnce an image is generated you will have to rate it's similarity to the original image you were shown on a scale of 1 (least similar) to 100 (most similar).
+                    \nIf the image is not similar to the original image, update your description to make them as similar as possible.   
+                    \nAfter you finish the three attempts, a new image will be presentedup and you will repeat the process.
+                    \nYou will get 3 attempts per image, in each you may modify your previous description,  or expand it to include more aspects of the original image that are missing in the generated image (you can't use an identical description).
+                    \nDuration: The experiment should take about 40 minutes to complete.
+                    \nThis study is not supposed to contain any graphic or unpleasent images. If for some reason you wish to stop, you can stop at any time by exiting the screen.
                     \nFor any inquiries about the experiment, please contact anat.korol@mail.tau.ac.il
-                    
                 """)
         agree = st.checkbox("I have read the study information and **I consent** to participate.")
         submit = st.form_submit_button("I agree and continue")
@@ -662,6 +670,12 @@ with left:
     #     else:
             # OK to generate
     if gen_clicked:
+        if S.attempt_started_at:
+            S.attempt_metrics = S.attempt_metrics or {}
+            S.attempt_metrics["prompt_latency_secs"] = round(time.time() - S.attempt_started_at, 3)
+        else:
+            # fallback if something started without calling start_attempt()
+            S.attempt_metrics = {"prompt_latency_secs": None}
         raw_text = st.session_state.get(S.text_key, "")
         raw_stripped = raw_text.strip()
 
@@ -693,10 +707,17 @@ with left:
                 # API call
                 S.is_generating = True
                 with st.spinner("Generating the image may take 20-30 seconds…"):
+                    t0 = time.time() # starting clock for model latency measurement
                     S.gen_paths, returned_seeds, images_bytes = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image ## Note: i only return one image bytes
+                    model_latency = time.time() - t0
                 S.images_bytes = images_bytes 
                 S.is_generating = False
                 
+                # store model latency + timestamps
+                S.attempt_metrics["model_latency_secs"] = round(model_latency, 3)
+                S.attempt_metrics["generated_at_utc"]   = datetime.now(timezone.utc).isoformat()
+                S.attempt_metrics["generated_epoch"]    = time.time()
+
                 print(f"Generated image/images saved: {[Path(p).name for p in S.gen_paths]}")
                 
 
@@ -785,6 +806,9 @@ with left:
             # blank the textbox by rotating the key
             # S.text_key = fresh_key()
             # S.last_prompt = ""     # allow changed-text validation to work correctly
+            
+            start_attempt()   # <-- start timing for the new attempt
+            
             rerun()
 
 #make stramlit not show the fullscreen option button!
