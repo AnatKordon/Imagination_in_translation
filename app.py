@@ -182,10 +182,12 @@ def seed_from(gt_filename: str) -> int:
     return int(hashlib.sha256(gt_filename.encode("utf-8")).hexdigest(), 16) % (2**32)  # 32-bit
 
 #new generation of 4 images
-def generate_images(prompt: str, seed: int, session: int, attempt: int, gt: Path, uid: str) -> list[Path]:
+def generate_images(prompt: str, negative_prompt: str, seed: int, session: int, attempt: int, gt: Path, uid: str) -> list[Path]:
     params = config.params.copy()
     params["prompt"] = prompt
     params["gt"] = str(gt)
+    if negative_prompt:
+        params["negative_prompt"] = negative_prompt  # Stability API accepts this
     # initialize collecting paths
     local_paths = []
     returned_seeds = []
@@ -272,6 +274,9 @@ def log_participant_info(uid: str, age: int, gender: str, native: str) -> Path:
 def fresh_key() -> str:
     return f"prompt_{uuid4().hex}"
 
+def fresh_neg_key() -> str:
+    return f"neg_{uuid4().hex}"
+
 #marking that image was rated
 def mark_rated():
     # Use a per-session/attempt key so it resets automatically each attempt
@@ -310,6 +315,7 @@ def commit_attempt_log():
             request_seed=meta["request_seed"] if config.API_CALL == "stability_ai" else "",
             returned_seed=meta["returned_seed"],
             prompt=S.prompt,
+            negative_prompt=S.neg_prompt, 
             gen=p.name,
             subjective_score=rating,
             prompt_latency_secs=metrics.get("prompt_latency_secs"),
@@ -365,6 +371,8 @@ def next_gt():
     S.gen_path = None
     S.gen_paths = [] # clear list on a new target
     S.last_prompt = "" # reset for new session - somehow doesn't work 
+    S.neg_prompt = ""
+
     # S.last_score = 0.0
 
     # creating a new sussion folder for next session:
@@ -373,6 +381,7 @@ def next_gt():
     # st.session_state["prompt_text"] = ""  # because your text_area uses key="prompt_text"
 
     S.text_key = fresh_key() # new widget key so the existing widget value is not overwritten
+    S.neg_text_key = fresh_neg_key()
     rerun()
 
 
@@ -397,6 +406,8 @@ for k, v in {
     # "cosine_distance": 0.0, # cosine distance of last generation
     "text_key": fresh_key(), # widget key for the textbox
     "last_prompt": "", # stores the last image description
+    "neg_text_key": fresh_neg_key(),
+    "neg_prompt": "",
     "subjective_score": None, # stores the last subjective score
     "is_generating": False, # Adds a deafult state - True when waiting for the model to generate
     "feedback_submitted": False,  # Add this new variable
@@ -609,50 +620,27 @@ with left:
             placeholder="Type an accurate description of the target image.",
             disabled=text_disabled
         )
-        # if text_disabled:
-        #     st.caption("Please rate similarity of the generated image to the original first.")
-            
-        #allowing to clicl generation for next command
-        # submitted = st.form_submit_button("Generate", type="primary")  # <-- always enabled
-        # st.markdown("#### Target image")
-        # show_img_fixed(S.gt_path, GT_BOX)
-
-        # ---- validations run on the current text value ----
-        # Trim to max length (but show a warning)
-        # if len(prompt_val) > config.MAX_LENGTH - 1:
-        #     st.warning(
-        #         f"Your description is too long. Only the first {config.MAX_LENGTH} characters will be used."
-        #     )
-        # prompt_used = prompt_val[: config.MAX_LENGTH - 1] # logging the prompt that was used (upto max length)
-
-        # same_prompt = prompt_used.strip() == S.last_prompt.strip()
-        # # error handling inside the form:
-        # symbols = bool(re.search(r"[^a-zA-Z0-9\s\.\,\!\?\:\;\'\"\-\(\)]", prompt_used))
-        # if symbols:
-        #     st.error("Please use only letters, numbers, spaces, and . , ! ? : ; ' \" - ( ).")
-
-        # http = any(i in prompt_used for i in config.websites)
-        # if http:
-        #     st.error("Please, do not use links in your description. Only text is allowed.")
-
         c1, c2 = st.columns(2) # add count for characters and attempt number
         c1.caption(f"{len(prompt_val)} characters")
         c2.caption(f"{S.attempt} / {config.REQUIRED_ATTEMPTS}")
+
+        #negative prompt area
+        neg_text_disabled = S.generated  # same behavior as main textbox
+        neg_val = st.text_area(
+            "If the generated image presented an item you did not intend it to show, you can ask to remove it: (optional)",
+            key=S.neg_text_key,
+            height=100,
+            placeholder="e.g., objects, people, text,  blur",
+            disabled=neg_text_disabled
+        )
+
 
         # ---- two side-by-side form submit buttons - generate or another try/done ----
         gen_button, next_button = st.columns([1, 1])
         
         #because it's form, gen is disabled when image is generated (not for wrong text inputs because character counter doesn't update so it locks it in generation
         gen_disabled = S.generated or S.is_generating
-        # disabling generate button if already generated, or empty prompt, or bad chars, or same prompt on later attempts
-        # gen_disabled = (
-        #     S.generated                # already generated; wait for rating + next action
-        #     or not prompt_used.strip() # empty
-        #     or symbols                 # bad chars
-        #     or http                    # links
-        #     or (S.attempt > 1 and same_prompt)
-        #     # or (S.attempt > 1 and same_prompt)  # force changed text on later attempts
-        # )
+
         #generate button:
         gen_clicked = gen_button.form_submit_button("Generate", type="primary", disabled=gen_disabled, use_container_width=True)
 
@@ -665,20 +653,6 @@ with left:
         #Anoter try or done button:
         next_clicked = next_button.form_submit_button(next_label, disabled=next_disabled, use_container_width=True)
 
-         
-    # # --- Handle submit - what happens after participant presses "Generate" ---
-    # if submitted:
-    #     # gate by validation here
-    #     if not prompt_used.strip():
-    #         st.error("Please enter a description.")
-    #     elif symbols:
-    #         st.error("Fix invalid characters before generating.")
-    #     elif http:
-    #         st.error("Remove links before generating.")
-    #     elif S.attempt > 1 and prompt_used.strip() == S.last_prompt.strip():
-    #         st.warning("Please modify your description.")
-    #     else:
-            # OK to generate
     if gen_clicked:
         if S.attempt_started_at:
             S.attempt_metrics = S.attempt_metrics or {}
@@ -686,9 +660,35 @@ with left:
         else:
             # fallback if something started without calling start_attempt()
             S.attempt_metrics = {"prompt_latency_secs": None}
+        
+        #regular text:
         raw_text = st.session_state.get(S.text_key, "")
-        raw_stripped = raw_text.strip()
+        # raw_stripped = raw_text.strip()
 
+
+        #negative prompt text
+        raw_neg = st.session_state.get(S.neg_text_key, "")
+        # neg_used = raw_neg
+
+        # allow only these chars
+        allowed_full_line = re.compile(r'^[a-zA-Z0-9\s\.\,\!\?\:\;\'\"\-\(\)]*$')
+
+        # Validate ONLY if provided
+        if raw_neg.strip():
+            if len(raw_neg) > config.MAX_LENGTH - 1:
+                st.warning(f"Your negative prompt is too long. Only the first {config.MAX_LENGTH} characters will be used.")
+            neg_used = raw_neg[: config.MAX_LENGTH - 1]
+
+            if re.search(r"[^a-zA-Z0-9\s\.\,\!\?\:\;\'\"\-\(\)]", raw_neg):
+                st.error("Negative prompt: Please use only letters, numbers, spaces, and . , ! ? : ; ' \" - ( ).")
+                st.stop()
+
+            if any(i in raw_neg for i in config.websites):
+                st.error("Negative prompt: links are not allowed.")
+                st.stop()
+
+        S.neg_prompt = neg_used.strip()
+        # Validate main prompt
         # --- collect validation errors without st.stop() ---
         errors = []
         if not raw_stripped:
@@ -718,7 +718,7 @@ with left:
                 S.is_generating = True
                 with st.spinner("Generating the image may take 20-30 seconds…"):
                     t0 = time.time() # starting clock for model latency measurement
-                    S.gen_paths, returned_seeds, images_bytes = generate_images(S.prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image ## Note: i only return one image bytes
+                    S.gen_paths, returned_seeds, images_bytes = generate_images(S.prompt, S.neg_prompt, S.seed, S.session, S.attempt, S.gt_path, S.uid) # generate the image ## Note: i only return one image bytes
                     model_latency = time.time() - t0
                 S.images_bytes = images_bytes 
                 S.is_generating = False

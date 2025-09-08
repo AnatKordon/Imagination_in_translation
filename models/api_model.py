@@ -49,6 +49,7 @@ def send_generation_request(
         }
     data = {
         "prompt": (None, params["prompt"]), # 
+        "negative_prompt": (None, params.get("negative_prompt", "")), # if no negative prompt, empty string
         "control_strength": 0.2, # high control means high adherence to structure
         "aspect_ratio": (None, params["aspect_ratio"]),
         "output_format": (None, params["output_format"]),
