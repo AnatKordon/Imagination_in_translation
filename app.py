@@ -104,6 +104,18 @@ GEN_BOX = (300, 300)   # each generated image
 #     """Open, bound to box while preserving aspect, and render at a fixed width."""
 #     img = ImageOps.contain(Image.open(path), box)
 #     st.image(img, width=box[0], clamp=True, caption=caption)
+
+@st.cache_data
+def load_gt_images_base64():
+    """Load all GT images as base64 once and cache them"""
+    gt_data = {}
+    for gt_path in config.GT_DIR.glob("*.[pj][pn]g"):
+        img = ImageOps.contain(Image.open(gt_path), GT_BOX)
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        gt_data[gt_path.name] = base64.b64encode(buffered.getvalue()).decode()
+    return gt_data
+
 def show_img_fixed(image_source, box, caption=None):
     """
     Display image from either file path, bytes, or PIL Image object.
@@ -394,13 +406,7 @@ for k, v in {
     st.session_state.setdefault(k, v)
 S = st.session_state
 
-# One-shot transition spinner (if set on form submit)
-if S.get("transition_loading", False):
-    with st.spinner("Loading experiment…"):
-        import time as _t
-        _t.sleep(3.0)
-    S.transition_loading = False
-    rerun()
+
 
 st.set_page_config(page_title="Imagination in Translation", layout="wide")
 S.setdefault("last_gen_meta", []) # list of dicts with metadata of last generation (one dict per image)
@@ -422,6 +428,10 @@ st.markdown("""
     button[title="View fullscreen"] { display: none !important; }
     </style>
     """, unsafe_allow_html=True)
+
+# Load at startup
+if 'gt_images_cache' not in st.session_state:
+    st.session_state.gt_images_cache = load_gt_images_base64()
 
 # --- Consent gate (shown once) ---
 if "consent_given" not in S:
@@ -808,7 +818,7 @@ with left:
             # S.last_prompt = ""     # allow changed-text validation to work correctly
             
             start_attempt()   # <-- start timing for the new attempt
-            
+
             rerun()
 
 #make stramlit not show the fullscreen option button!
