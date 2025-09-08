@@ -453,16 +453,25 @@ if not S.consent_given:
         st.subheader("Participant Information & Consent")
         st.markdown("""
                     In this study you will be asked to describe images in the most accurate way possible. 
-                    \nOnce you finish and click "generate", an image will appear based on your description.
-                    \nIt may take up to 30 seconds to generate an image. Please wait patiently.
-                    \nOnce an image is generated you will have to rate it's similarity to the original image you were shown on a scale of 1 (least similar) to 100 (most similar).
-                    \nIf the image is not similar to the original image, update your description to make them as similar as possible.   
-                    \nAfter you finish the three attempts, a new image will be presentedup and you will repeat the process.
-                    \nYou will get 3 attempts per image, in each you may modify your previous description,  or expand it to include more aspects of the original image that are missing in the generated image (you can't use an identical description).
-                    \nDuration: The experiment should take about 40 minutes to complete.
-                    \nThis study is not supposed to contain any graphic or unpleasent images. If for some reason you wish to stop, you can stop at any time by exiting the screen.
-                    \nFor any inquiries about the experiment, please contact anat.korol@mail.tau.ac.il
-                """)
+                    - Once you finish and click **generate**, an image will appear based on your description.
+                    - It may take up to 30 seconds to generate an image. Please wait patiently.
+                    - Once an image is generated you will have to **rate** it's similarity to the original image you were shown on a scale of 1 (least similar) to 100 (most similar).
+                    - If the image is not similar to the original image, update your description to make them as similar as possible.
+                    - After you finish the three attempts, a new image will be presented and you will repeat the process.
+                    - You will get ***3 attempts** per image, in each you may modify your previous description, or expand it to include more aspects of the original image that are missing in the generated image (you can't use an identical description).
+                    - ***Duration**: The experiment should take about 40 minutes to complete.
+                    """)
+        # Informed consent – translation & adaptation of your bullets
+        st.markdown("""
+                    **By clicking *I agree and continue*, I confirm that:**
+                    - I **voluntarily** agree to participate in this study.
+                    - No graphic or unpleasent content is expected to be shown during the study.
+                    - No risks are expected from participation in this study.
+                    - I may **stop my participation at any time** by closing the window, **without penalty** or loss of benefits.
+                    - The research team will **protect my privacy and confidentiality**. 
+                    - I can **ask questions at any time** and receive answers from the research team at **anat.korol@mail.tau.ac.il**.
+                        """)
+        
         agree = st.checkbox("I have read the study information and **I consent** to participate.")
         submit = st.form_submit_button("I agree and continue")
         
@@ -616,7 +625,7 @@ with left:
         prompt_val = st.text_area(
             "The picture shows...",
             key=S.text_key, # I think this shoulld be S.text_key
-            height=140,
+            height=220,
             placeholder="Type an accurate description of the target image.",
             disabled=text_disabled
         )
@@ -625,12 +634,12 @@ with left:
         c2.caption(f"{S.attempt} / {config.REQUIRED_ATTEMPTS}")
 
         #negative prompt area
-        neg_text_disabled = S.generated  # same behavior as main textbox
+        neg_text_disabled = S.generated  or (S.attempt == 1)# same behavior as main textbox
         neg_val = st.text_area(
-            "If the generated image presented an item you did not intend it to show, you can ask to remove it: (optional)",
+            "Negative prompt: if there is an item/object in the generated image that does not appear in the original image and you want to remove it, you can write it down here: (optional from second attempt onwards)",
             key=S.neg_text_key,
             height=100,
-            placeholder="e.g., objects, people, text,  blur",
+            placeholder="e.g., objects, people, text.",
             disabled=neg_text_disabled
         )
 
@@ -663,52 +672,63 @@ with left:
         
         #regular text:
         raw_text = st.session_state.get(S.text_key, "")
-        # raw_stripped = raw_text.strip()
-
-
         #negative prompt text
         raw_neg = st.session_state.get(S.neg_text_key, "")
-        # neg_used = raw_neg
-
         # allow only these chars
         allowed_full_line = re.compile(r'^[a-zA-Z0-9\s\.\,\!\?\:\;\'\"\-\(\)]*$')
 
-        # Validate ONLY if provided
-        if raw_neg.strip():
-            if len(raw_neg) > config.MAX_LENGTH - 1:
-                st.warning(f"Your negative prompt is too long. Only the first {config.MAX_LENGTH} characters will be used.")
-            neg_used = raw_neg[: config.MAX_LENGTH - 1]
-
-            if re.search(r"[^a-zA-Z0-9\s\.\,\!\?\:\;\'\"\-\(\)]", raw_neg):
-                st.error("Negative prompt: Please use only letters, numbers, spaces, and . , ! ? : ; ' \" - ( ).")
-                st.stop()
-
-            if any(i in raw_neg for i in config.websites):
-                st.error("Negative prompt: links are not allowed.")
-                st.stop()
-
-        S.neg_prompt = neg_used.strip()
-        # Validate main prompt
-        # --- collect validation errors without st.stop() ---
+        #start collecting error
         errors = []
-        if not raw_stripped:
+
+        
+        # --- MAIN PROMPT ---
+        if not raw_text.strip():
             errors.append("Please enter a description.")
-        if re.search(r"[^a-zA-Z0-9\s\.\,\!\?\:\;\'\"\-\(\)]", raw_text):
+        if not allowed_full_line.match(raw_text):
             errors.append("Please use only letters, numbers, spaces, and . , ! ? : ; ' \" - ( ).")
         if any(i in raw_text for i in config.websites):
-            errors.append("Please, do not use links in your description. Only text is allowed.")
-        if S.attempt > 1 and raw_stripped == S.last_prompt.strip():
+            errors.append("Please, do not use links in your description.")
+        if S.attempt > 1 and raw_text.strip() == S.last_prompt.strip():
             errors.append("Please modify your description before generating again.")
 
+        # --- NEGATIVE PROMPT (optional) ---
+        neg_used = ""
+        if not errors:
+            if S.attempt == 1:
+                # Ignore anything they somehow typed (defense in depth)
+                neg_used = ""
+            else:
+                if S.attempt > 1 and raw_neg.strip():
+                    if not allowed_full_line.match(raw_neg):
+                        errors.append("Negative prompt: Please use only letters, numbers, spaces, and . , ! ? : ; ' \" - ( ).")
+                    if any(i in raw_neg for i in config.websites):
+                        errors.append("Negative prompt: links are not allowed.")
+                    # only truncate after it passes symbol/link validation
+                    neg_used = raw_neg[: config.MAX_LENGTH - 1].strip()
+
+        #if only neg prompt is modified - don't allow it:
+        if not errors and S.attempt > 1 and raw_text.strip() == S.last_prompt.strip() and neg_used and neg_used != S.neg_prompt:
+            errors.append("Please modify your main description, not only the negative prompt.")
+        
+        # Validate main prompt
+        # --- collect validation errors without st.stop() ---
+        
+        
         if errors:
             for e in errors:
                 st.error(e)            # show messages
+             # also make sure we are not stuck in a generating state
+            S.is_generating = False
+            S.generated = False
+
             # IMPORTANT: do not st.stop(), do not generate, simply fall through
         else:
 
             # --- proceed to generation ---
-            prompt_used = raw_text[: config.MAX_LENGTH - 1]
-            S.prompt = prompt_used.strip()   # if it was submitted, than prompt is logged
+            S.neg_prompt = neg_used
+            prompt_used  = raw_text[: config.MAX_LENGTH - 1]
+            S.prompt     = prompt_used.strip()
+
             S.gen_paths = []
             S.generated = False # because it's before generation
             try:
