@@ -118,7 +118,9 @@ venv311
 *.csv
 client_secrets.json
 service_account.json
-
+*.txt
+/Analysis
+/.docx
 # Virtual environments
 venv/
 venv311/
