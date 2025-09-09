@@ -303,13 +303,18 @@ def mark_rated():
     # Use a per-session/attempt key so it resets automatically each attempt
     rated_key = f"rated_{S.session}_{S.attempt}"
     st.session_state[rated_key] = True
-    # Log the time when the rating was made
-    st.session_state[f"rated_time_{S.session}_{S.attempt}"] = time.time()
 
 def is_rated() -> bool:
     return st.session_state.get(f"rated_{S.session}_{S.attempt}", False)
 
 def commit_attempt_log():
+    """Log only once when user clicks Done/Another try"""
+    # Add duplicate prevention
+    attempt_id = f"{S.uid}_{S.session}_{S.attempt}"
+    if attempt_id in S.logged_attempts:
+        return  # Already logged this attempt
+    
+    
     # Read the slider’s value from session (see the slider key below)
     rating_key = f"subjective_score_{S.session}_{S.attempt}"
     rating = st.session_state.get(rating_key, None)
@@ -317,13 +322,15 @@ def commit_attempt_log():
         st.warning("No similarity rating found for this attempt. Please move the slider before continuing.")
         return
     
+    # Record the rating time NOW (when they commit to their choice)
+    rating_time = time.time()
+
     #latency measures:
     metrics = getattr(S, "attempt_metrics", {}) or {}
     # compute rating latency if we have both times
-    rated_epoch = st.session_state.get(f"rated_time_{S.session}_{S.attempt}")
     rating_latency = None
-    if rated_epoch and metrics.get("generated_epoch"):
-        rating_latency = round(rated_epoch - metrics["generated_epoch"], 3)
+    if metrics.get("generated_epoch"):
+        rating_latency = round(rating_time - metrics["generated_epoch"], 3)
 
     for meta in S.last_gen_meta:
         p = Path(meta["path"])
@@ -345,6 +352,9 @@ def commit_attempt_log():
             generated_at_utc=metrics.get("generated_at_utc"),
             ts=int(time.time()),
         )
+ 
+    # Mark as logged to prevent duplicates
+    S.logged_attempts.add(attempt_id)
     upload_participant_log(S.uid)
 
 
@@ -435,6 +445,7 @@ for k, v in {
     "feedback_submitted": False,  # Add this new variable
     "attempt_started_at": None, #when prompt writing started
     "attempt_metrics": {},   # holds timings for the current attempt
+    "logged_attempts": set(),  # Track which attempts have been logged to prevent duplicates
 }.items():
     st.session_state.setdefault(k, v)
 S = st.session_state
@@ -958,9 +969,12 @@ with right:
             step=1,
             key=f"subjective_score_{S.session}_{S.attempt}", 
             disabled=not S.generated,
-            on_change=mark_rated
+            # on_change=mark_rated I disable it as it causes issues with multiple images
         )
-    
+        # Add this after the slider to mark it as rated when they interact with it
+        rating_key = f"subjective_score_{S.session}_{S.attempt}"
+        if rating_key in st.session_state:  # 50 is default
+            mark_rated()
     # After displaying images / slider...
     # rated = is_rated()
 

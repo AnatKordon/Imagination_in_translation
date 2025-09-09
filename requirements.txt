@@ -7,11 +7,11 @@
 pandas
 # scipy
 # scikit-learn
-#ML and DL
+# ML and DL
 # torch
 # torchvision
 # transformers
-#openai
+# openai
 # lpips
 
 #UI packages
@@ -20,7 +20,7 @@ streamlit
 Pillow
 # Data visualization
 # matplotlib
-altair
+# altair
 
 # API requests and environment variables
 requests
