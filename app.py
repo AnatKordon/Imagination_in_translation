@@ -96,6 +96,27 @@ def on_saved(path: Path, idx: int, seed: str):
     dest = image_dest_name(S.uid, S.session, S.attempt, idx=idx, suffix=path.suffix)  # set idx appropriately
     update_or_insert_file(service, path, S.session_drive_folder_id, dest_name=dest)
 
+#safe prolific URL
+def show_prolific_link():
+    # Try URL first
+    url = getattr(config, "PROLIFIC_URL", None)
+
+    # Or build from a completion code
+    code = getattr(config, "PROLIFIC_COMPLETION_CODE", "C1OJX362")
+    if not url and code:
+        url = f"https://app.prolific.com/submissions/complete?cc={code}"
+
+    st.success("Thank you for your feedback!")
+
+    if url:
+        st.markdown(f"[**Click here** to return to Prolific and receive your credit]({url}).")
+    else:
+        st.warning("We couldn't load the Prolific link automatically.")
+
+    st.caption(
+        f"If the link doesn't work, copy-paste this completion code in Prolific: **{code}**"
+    )
+
 # Image size setup - Fixed bounding boxes (size should change if a single image or 2)
 GT_BOX  = (300, 300)   # target image size
 GEN_BOX = (300, 300)   # each generated image
@@ -344,16 +365,18 @@ def next_gt():
         
     if S.finished and S.feedback_submitted:
         # Now redirect after feedback is submitted
-        st.success("Thank you for your feedback!")
-        # Try JavaScript redirect
-        st.markdown(f"""
-        [**Click here** to get to back to Prolific and receive your credit]({config.PROLIFIC_URL}).
-        """)
-        st.caption("If the link doesn't work, please copy-paste the URL into your browser:\n https://app.prolific.com/submissions/complete?cc=C1OJX362 \n Or paste the following code directly inside prolific: C1OJX362")
-        st.stop()
         
-
-    remaining = [p for p in config.GT_DIR.glob("*.[pj][pn]g") if p.name not in S.used]
+        show_prolific_link()
+        st.stop()
+        # Try JavaScript redirect
+        # st.markdown(f"""
+        # [**Click here** to get to back to Prolific and receive your credit]({config.PROLIFIC_URL}).
+        # """)
+        # st.caption("If the link doesn't work, please copy-paste the URL into your browser:\n https://app.prolific.com/submissions/complete?cc=C1OJX362 \n Or paste the following code directly inside prolific: C1OJX362")
+        # st.stop()
+        
+    remaining = None
+    # remaining = [p for p in config.GT_DIR.glob("*.[pj][pn]g") if p.name not in S.used]
     if not remaining:
         S.finished = True
         rerun()
