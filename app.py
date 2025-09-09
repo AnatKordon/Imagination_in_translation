@@ -374,9 +374,8 @@ def next_gt():
         # """)
         # st.caption("If the link doesn't work, please copy-paste the URL into your browser:\n https://app.prolific.com/submissions/complete?cc=C1OJX362 \n Or paste the following code directly inside prolific: C1OJX362")
         # st.stop()
-        
-    remaining = None
-    # remaining = [p for p in config.GT_DIR.glob("*.[pj][pn]g") if p.name not in S.used]
+
+    remaining = [p for p in config.GT_DIR.glob("*.[pj][pn]g") if p.name not in S.used]
     if not remaining:
         S.finished = True
         rerun()
