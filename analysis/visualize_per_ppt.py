@@ -21,6 +21,13 @@ IMG_EXTS = {".png", ".jpg", ".jpeg"}
 
 SEED_TAG = re.compile(r"_seed\d+(?=\.\w+$)", re.IGNORECASE)
 
+# --- caption + axes helpers ---
+CAPTION_WIDTH = 40       # characters per line before wrapping
+CAPTION_MAX_LINES = 9     # show up to N lines under each image
+CAPTION_FONTSIZE = 8
+CAPTION_YOFFSET = -0.16   # how far below the axes to draw the caption (negative = below)
+
+
 #helper - remove's seed from name
 def normalize_name(name: str) -> str:
     """Remove trailing `_seed123456` just before the extension."""
@@ -91,6 +98,22 @@ def resolve_gen_path_from_row(row: pd.Series, uid_index: dict) -> Path | None:
     # 3) look up in the per-UID index by raw or seedless keys
     return uid_index.get(filename) or uid_index.get(seedless)
 
+def hide_axes(ax):
+    """Remove ticks and spines but keep the axes alive for drawing text."""
+    ax.set_xticks([])
+    ax.set_yticks([])
+    for s in ax.spines.values():
+        s.set_visible(False)
+
+def draw_caption(ax, text):
+    """Place a multiline caption under the axes."""
+    ax.text(
+        0.5, CAPTION_YOFFSET, text,
+        ha="center", va="top",
+        transform=ax.transAxes,
+        fontsize=CAPTION_FONTSIZE,
+        wrap=True,
+    )
 
 #opening image
 def read_image(path: Optional[Path], box=(320, 320)) -> Image.Image:
@@ -111,11 +134,10 @@ def read_gt(gt_name: str, gt_dir: Path, box=(320,320)) -> Image.Image:
     p = gt_dir / gt_name
     return read_image(p, box)
 
-def wrap_lines(s: str, width: int = 45, max_lines: int = 3) -> str:
+def wrap_lines(s: str, width: int = CAPTION_WIDTH, max_lines: int = CAPTION_MAX_LINES) -> str:
     if not isinstance(s, str):
         s = "" if pd.isna(s) else str(s)
     wrapped = textwrap.fill(s.strip(), width=width)
-    # limit to max_lines
     lines = wrapped.splitlines()
     return "\n".join(lines[:max_lines])
 
@@ -127,23 +149,24 @@ def panel_for_uid(uid: str, df_uid: pd.DataFrame, gt_list: List[str], out_dir: P
 
     rows = len(gt_list)
     cols = 4
-    fig, axes = plt.subplots(rows, cols, figsize=(cols*3.4, rows*3.6))
+    fig, axes = plt.subplots(rows, cols, figsize=(cols*3.4, rows*4.6))
     if rows == 1:
         axes = np.array([axes])
 
-    plt.subplots_adjust(hspace=0.65, wspace=0.06, top=0.96, bottom=0.04)
+
+    plt.subplots_adjust(hspace=1.10, wspace=0.06, top=0.96, bottom=0.04)
 
     for r, gt_name in enumerate(gt_list):
-        # Left: GT
+
+        # GT cell
         ax_gt = axes[r, 0]
         ax_gt.imshow(np.asarray(read_gt(gt_name, Path(config.GT_DIR))))
-        ax_gt.set_axis_off()
+        hide_axes(ax_gt)                      # <- no ticks/spines
         ax_gt.set_title(f"GT: {gt_name}", fontsize=9)
 
         # Attempts 1..3
         for attempt in (1, 2, 3):
             ax = axes[r, attempt]
-            # pick the latest record for this (uid, gt, attempt)
             row = (
                 df_uid[(df_uid["gt"] == gt_name) & (df_uid["attempt"] == attempt)]
                 .sort_values("ts")
@@ -151,29 +174,18 @@ def panel_for_uid(uid: str, df_uid: pd.DataFrame, gt_list: List[str], out_dir: P
             )
 
             if not row.empty:
-                row = row.iloc[0]  # turn into Series
+                row = row.iloc[0]
                 img_p = resolve_gen_path_from_row(row, uid_index)
-
-            #     # DEBUG prints to help you trace
-            #     print(
-            #     f"[DEBUG] uid={uid} gt={gt_name} attempt={attempt} "
-            #     f"gen_csv={row.get('gen')} "
-            #     f"seedless={normalize_name(str(row.get('gen','')))} "
-            #     f"resolved={img_p}"
-            # )
-
                 ax.imshow(np.asarray(read_image(img_p)))
-                ax.set_axis_off()
+                hide_axes(ax)
 
-                # Prompt label
-                prompt_text = wrap_lines(row.get("prompt", ""), width=42, max_lines=3)
-                ax.set_xlabel(f"Attempt {attempt}\n{prompt_text}", fontsize=8)
-                ax.xaxis.set_label_position('bottom')
+                prompt_text = wrap_lines(row.get("prompt", ""))  # now uses higher width/lines
+                draw_caption(ax, f"Attempt {attempt}\n{prompt_text}")
             else:
                 ax.imshow(np.asarray(read_image(None)))
-                ax.set_axis_off()
-                ax.set_xlabel(f"Attempt {attempt}\n(no data)", fontsize=8)
-                ax.xaxis.set_label_position('bottom')
+                hide_axes(ax)
+                draw_caption(ax, f"Attempt {attempt}\n(no data)")
+
 
     fig.suptitle(f"Participant {uid}", fontsize=12, y=0.995)
     out_path = out_dir / f"{uid}_panel.png"
@@ -201,9 +213,9 @@ def main(csv_path: Path, ge_list, out_dir: Path):
         df_uid = df[df["uid"] == uid]
         p = panel_for_uid(uid, df_uid, gt_list, out_dir)
         outputs.append(p)
-        print(f"✓ wrote {p}")
+        # print(f"✓ wrote {p}")
 
-    print(f"\nDone. Panels saved in: {out_dir.resolve()}")
+    # print(f"\nDone. Panels saved in: {out_dir.resolve()}")
 
 if __name__ == "__main__":
     gt_list = ['farm_h.jpg', 'fountain_l.jpg', 'garden_h.jpg', 'kitchen_l.jpg',
