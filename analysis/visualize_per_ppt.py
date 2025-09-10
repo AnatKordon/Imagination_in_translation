@@ -180,11 +180,11 @@ def panel_for_uid(uid: str, df_uid: pd.DataFrame, gt_list: List[str], out_dir: P
                 hide_axes(ax)
 
                 prompt_text = wrap_lines(row.get("prompt", ""))  # now uses higher width/lines
-                draw_caption(ax, f"Attempt {attempt}\n{prompt_text}")
+                draw_caption(ax, prompt_text)
             else:
                 ax.imshow(np.asarray(read_image(None)))
                 hide_axes(ax)
-                draw_caption(ax, f"Attempt {attempt}\n(no data)")
+                draw_caption(ax, "no data")
 
 
     fig.suptitle(f"Participant {uid}", fontsize=12, y=0.995)
