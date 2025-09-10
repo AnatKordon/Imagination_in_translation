@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image, ImageOps, ImageDraw, ImageFont
 import matplotlib.pyplot as plt
+import re
 
 # Make sure we can import config.py from project root
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -16,6 +17,14 @@ if str(PROJECT_ROOT) not in sys.path:
 import config  # uses your project-level config.py
 
 IMG_EXTS = {".png", ".jpg", ".jpeg"}
+
+
+SEED_TAG = re.compile(r"_seed\d+(?=\.\w+$)", re.IGNORECASE)
+
+#helper - remove's seed from name
+def normalize_name(name: str) -> str:
+    """Remove trailing `_seed123456` just before the extension."""
+    return SEED_TAG.sub("", name).strip()
 
 def load_all_logs(csv_path: Path) -> pd.DataFrame:
     df = pd.read_csv(csv_path)
@@ -29,14 +38,59 @@ def load_all_logs(csv_path: Path) -> pd.DataFrame:
 
 #find all images by this ppt
 def build_uid_image_index(uid: str) -> Dict[str, Path]:
-    """Map generated image filename -> full path (search only this uid's folder)."""
     root = Path(config.PARTICIPANTS_DIR) / uid
+    print("PARTICIPANTS_DIR:", Path(config.PARTICIPANTS_DIR).resolve())
+    print("GT_DIR:", Path(config.GT_DIR).resolve())
     index = {}
     if root.exists():
         for p in root.rglob("*"):
             if p.is_file() and p.suffix.lower() in IMG_EXTS:
-                index[p.name] = p
+                key_raw  = p.name
+                key_norm = normalize_name(p.name)
+                index[key_raw] = p
+                # don’t overwrite an existing raw key, but ensure the norm key exists
+                index.setdefault(key_norm, p)
+    # small debug
+    print(f"Indexed {len(index)} files for uid={uid}. Example keys: {list(index.keys())[:3]}")
     return index
+
+def build_gen_index(participants_root: Path, exts=("*.png","*.jpg","*.jpeg")):
+    index = {}
+    for pat in exts:
+        for p in participants_root.rglob(pat):
+            index[p.name] = p
+    return index
+
+#reconstructing path by the direct path how it was saved
+def resolve_gen_path_from_row(row: pd.Series, uid_index: dict) -> Path | None:
+    filename = str(row.get("gen", "")).strip()
+    if not filename:
+        return None
+
+    uid_val     = str(row["uid"]).strip()
+    session_val = int(row["session"])
+
+    # 1) reconstructed path, raw filename
+    recon = (
+        Path(config.PARTICIPANTS_DIR)
+        / uid_val
+        / "gen_images"
+        / f"session_{session_val:02d}"
+        / filename
+    )
+    if recon.exists():
+        return recon
+
+    # 2) reconstructed path, normalized filename
+    seedless = normalize_name(filename)
+    if seedless != filename:
+        recon2 = recon.with_name(seedless)
+        if recon2.exists():
+            return recon2
+
+    # 3) look up in the per-UID index by raw or seedless keys
+    return uid_index.get(filename) or uid_index.get(seedless)
+
 
 #opening image
 def read_image(path: Optional[Path], box=(320, 320)) -> Image.Image:
@@ -67,54 +121,55 @@ def wrap_lines(s: str, width: int = 45, max_lines: int = 3) -> str:
 
 def panel_for_uid(uid: str, df_uid: pd.DataFrame, gt_list: List[str], out_dir: Path):
     out_dir.mkdir(parents=True, exist_ok=True)
-    gen_index = build_uid_image_index(uid)
-    print(f"gen_index: {gen_index}")
-    # canvas: rows = number of GTs (fixed order), cols = 4 (GT + attempts 1..3)
+
+    # Build a per-UID filename -> path index once
+    uid_index = build_uid_image_index(uid)
+
     rows = len(gt_list)
     cols = 4
     fig, axes = plt.subplots(rows, cols, figsize=(cols*3.4, rows*3.6))
-    if rows == 1:  # matplotlib quirk: ensure 2D
+    if rows == 1:
         axes = np.array([axes])
 
-    # consistent margin so xlabels (prompts) show below images
     plt.subplots_adjust(hspace=0.65, wspace=0.06, top=0.96, bottom=0.04)
 
     for r, gt_name in enumerate(gt_list):
-        # left col: GT
+        # Left: GT
         ax_gt = axes[r, 0]
         ax_gt.imshow(np.asarray(read_gt(gt_name, Path(config.GT_DIR))))
         ax_gt.set_axis_off()
         ax_gt.set_title(f"GT: {gt_name}", fontsize=9)
 
-        # attempts 1..3
+        # Attempts 1..3
         for attempt in (1, 2, 3):
             ax = axes[r, attempt]
+            # pick the latest record for this (uid, gt, attempt)
             row = (
                 df_uid[(df_uid["gt"] == gt_name) & (df_uid["attempt"] == attempt)]
-                .head(1) # the head is in case there are duplicates
+                .sort_values("ts")
+                .tail(1)
             )
+
             if not row.empty:
-                filename = row["gen"].iloc[0] if "gen" in row else None
-                full_path_str = config.PARTICIPANTS_DIR / df_uid["uid"] / "gen_images" / f"session_{df_uid['session']:02d}" / filename    
-                # gen_file = row["gen"].iloc[0] if "gen" in row else None
-                print(f"gen_file: {full_path_str}")
-                prompt = row["prompt"].iloc[0] if "prompt" in row else ""
-                # neg    = row["negative_prompt"].iloc[0] if "negative_prompt" in row else ""
-                img_p = gen_index.get(full_path_str) if isinstance(full_path_str, str) else None
-                print(f"img_p: {img_p}")
+                row = row.iloc[0]  # turn into Series
+                img_p = resolve_gen_path_from_row(row, uid_index)
+
+            #     # DEBUG prints to help you trace
+            #     print(
+            #     f"[DEBUG] uid={uid} gt={gt_name} attempt={attempt} "
+            #     f"gen_csv={row.get('gen')} "
+            #     f"seedless={normalize_name(str(row.get('gen','')))} "
+            #     f"resolved={img_p}"
+            # )
+
                 ax.imshow(np.asarray(read_image(img_p)))
                 ax.set_axis_off()
 
-                # prompt under image (and neg if present)
-                prompt_text = wrap_lines(prompt, width=42, max_lines=3)
-                # neg_text    = wrap_lines(f"avoid: {neg}", width=42, max_lines=1) if isinstance(neg, str) and neg.strip() else ""
-                label = f"Attempt {attempt}\n{prompt_text}"
-                # if neg_text:
-                #     label += f"\n{neg_text}"
-                ax.set_xlabel(label, fontsize=8)
+                # Prompt label
+                prompt_text = wrap_lines(row.get("prompt", ""), width=42, max_lines=3)
+                ax.set_xlabel(f"Attempt {attempt}\n{prompt_text}", fontsize=8)
                 ax.xaxis.set_label_position('bottom')
             else:
-                # no data for this attempt
                 ax.imshow(np.asarray(read_image(None)))
                 ax.set_axis_off()
                 ax.set_xlabel(f"Attempt {attempt}\n(no data)", fontsize=8)
