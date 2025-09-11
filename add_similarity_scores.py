@@ -18,7 +18,7 @@ df = pd.read_csv(CSV_PATH)
 weights = VGG16_Weights.IMAGENET1K_V1
 vgg_imagenet = models.vgg16(weights=weights)
 
-vgg_last_conv_embedder = VGGEmbedder(model=vgg_imagenet, layer='Layer_30')
+vgg_last_conv_embedder = VGGEmbedder(model=vgg_imagenet, layer='Classifier_4') # this is fc7, else: 'Layer_30'
 
 if __name__ == "__main__":
     # CLIP

@@ -28,33 +28,46 @@ def encode_image_to_base64(image_path: Path) -> str:
     return f"data:image/{suffix};base64,{encoded}" #jpg/jpeg/png
 
 def generate_diffusion_prompt(image_path: Path) -> str:
-    """Send an image to the GPT model and receive a descriptive prompt."""
-    image_data_uri = encode_image_to_base64(image_path)
-    
-    messages = [
-        {
-            "role": "system",
-            "content": (
-                "You are a visual assistant that specializes in describing images "
-                "for use as prompts for diffusion models."
-            )
-        },
-        {
-            "role": "user",
-            "content": [
-                {"type": "text", "text": "Please, describe the picture as precisely as possible in English only."},
-                {"type": "image_url", "image_url": {"url": image_data_uri}}
-            ]
-        }
-    ]
-    
-    response = client.chat.completions.create(
-        model="gpt-5", 
-        messages=messages,
-        temperature=0.0, # lowest temperature - deterministic
-        max_tokens=10000
+    img_uri = encode_image_to_base64(image_path)
+
+    response = client.responses.create(
+        model="gpt-5",  # your GPT-5 reasoning model id
+        # Put your “system/dev” guidance here (not as an assistant message)
+        instructions=(
+            'You are a visual assistant that specializes in describing images for use as prompts for diffusion models'
+            # "You are a visual assistant that specializes in describing images for "
+            # "use as prompts for diffusion models. Be precise and concrete; include "
+            # "composition/camera angle, subjects, lighting, color palette, materials/"
+            # "textures, style, mood, and any salient small details. English only."
+        ),
+        input=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "input_text",
+                        "text": "Please, describe the picture as precisely as possible in English only."
+                    },
+                    {
+                        "type": "input_image",
+                        "image_url": img_uri
+                    }
+                ]
+            }
+        ],
+        # Responses API uses max_output_tokens (not max_tokens)
+        # max_output_tokens=800,
+        # Reasoning control for GPT-5 models
+        reasoning={"effort": "medium"},   # try "low" if you want it snappier
+        text={ "verbosity": "high" }, 
+        # # Optional hygiene:
+        store=False,
+        # metadata={"task": "diffusion_prompt"}
     )
-    return response.choices[0].message.content.strip()
+    # print(f"Raw response: {response}")
+    print(response.output_text)
+    # SDK convenience accessor; falls back to structured path if needed
+    return response, response.output_text
 
 def describe_all_images(gt_dir: Path) -> List[dict]:
     """Iterate over all images in GT_DIR and describe each."""
@@ -64,10 +77,12 @@ def describe_all_images(gt_dir: Path) -> List[dict]:
             continue
         print(f"Describing {image_path.name}...")
         try:
-            description = generate_diffusion_prompt(image_path)
+            full_response, description = generate_diffusion_prompt(image_path)
             all_descriptions.append({
                 "image": image_path.name,
-                "description": description
+                "description": description,
+                "full_response": full_response.model_dump_json()
+
             })
         except Exception as e:
             print(f"Failed on {image_path.name}: {e}")
@@ -75,10 +90,11 @@ def describe_all_images(gt_dir: Path) -> List[dict]:
 
 if __name__ == "__main__":
     image_dir = config.GT_DIR
-    results = describe_all_images(image_dir)
+
+    all_descriptions = describe_all_images(image_dir)
 
     # Optional: print all results
-    for r in results:
+    for r in all_descriptions:
         print(f"\n🖼️ {r['image']}\n📜 {r['description']}")
 
-    pd.DataFrame(results).to_csv("image_descriptions.csv", index=False)
+    pd.DataFrame(all_descriptions).to_csv("image_descriptions.csv", index=False)
