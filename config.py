@@ -18,7 +18,7 @@ PROLIFIC_URL = "https://app.prolific.com/submissions/complete?cc=C1OJX362"  # Pr
 #analysis
 ANALYSIS_DIR = ROOT / "analysis"  
 PARTICIPANTS_DIR = ROOT / "Data" / "participants_data"
-PROCESSED_DIR = ROOT / "Data" / "processed_data" / "08092025"
+PROCESSED_DIR = ROOT / "Data" / "processed_data" / "08092025_pilot"
 PANELS_DIR = ANALYSIS_DIR / "panels"
 ## for error handling
 websites = [".com", ".net", ".org", ".edu", ".gov", ".io", ".co", ".uk", ".de", ".fr", ".jp", ".ru","https", "http", "www."]

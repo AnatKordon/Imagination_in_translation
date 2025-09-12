@@ -66,8 +66,10 @@ def build_uid_image_index(uid: str) -> Dict[str, Path]:
 #reconstructing path by the direct path how it was saved - from csv to full path
 def path_from_row(row) -> Path:
     filename = normalize_name(str(row["gen"]).strip())
-    uid      = str(row["uid"]).strip()
-    session  = int(row["session"])
+
+    uid      = str(row["uid"]).strip() # I changed the name of gpt-5 folder form the uid to this name, should look in the future if that causes some bugs...
+    session  = int(row["session"]) # same as int(str(filename)[45:47]) - but more robust to use the csv value
+    print(f"uid: {uid}, session: {session}, filename: {filename}")
     return (
         Path(config.PARTICIPANTS_DIR)
         / uid
@@ -201,7 +203,7 @@ if __name__ == "__main__":
     gt_list = ['farm_h.jpg', 'fountain_l.jpg', 'garden_h.jpg', 'kitchen_l.jpg',
        'dam_l.jpg', 'conference_room_l.jpg', 'badlands_h.jpg',
        'bedroom_h.jpg']
-    csv_path = config.PROCESSED_DIR / "08092025_pilot" / "participants_log_cleaned_pilot_08092025.csv"
-    out_dir = config.PANELS_DIR / "pilot_08092025_new"
+    csv_path = config.PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025.csv"
+    out_dir = config.PANELS_DIR / "pilot_08092025_with_gpt"
 
     main(Path(csv_path), gt_list, Path(out_dir))
