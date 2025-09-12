@@ -12,6 +12,12 @@ from torchvision import transforms, models
 from torchvision.models import vgg16, VGG16_Weights
 from scipy.spatial.distance import cosine
 
+#beacause something wasn't on cpu
+def _to_numpy(x):
+    if isinstance(x, torch.Tensor):
+        return x.detach().cpu().numpy()
+    return np.asarray(x)
+
 class VGGEmbedder:
     """
     Extracts an embedding from a specified VGG layer for a single image,
@@ -56,7 +62,7 @@ class VGGEmbedder:
         Returns a hook function to save the layer output as an embedding.
         """
         def hook(model, input, output):
-            self.embedding = output.detach().flatten().cpu().numpy()
+            self.embedding = output.detach().flatten().to("cpu").numpy()
         return hook
 
     def preprocess_image(self, img_path: str) -> torch.Tensor:
@@ -102,6 +108,9 @@ def compute_similarity_score(embedding1: np.ndarray, embedding2: np.ndarray) -> 
         Returns:
             Similarity score between 0 and 100 (higher = more similar).
         """
+        #making sure embeddings are nunmpy arrays and not tensor and flattenning!
+        embedding1 = _to_numpy(embedding1).ravel()
+        embedding2 = _to_numpy(embedding2).ravel()
         cosine_distance = cosine(embedding1, embedding2) #dissimilarity value - lower is higher similarity, used for logging ranges [0, 2]
         similarity = 1 - cosine_distance  # ranges [-1,+1]
         scaled_similarity = ((similarity + 1) / 2) * 100  # maps to [0,100] for visibility, rounding for user friendliness

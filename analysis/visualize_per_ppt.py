@@ -8,6 +8,7 @@ import pandas as pd
 from PIL import Image, ImageOps, ImageDraw, ImageFont
 import matplotlib.pyplot as plt
 import re
+import math
 
 # Make sure we can import config.py from project root
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -175,7 +176,7 @@ def panel_for_uid(uid: str, df_uid: pd.DataFrame, gt_list: List[str], out_dir: P
     plt.close(fig)
     return out_path
 
-def main(csv_path: Path, ge_list, out_dir: Path):
+def main_uid(csv_path: Path, ge_list, out_dir: Path):
     df = load_all_logs(csv_path)
 
     # enforce dtypes we rely on
@@ -193,17 +194,121 @@ def main(csv_path: Path, ge_list, out_dir: Path):
     outputs = []
     for uid in uids:
         df_uid = df[df["uid"] == uid]
-        p = panel_for_uid(uid, df_uid, gt_list, out_dir)
+        p = panel_for_uid(uid, df_uid, gt_list, out_dir) # generating a panel per uid
         outputs.append(p)
         # print(f"✓ wrote {p}")
 
     # print(f"\nDone. Panels saved in: {out_dir.resolve()}")
+
+#############################################################################333
+
+# Now constructing a panel based on gt image:
+def panel_for_gt(gt_name: str, df: pd.DataFrame, out_dir: Path, uid_order: List[str] | None = None):
+    """
+    Build a panel for a single GT:
+      - Top row: GT image spanning all columns
+      - Then one row per participant: [uid | attempt1 | attempt2 | attempt3]
+    """
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Filter rows for this GT and keep the latest record per (uid, attempt)
+    df_gt = df[df["gt"] == gt_name].copy()
+    if df_gt.empty:
+        print(f"[panel_for_gt] No rows for GT '{gt_name}' — skipping.")
+        return None
+
+    # Ensure types we rely on
+    df_gt["attempt"] = df_gt["attempt"].astype(int)
+
+    # Decide participant order (left-to-right rows)
+    if uid_order is None:
+        uid_order = df_gt["uid"].dropna().unique().tolist()
+
+    # Layout: 1 header row (GT) + N participant rows; 4 columns (uid + 3 attempts)
+    n_rows = len(uid_order)
+    n_cols = 4
+
+    # Nice-ish sizing: each image ~3.4 wide, each row ~4.6 tall (like your other panel)
+    fig_w = n_cols * 3.4
+    fig_h = (1 + n_rows) * 4.6
+    fig = plt.figure(figsize=(fig_w, fig_h))
+
+    gs = fig.add_gridspec(
+        nrows=1 + n_rows, ncols=n_cols,
+        height_ratios=[1.2] + [1.0] * n_rows,
+        width_ratios=[0.75, 1, 1, 1],   # narrower first column for the uid label
+        hspace=1.10, wspace=0.06
+    )
+
+    # --- Top: GT spanning all columns ---
+    ax_top = fig.add_subplot(gs[0, :])
+    ax_top.imshow(np.asarray(read_gt(gt_name, Path(config.GT_DIR))))
+    hide_axes(ax_top)
+    ax_top.set_title(f"GT: {gt_name}", fontsize=10)
+
+    # --- Rows: one per participant ---
+    for r, uid in enumerate(uid_order, start=1):
+        # left label cell: UID text only
+        ax_uid = fig.add_subplot(gs[r, 0])
+        hide_axes(ax_uid)
+        # compact uid label (hex can be long)
+        uid_label = uid if len(uid) <= 20 else f"{uid[:10]}…{uid[-4:]}"
+        ax_uid.text(0.5, 0.5, uid_label, ha="center", va="center", fontsize=9)
+
+        # the participant's rows for this GT
+        df_u = df_gt[df_gt["uid"] == uid]
+
+        # attempts 1..3
+        for attempt in (1, 2, 3):
+            ax = fig.add_subplot(gs[r, attempt])
+            row = (
+                df_u[df_u["attempt"] == attempt]
+                .sort_values("ts")
+                .tail(1)
+            )
+
+            if not row.empty:
+                row = row.iloc[0]
+                img_p = path_from_row(row)
+                ax.imshow(np.asarray(read_image(img_p)))
+                hide_axes(ax)
+
+                prompt_text = wrap_lines(row.get("prompt", ""))
+                draw_caption(ax, prompt_text)
+            else:
+                # no row for this (uid, gt, attempt)
+                ax.imshow(np.asarray(read_image(None)))
+                hide_axes(ax)
+                draw_caption(ax, "no data")
+
+    # Title & export
+    fig.suptitle(f"GT panel • {gt_name}", fontsize=12, y=0.995)
+    out_path = out_dir / f"GT_{Path(gt_name).stem}_by_uid.png"
+    fig.savefig(out_path, dpi=150)
+    plt.close(fig)
+    return out_path
+
+def main_gt_panels(csv_path: Path, gt_list: List[str], out_dir: Path):
+    df = load_all_logs(csv_path)
+    for col in ["uid", "gt", "session", "attempt"]:
+        if col not in df.columns:
+            raise ValueError(f"CSV missing required column: {col}")
+    df["attempt"] = df["attempt"].astype(int)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for gt_name in gt_list:
+        p = panel_for_gt(gt_name, df, out_dir) # this is the function that generates a panel per gt
+        if p:
+            print(f"✓ wrote {p}")
+    print(f"\nGT panels saved in: {out_dir.resolve()}")
+
 
 if __name__ == "__main__":
     gt_list = ['farm_h.jpg', 'fountain_l.jpg', 'garden_h.jpg', 'kitchen_l.jpg',
        'dam_l.jpg', 'conference_room_l.jpg', 'badlands_h.jpg',
        'bedroom_h.jpg']
     csv_path = config.PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025.csv"
-    out_dir = config.PANELS_DIR / "pilot_08092025_with_gpt"
-
-    main(Path(csv_path), gt_list, Path(out_dir))
+    uid_out_dir = config.PANELS_DIR / "by_uid"
+    gt_out_dir = config.PANELS_DIR  / "by_gt"
+    # main_uid(Path(csv_path), gt_list, Path(uid_out_dir))
+    main_gt_panels(Path(csv_path), gt_list, Path(gt_out_dir))
