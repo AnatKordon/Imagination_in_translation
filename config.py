@@ -12,13 +12,13 @@ IMG_H = 260  # The height of images is limited to 260 px so the user doesn't nee
 MAX_LENGTH = 10000  # Maximum length of the prompt text
 N_OUT = 1  # Number of images to generate per prompt (1 or 4)
 MAX_SESSIONS = 8             # total sessions per participant
-REQUIRED_ATTEMPTS = 1         # exactly 3 attempts per session
+REQUIRED_ATTEMPTS = 3         # exactly 3 attempts per session
 PROLIFIC_URL = "https://app.prolific.com/submissions/complete?cc=C1OJX362"  # Prolific completion URL
 
 #analysis
 ANALYSIS_DIR = ROOT / "analysis"  
 PARTICIPANTS_DIR = ROOT / "Data" / "participants_data"
-PROCESSED_DIR = ROOT / "Data" / "processed_data"
+PROCESSED_DIR = ROOT / "Data" / "processed_data" / "08092025"
 PANELS_DIR = ANALYSIS_DIR / "panels"
 ## for error handling
 websites = [".com", ".net", ".org", ".edu", ".gov", ".io", ".co", ".uk", ".de", ".fr", ".jp", ".ru","https", "http", "www."]

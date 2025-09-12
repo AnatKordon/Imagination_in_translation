@@ -43,7 +43,8 @@ def load_all_logs(csv_path: Path) -> pd.DataFrame:
         )
     return df
 
-#find all images by this ppt
+#find all images by this ppt - creates a dict mapping row and path by the uid
+# a dictionary that maps generated image filenames (both the raw name and a “normalized” name with _seedNNN stripped) → full filesystem Path for that single UID’s folder.
 def build_uid_image_index(uid: str) -> Dict[str, Path]:
     root = Path(config.PARTICIPANTS_DIR) / uid
     print("PARTICIPANTS_DIR:", Path(config.PARTICIPANTS_DIR).resolve())
@@ -52,52 +53,29 @@ def build_uid_image_index(uid: str) -> Dict[str, Path]:
     if root.exists():
         for p in root.rglob("*"):
             if p.is_file() and p.suffix.lower() in IMG_EXTS:
-                key_raw  = p.name
+                # key_raw  = p.name # I don't need it as the key is always seedless
                 key_norm = normalize_name(p.name)
-                index[key_raw] = p
+                # index[key_raw] = p
                 # don’t overwrite an existing raw key, but ensure the norm key exists
-                index.setdefault(key_norm, p)
+                index.setdefault(key_norm, p) # we get a dict where key is full path (seedless)
     # small debug
     print(f"Indexed {len(index)} files for uid={uid}. Example keys: {list(index.keys())[:3]}")
     return index
 
-def build_gen_index(participants_root: Path, exts=("*.png","*.jpg","*.jpeg")):
-    index = {}
-    for pat in exts:
-        for p in participants_root.rglob(pat):
-            index[p.name] = p
-    return index
 
-#reconstructing path by the direct path how it was saved
-def resolve_gen_path_from_row(row: pd.Series, uid_index: dict) -> Path | None:
-    filename = str(row.get("gen", "")).strip()
-    if not filename:
-        return None
-
-    uid_val     = str(row["uid"]).strip()
-    session_val = int(row["session"])
-
-    # 1) reconstructed path, raw filename
-    recon = (
+#reconstructing path by the direct path how it was saved - from csv to full path
+def path_from_row(row) -> Path:
+    filename = normalize_name(str(row["gen"]).strip())
+    uid      = str(row["uid"]).strip()
+    session  = int(row["session"])
+    return (
         Path(config.PARTICIPANTS_DIR)
-        / uid_val
+        / uid
         / "gen_images"
-        / f"session_{session_val:02d}"
+        / f"session_{session:02d}"
         / filename
     )
-    if recon.exists():
-        return recon
-
-    # 2) reconstructed path, normalized filename
-    seedless = normalize_name(filename)
-    if seedless != filename:
-        recon2 = recon.with_name(seedless)
-        if recon2.exists():
-            return recon2
-
-    # 3) look up in the per-UID index by raw or seedless keys
-    return uid_index.get(filename) or uid_index.get(seedless)
-
+    
 def hide_axes(ax):
     """Remove ticks and spines but keep the axes alive for drawing text."""
     ax.set_xticks([])
@@ -141,11 +119,12 @@ def wrap_lines(s: str, width: int = CAPTION_WIDTH, max_lines: int = CAPTION_MAX_
     lines = wrapped.splitlines()
     return "\n".join(lines[:max_lines])
 
+#this finally creates a panel for a single ppt
 def panel_for_uid(uid: str, df_uid: pd.DataFrame, gt_list: List[str], out_dir: Path):
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Build a per-UID filename -> path index once
-    uid_index = build_uid_image_index(uid)
+    # uid_index = build_uid_image_index(uid)
 
     rows = len(gt_list)
     cols = 4
@@ -175,7 +154,8 @@ def panel_for_uid(uid: str, df_uid: pd.DataFrame, gt_list: List[str], out_dir: P
 
             if not row.empty:
                 row = row.iloc[0]
-                img_p = resolve_gen_path_from_row(row, uid_index)
+                img_p = path_from_row(row)
+                # img_p = resolve_gen_path_from_row(row, uid_index)
                 ax.imshow(np.asarray(read_image(img_p)))
                 hide_axes(ax)
 
@@ -222,6 +202,6 @@ if __name__ == "__main__":
        'dam_l.jpg', 'conference_room_l.jpg', 'badlands_h.jpg',
        'bedroom_h.jpg']
     csv_path = config.PROCESSED_DIR / "08092025_pilot" / "participants_log_cleaned_pilot_08092025.csv"
-    out_dir = config.PANELS_DIR / "pilot_08092025"
+    out_dir = config.PANELS_DIR / "pilot_08092025_new"
 
     main(Path(csv_path), gt_list, Path(out_dir))

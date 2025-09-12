@@ -35,6 +35,10 @@ def generate_diffusion_prompt(image_path: Path) -> str:
         # Put your “system/dev” guidance here (not as an assistant message)
         instructions=(
             'You are a visual assistant that specializes in describing images for use as prompts for diffusion models'
+            "Output must contain only ASCII letters, digits, spaces, "
+            "and these punctuation marks: . , ! ? : ; ' \" - ( ). "
+            "Do not use any other characters (no emojis, curly quotes, en dashes/em dashes, "
+            "slashes, brackets, ellipses, bullets). Do not add newlines. "
             # "You are a visual assistant that specializes in describing images for "
             # "use as prompts for diffusion models. Be precise and concrete; include "
             # "composition/camera angle, subjects, lighting, color palette, materials/"
@@ -47,6 +51,7 @@ def generate_diffusion_prompt(image_path: Path) -> str:
                     {
                         "type": "input_text",
                         "text": "Please, describe the picture as precisely as possible in English only."
+            
                     },
                     {
                         "type": "input_image",
@@ -58,14 +63,15 @@ def generate_diffusion_prompt(image_path: Path) -> str:
         # Responses API uses max_output_tokens (not max_tokens)
         # max_output_tokens=800,
         # Reasoning control for GPT-5 models
-        reasoning={"effort": "medium"},   # try "low" if you want it snappier
-        text={ "verbosity": "high" }, 
+        reasoning={"effort": "high"},   # can change 
+        text={ "verbosity": "low" }, 
         # # Optional hygiene:
         store=False,
         # metadata={"task": "diffusion_prompt"}
     )
     # print(f"Raw response: {response}")
     print(response.output_text)
+    
     # SDK convenience accessor; falls back to structured path if needed
     return response, response.output_text
 
@@ -96,5 +102,5 @@ if __name__ == "__main__":
     # Optional: print all results
     for r in all_descriptions:
         print(f"\n🖼️ {r['image']}\n📜 {r['description']}")
-
-    pd.DataFrame(all_descriptions).to_csv("image_descriptions.csv", index=False)
+   
+    pd.DataFrame(all_descriptions).to_csv("gpt-5_image_descriptions_verbosity-low.csv", index=False)

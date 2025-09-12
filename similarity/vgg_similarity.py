@@ -104,8 +104,8 @@ def compute_similarity_score(embedding1: np.ndarray, embedding2: np.ndarray) -> 
         """
         cosine_distance = cosine(embedding1, embedding2) #dissimilarity value - lower is higher similarity, used for logging ranges [0, 2]
         similarity = 1 - cosine_distance  # ranges [-1,+1]
-        scaled_similarity = int(((similarity + 1) / 2) * 100)  # maps to [0,100] for visibility, rounding for user friendliness
-        return scaled_similarity, cosine_distance  # maybe we should only log similarity
+        scaled_similarity = ((similarity + 1) / 2) * 100  # maps to [0,100] for visibility, rounding for user friendliness
+        return similarity, scaled_similarity, cosine_distance  # maybe we should only log similarity
 
 def get_vgg_embedder(layer='Classifier_4'):
     """
@@ -129,9 +129,9 @@ if __name__ == "__main__":
     embedding_gt = embedder.get_embedding(img_path=str(img_gt))
     embedding_gen = embedder.get_embedding(img_path=str(img_gen))
     # Compute similarity score
-    ObjeciveSimilarityScore, cosine_distance = compute_similarity_score(embedding1=embedding_gt, embedding2=embedding_gen)
-    #present user with ObjeciveSimilarityScore, log cosine_distance for analyses
-    print(f"Similarity score: {int(ObjeciveSimilarityScore)}")
+    similarity, scaled_similarity, cosine_distance = compute_similarity_score(embedding1=embedding_gt, embedding2=embedding_gen)
+    #present user with similarity score, log cosine_distance for analyses
+    print(f"Similarity score: {int(scaled_similarity)}")
     print(cosine_distance)
     # add logging for distance score (not the simialrity we show the user - UserID, SessionID, Iteration, cosine_distance)
 
