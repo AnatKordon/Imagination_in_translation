@@ -73,9 +73,18 @@ STABILITY_API_KEY=your_stability_ai_key_goes_here
 7. Run the Streamlit app.
 ```bash
 streamlit run app.py
-````
+```
 8. After you are done testing, close the browser.
    
+
+## Analysis pipelines:
+Analysis scripts are located in the `analysis` folder.
+*Visualize per ppt.py* allows for a visual inspection of the results - all ground truth, generated images and description - per participant and per ground truth image.
+*aggregate.py* aggregates all results across all ppts - then we should check for duplicates/missing values
+*add_similarity_scores.py* takes ppts and gpt csv and adds cosine distances scores for visual clip and vgg fc7 (similarity is 1 - cosine distance)
+*gpt_image_desc_api.py* allows to receive gpt descriptions for all ground truth images - we can choose verbosity level. Currently 3 verbosity levels were used with gpt-5.
+
+
 ## License
 MIT – see `LICENSE` for full text.
 
