@@ -15,37 +15,41 @@ class SGPTEmbedder:
                  model_name: str = "Muennighoff/SGPT-1.3B-weightedmean-nli-bitfit",
                  device: str = None,
                  max_length: int = 2047, # from model card, base model max length is 2048 
-                 batch_size: int = 8):
+                 batch_size: int = 8,
+                 pooling: str = "mean"):
         self.device = torch.device(device) if device else torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.tok = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModel.from_pretrained(model_name).to(self.device)
         self.model.eval()
         self.max_length = max_length
-        self.batch_size = batch_size
+        self.batch = batch_size
+        assert pooling in {"mean", "weighted_end", "weighted_start"}
+        self.pooling = pooling
 
     def encode(self, texts: List[str]) -> np.ndarray:
-        """Weighted-mean pooled embeddings, L2-normalized, shape [N, H]."""
-        embs = []
+        out = []
         with torch.no_grad():
-            for i in range(0, len(texts), self.batch_size):
-                batch = texts[i:i+self.batch_size]
-                toks = self.tokenizer(batch, padding=True, truncation=True,
-                                      max_length=self.max_length, return_tensors="pt").to(self.device)
-                out = self.model(**toks, output_hidden_states=True, return_dict=True)
-                last_hidden = out.last_hidden_state  # [bs, seq, hid]
+            for i in range(0, len(texts), self.batch):
+                batch = texts[i:i+self.batch]
+                toks = self.tok(batch, padding=True, truncation=True,
+                                max_length=self.max_length, return_tensors="pt").to(self.device)
+                hid = self.model(**toks, output_hidden_states=True, return_dict=True).last_hidden_state  # [bs, L, H]
+                bs, sequence_len, H = hid.shape #batch size, sequence length, hidden size
+                mask = toks["attention_mask"].unsqueeze(-1).float()  # [bs,L,1]
 
-                # Weighted mean pooling (your recipe)
-                bs, seq_len, hid = last_hidden.shape #batch size, sequence length, hidden size
-                weights = torch.arange(1, seq_len+1, device=last_hidden.device).float().view(1, seq_len, 1)
-                weights = weights.expand(bs, seq_len, hid)
-                mask = toks["attention_mask"].unsqueeze(-1).expand(bs, seq_len, hid).float()
+                # weights on every token in the sequence - Adva's suggestion is weighted mean (last) - but i'm going with flat mean for now because in my descriptions the main things isn't at the end
+                if self.pooling == "weighted_end":
+                    weights = torch.arange(1, sequence_len+1, device=hid.device).float().view(1,sequence_len,1).expand(bs,sequence_len,H)
+                elif self.pooling == "weighted_start":
+                    weights = torch.arange(sequence_len, 0, -1, device=hid.device).float().view(1,sequence_len,1).expand(bs,sequence_len,H)
+                else:  # "mean"
+                    weights = torch.ones_like(hid)
 
-                sum_emb = torch.sum(last_hidden * mask * weights, dim=1)
-                sum_w = torch.sum(mask * weights, dim=1)
-                emb = sum_emb / (sum_w + 1e-8)  # [bs, hid]
+                num = (hid * mask * weights).sum(dim=1)                   # [bs,H]
+                den = (mask * weights).sum(dim=1) + 1e-8                  # [bs,1]
+                emb = num / den
+                emb = torch.nn.functional.normalize(emb, p=2, dim=1)
+                out.append(emb.cpu().numpy())
+        return np.vstack(out)
+    
 
-                # L2 normalize
-                emb = emb / (emb.norm(p=2, dim=1, keepdim=True) + 1e-8)
-                embs.append(emb.cpu().numpy())
-
-        return np.vstack(embs)
