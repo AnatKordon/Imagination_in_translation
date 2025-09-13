@@ -70,7 +70,7 @@ def path_from_row(row) -> Path:
 
     uid      = str(row["uid"]).strip() # I changed the name of gpt-5 folder form the uid to this name, should look in the future if that causes some bugs...
     session  = int(row["session"]) # same as int(str(filename)[45:47]) - but more robust to use the csv value
-    print(f"uid: {uid}, session: {session}, filename: {filename}")
+    # print(f"uid: {uid}, session: {session}, filename: {filename}") # for debugging
     return (
         Path(config.PARTICIPANTS_DIR)
         / uid

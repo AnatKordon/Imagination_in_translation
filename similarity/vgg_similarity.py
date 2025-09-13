@@ -140,7 +140,6 @@ if __name__ == "__main__":
     # Compute similarity score
     similarity, scaled_similarity, cosine_distance = compute_similarity_score(embedding1=embedding_gt, embedding2=embedding_gen)
     #present user with similarity score, log cosine_distance for analyses
-    print(f"Similarity score: {int(scaled_similarity)}")
-    print(cosine_distance)
+
     # add logging for distance score (not the simialrity we show the user - UserID, SessionID, Iteration, cosine_distance)
 

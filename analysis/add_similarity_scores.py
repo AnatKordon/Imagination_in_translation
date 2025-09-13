@@ -10,7 +10,7 @@ if str(PROJECT_ROOT) not in sys.path:
 import pandas as pd
 from pathlib import Path
 import config as config
-from similarity.CLIP_similarity import get_clip_visual_embedding, get_clip_text_embedding
+from similarity.CLIP_similarity import get_clip_visual_embedding, get_clip_text_embedding, cosine_similarity
 from similarity.vgg_similarity import compute_similarity_score, VGGEmbedder
 from visualize_per_ppt import path_from_row
 from torchvision import models
@@ -18,7 +18,7 @@ from torchvision.models import vgg16, VGG16_Weights
 from similarity.LPIPS_similarity import compute_lpips_score
 
 CSV_PATH = config.PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025.csv"  # Path to my CSV for analysis
-OUTPUT_CSV = config.PROCESSED_DIR / "participants_log_with_gpt_with_distances_pilot_08092025_.csv" 
+OUTPUT_CSV = config.PROCESSED_DIR / "participants_log_with_gpt_with_distances_and_alignment_pilot_08092025_.csv"
 
 # ---- Process CSV ----
 df = pd.read_csv(CSV_PATH)
@@ -32,28 +32,33 @@ vgg_fc7_embedder = VGGEmbedder(model=vgg_imagenet, layer='Classifier_4') # this 
 
 if __name__ == "__main__":
     # CLIP
-    clip_similarities = []
-    clip_distances = []
-    clip_scaled_similarities = []
 
+    clip_distances = []
+    clip_vis_text_similarities = []
+    clip_text_embeddings = []
     lpips_distances = []
     lpips_scaled_similarities = []
 
     vgg_fc7_distances = []
     vgg_fc7_similarities = []
     vgg_fc7_scaled_similarities = []
-    clip_text_embeddings = []
+
     token_nums = []
     for idx, row in df.iterrows():
+        # path for gt and gen per row
         gt_path = config.GT_DIR / row['gt']
         gen_path = path_from_row(row) # in the function it knows to use the 'gen' row and turn it into a full path
-        gt_embed = get_clip_visual_embedding(gt_path)
-        gen_embed = get_clip_visual_embedding(gen_path)
-        # Compute cosine similarity using PyTorch
-        _, _, clip_cosine_distance = compute_similarity_score(gt_embed, gen_embed)
-        # clip_similarities.append(clip_sim)
+        gt__clip_embed = get_clip_visual_embedding(gt_path)
+        gen__clip_embed = get_clip_visual_embedding(gen_path)
+        prompt_clip_embed, token_num = get_clip_text_embedding(row['prompt']) # Note that for prompts longer than 77 words it is truncated
+        token_nums.append(token_num)
+        # Compute cosine similarity for images
+        _, _, clip_cosine_distance = compute_similarity_score(gt__clip_embed, gen__clip_embed)
         clip_distances.append(clip_cosine_distance)
-        # clip_scaled_similarities.append(clip_scaled_sim)
+
+        #compute visual_text alighnment using clip
+        clip_visual_text_alignment = cosine_similarity(gen__clip_embed, prompt_clip_embed)
+        clip_vis_text_similarities.append(clip_visual_text_alignment) # note that this is similarity, not distance
 
 
         # # LPIPS (based on vgg)
@@ -72,8 +77,6 @@ if __name__ == "__main__":
 
         # add logging for distance score (not the simialrity we show the user - UserID, SessionID, Iteration, cosine_distance)
         vgg_fc7_distances.append(vgg_fc7_distance)
-        #vgg_fc7_similarities.append(vgg_fc7_similarity)
-        # vgg_fc7_scaled_similarities.append(vgg_fc7_scaled_similarity)
 
     #append to csv
     df["clip_cosine_distance"] = clip_distances
@@ -85,8 +88,8 @@ if __name__ == "__main__":
     # df["vgg_fc7_similarity"] = vgg_fc7_similarities
     # df["vgg_fc7_scaled_similarity"] = vgg_fc7_scaled_similarities
 
-    # df['clip_text_embedding'] = clip_text_embeddings # I'm not using the raw embedding in the csv because it will blow up
-    # df["real_token_num"] = token_nums
+    df["clip_vis_text_similarity"] = clip_vis_text_similarities
+    df["token_num"] = token_nums
 
     df.to_csv(OUTPUT_CSV, index=False)
 

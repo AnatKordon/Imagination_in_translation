@@ -32,3 +32,19 @@ def get_clip_text_embedding(text: str, clip_tokenizer=clip_tokenizer, clip_model
     return features[0], real_token_num
 
 
+
+def cosine_similarity(emb1: torch.Tensor, emb2: torch.Tensor) -> float:
+    return float(torch.matmul(emb1, emb2))
+
+def compute_clip_similarity(image_path: Path, text: str) -> float:
+    image_emb = get_clip_visual_embedding(image_path)
+    text_emb, _ = get_clip_text_embedding(text)
+    similarity = cosine_similarity(image_emb, text_emb)
+    return similarity
+
+## now i will call it on my dataframe
+if __name__ == "__main__":
+    df = pd.read_csv("data/processed/similarity_data.csv")
+    df["clip_similarity"] = df.apply(lambda row: compute_clip_similarity(Path(row["image_path"]), row["description"]), axis=1)
+    df.to_csv("data/processed/similarity_data.csv", index=False)
+    print("CLIP similarity computation completed and saved to data/processed/similarity_data.csv")
