@@ -1,3 +1,5 @@
+
+# this code adds similarity scores according to the functions in similarity folder
 from pathlib import Path
 import sys
 import pandas as pd
@@ -7,18 +9,17 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
-import pandas as pd
-from pathlib import Path
 import config as config
 from similarity.CLIP_similarity import get_clip_visual_embedding, get_clip_text_embedding, cosine_similarity
 from similarity.vgg_similarity import compute_similarity_score, VGGEmbedder
-from visualize_per_ppt import path_from_row
+from visualize_per_ppt import path_from_row, path_from_gen_col
 from torchvision import models
 from torchvision.models import vgg16, VGG16_Weights
 from similarity.LPIPS_similarity import compute_lpips_score
 
-CSV_PATH = config.PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025.csv"  # Path to my CSV for analysis
-OUTPUT_CSV = config.PROCESSED_DIR / "participants_log_with_gpt_with_distances_and_alignment_pilot_08092025_.csv"
+#change the paths acccording to task
+CSV_PATH = config.PROCESSED_DIR / "participants_log_cleaned_pilot_08092025_shuffled.csv" # this is the original good file with participant data: "participants_log_with_gpt_pilot_08092025.csv"  # Path to my CSV for analysis
+OUTPUT_CSV = config.PROCESSED_DIR / "participants_log_cleaned_pilot_08092025_shuffled_with_distances_and_alignment_pilot_08092025_.csv"
 
 # ---- Process CSV ----
 df = pd.read_csv(CSV_PATH)
@@ -47,7 +48,7 @@ if __name__ == "__main__":
     for idx, row in df.iterrows():
         # path for gt and gen per row
         gt_path = config.GT_DIR / row['gt']
-        gen_path = path_from_row(row) # in the function it knows to use the 'gen' row and turn it into a full path
+        gen_path = path_from_gen_col(row) # in the function it knows to use the 'gen' row and turn it into a full path (Previously I used function: path_from_row that worked but failed for shuffled data as it can't be reconstructed)
         gt__clip_embed = get_clip_visual_embedding(gt_path)
         gen__clip_embed = get_clip_visual_embedding(gen_path)
         prompt_clip_embed, token_num = get_clip_text_embedding(row['prompt']) # Note that for prompts longer than 77 words it is truncated
@@ -93,4 +94,4 @@ if __name__ == "__main__":
 
     df.to_csv(OUTPUT_CSV, index=False)
 
-    # print(f"Saved results to {OUTPUT_CSV}")
+    print(f"Saved results to {OUTPUT_CSV}")

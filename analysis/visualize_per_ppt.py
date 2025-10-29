@@ -78,7 +78,32 @@ def path_from_row(row) -> Path:
         / f"session_{session:02d}"
         / filename
     )
+
+#extracting path from the just the 'gen' column - useful for shuffled data where uid/session do not match
+#extracting the path from just the 'gen' column value according to it's structure of: uid_<uid>_session_<session>_gen_<filename>.png (example: 00aeccd632c742d48a9ffe94da201493_session01_attempt03_img01.png)
+FILENAME_RE = re.compile(
+    r"^(?P<uid>[^_]+)_session(?P<session>\d{2})_.*\.png$"
+)
+def path_from_gen_col(row) -> Path:
+    """Reconstruct the full path from the 'gen' column value."""
+    # Extract the UID and session from the 'gen' string
+    filename = normalize_name(str(row["gen"]).strip()) # revoming seed tag if any
+    m = FILENAME_RE.match(filename)
+    if not m:
+        raise ValueError(f"Invalid 'gen' format: {row['gen']}") # if pattern isn't matched
+    uid = m.group("uid") #extract uid
+    session = int(m.group("session"))
     
+    return (
+        Path(config.PARTICIPANTS_DIR)
+        / uid
+        / "gen_images"
+        / f"session_{session:02d}"
+        / filename
+    )
+
+
+
 def hide_axes(ax):
     """Remove ticks and spines but keep the axes alive for drawing text."""
     ax.set_xticks([])
