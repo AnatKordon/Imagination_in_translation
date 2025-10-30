@@ -1,0 +1,6 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,prompt,gen,similarity,cosine_distance,subjective_score,ts
+70b2a0ea056b4496946113cbcc65dd65,10,Prefer not to say,Yes,house_l.jpg,1,1,American house,logs\gen_images\70b2a0ea056b4496946113cbcc65dd65_session1_iter1.png,81,0.367,,1751887831
+70b2a0ea056b4496946113cbcc65dd65,10,Prefer not to say,Yes,house_l.jpg,1,2,oprah winfrey,logs\gen_images\70b2a0ea056b4496946113cbcc65dd65_session1_iter2.png,59,0.8053,4,1751887936
+70b2a0ea056b4496946113cbcc65dd65,10,Prefer not to say,Yes,house_l.jpg,1,3,car,logs\gen_images\70b2a0ea056b4496946113cbcc65dd65_session1_iter3.png,62,0.7469,1,1751888032
+70b2a0ea056b4496946113cbcc65dd65,10,Prefer not to say,Yes,house_l.jpg,1,4,"an american house, one floor, viewed from the backyard, with a small shed, chimey
+",logs\gen_images\70b2a0ea056b4496946113cbcc65dd65_session1_iter4.png,88,0.2215,3,1751888099

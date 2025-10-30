@@ -1,0 +1,9 @@
+uid,participant_age,participant_gender,participant_native,gt,session,attempt,seed,prompt,gen,similarity,cosine_distance,subjective_score,ts
+eee2a0d36b48425c89a5764267e7e886,10,Prefer not to say,Yes,lake_h.jpg,1,1,2655517,a room,logs\gen_images\eee2a0d36b48425c89a5764267e7e886_session1_iter1.png,56,0.8653,,1755173888
+eee2a0d36b48425c89a5764267e7e886,10,Prefer not to say,Yes,lake_h.jpg,1,2,2991154,a fish pool,logs\gen_images\eee2a0d36b48425c89a5764267e7e886_session1_iter2.png,66,0.6708,1,1755173914
+eee2a0d36b48425c89a5764267e7e886,10,Prefer not to say,Yes,lake_h.jpg,1,3,1033156,"a small golden fish pool between rocks
+",logs\gen_images\eee2a0d36b48425c89a5764267e7e886_session1_iter3.png,65,0.6897,1,1755173952
+eee2a0d36b48425c89a5764267e7e886,10,Prefer not to say,Yes,lake_h.jpg,1,4,634150,"a small golden fish pool between rocks. Brown colors. a log in the foreground. Pool is surrounded with wet rocks and small green flowers
+",logs\gen_images\eee2a0d36b48425c89a5764267e7e886_session1_iter4.png,59,0.8057,5,1755174032
+eee2a0d36b48425c89a5764267e7e886,10,Prefer not to say,Yes,lake_h.jpg,1,5,3163362,"A serene koi pond surrounded by natural rock formations and lush green aquatic plants. The water is clear and filled with colorful koi fish, including white, orange, gold, and black varieties, swimming calmly near the surface. A small waterfall gently cascades over the rocks on the left side, creating soft ripples in the pond. Tall, thin papyrus-like plants emerge from the water, adding texture and vertical contrast to the horizontal movement of the fish. The scene evokes a peaceful, zen-like atmosphere typical of a Japanese or tropical garden.",logs\gen_images\eee2a0d36b48425c89a5764267e7e886_session1_iter5.png,64,0.7121,3,1755174316
+eee2a0d36b48425c89a5764267e7e886,10,Prefer not to say,Yes,iceberg_l.jpg,2,1,480270,boy,logs\gen_images\eee2a0d36b48425c89a5764267e7e886_session2_iter1.png,53,0.9351,4,1755174967
