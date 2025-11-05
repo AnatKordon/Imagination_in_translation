@@ -29,13 +29,12 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 from config import PROCESSED_DIR, GPT_IMAGES, PANELS_DIR # uses your project-level config.py
 
 
-DATA = PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025.csv"
+DATA = PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025.csv" # participants and gpt descriptions
 GPT_IMAGES_DATA = PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025_gpt-image-1_generation.csv" # this is how to save it
 #looping through all prompts to generate an image for each using gpt-image-1 and saving them for further analysis
 # modifying the df to include the paths to the generated images
 
-df = pd.read_csv(DATA).head(2) # small amount to check it works
-
+df = pd.read_csv(DATA) 
 #building the folders for saving the images the same way as originally with the users
 
 def build_gpt_image_filename(uid: str, session: int, attempt: int, img_index: int) -> str:
