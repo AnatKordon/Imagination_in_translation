@@ -34,7 +34,7 @@ GPT_IMAGES_DATA = PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025_gpt-
 #looping through all prompts to generate an image for each using gpt-image-1 and saving them for further analysis
 # modifying the df to include the paths to the generated images
 
-df = pd.read_csv(DATA).head(3) # small amount to check it works
+df = pd.read_csv(DATA).head(2) # small amount to check it works
 
 #building the folders for saving the images the same way as originally with the users
 
@@ -95,27 +95,31 @@ def generate_gpt_image_from_prompt(prompt: str,
         f.write(img_bytes)
     # print(out_path)
     #inspecting full response:
-    print(resp)
-    print(getattr(resp.data[0], "revised_prompt", None))
-    return out_path
+    revised_prompt = getattr(resp.data[0], "revised_prompt", None)
+    print(revised_prompt)
+
+    return out_path, revised_prompt
 
 def regenerate_images_with_gpt(df, overwrite: bool = False):
     df = df.copy()
-    out_paths = []
+    filenames = []
+    revised_prompts = []
 
     for _, row in tqdm(df.iterrows(), total=len(df)):
         out_path = build_gpt_image_path(row)
 
         if out_path.exists() and not overwrite:
             # Reuse existing file if present
-            out_paths.append(str(out_path))
+            filenames.append(str(out_path.name)) # this only returns filenames
+            revised_prompts.append(None)
             continue
 
         prompt = str(row["prompt"])
-        generate_gpt_image_from_prompt(prompt, out_path)
-        out_paths.append(str(out_path))
-
-    df["gen_gpt_image"] = out_paths # include new paths in df
+        _, revised_prompt = generate_gpt_image_from_prompt(prompt, out_path)
+        filenames.append(str(out_path.name))
+        revised_prompts.append(revised_prompt)
+    df["gen_gpt_image"] = filenames # include new paths in df
+    df["revised_prompt"] = revised_prompts
     return df
 
 new_df = regenerate_images_with_gpt(df, overwrite=False)
