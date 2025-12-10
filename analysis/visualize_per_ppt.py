@@ -18,7 +18,7 @@ if str(PROJECT_ROOT) not in sys.path:
 import config  # uses your project-level config.py
 
 IMG_EXTS = {".png", ".jpg", ".jpeg"}
-
+csv_path = config.PROCESSED_DIR / "ppt_w_gpt_trials.csv"
 # if there's a seed in the end of the filename - ignore it for matching purposes
 SEED_TAG = re.compile(r"_seed\d+(?=\.\w+$)", re.IGNORECASE)
 #if _gpt-image is in the name's ending
@@ -29,6 +29,15 @@ CAPTION_MAX_LINES = 9     # show up to N lines under each image
 CAPTION_FONTSIZE = 8
 CAPTION_YOFFSET = -0.16   # how far below the axes to draw the caption (negative = below)
 
+def build_gt_list(gt_dir: Path) -> List[str]:
+    if not gt_dir.exists():
+        raise FileNotFoundError(f"GT directory not found: {gt_dir}")
+    return sorted([
+        p.name for p in gt_dir.iterdir()
+        if p.is_file() and p.suffix.lower() in IMG_EXTS
+    ])
+
+gt_list = build_gt_list(config.GT_DIR)
 
 #helper - remove's seed from name
 def normalize_name(name: str) -> str:
@@ -57,26 +66,36 @@ def load_all_logs(csv_path: Path) -> pd.DataFrame:
 #find all images by this ppt - creates a dict mapping row and path by the uid
 # a dictionary that maps generated image filenames (both the raw name and a “normalized” name with _seedNNN stripped) → full filesystem Path for that single UID’s folder.
 #currently not in use
-def build_uid_image_index(uid: str) -> Dict[str, Path]:
-    root = Path(config.PARTICIPANTS_DIR) / uid
-    print("PARTICIPANTS_DIR:", Path(config.PARTICIPANTS_DIR).resolve())
-    print("GT_DIR:", Path(config.GT_DIR).resolve())
-    index = {}
-    if root.exists():
-        for p in root.rglob("*"):
-            if p.is_file() and p.suffix.lower() in IMG_EXTS:
-                # key_raw  = p.name # I don't need it as the key is always seedless
-                key_norm = normalize_name(p.name)
-                # index[key_raw] = p
-                # don’t overwrite an existing raw key, but ensure the norm key exists
-                index.setdefault(key_norm, p) # we get a dict where key is full path (seedless)
-    # small debug
-    print(f"Indexed {len(index)} files for uid={uid}. Example keys: {list(index.keys())[:3]}")
-    return index
+# def build_uid_image_index(uid: str) -> Dict[str, Path]:
+#     root = Path(config.PARTICIPANTS_DIR) / uid
+#     print("PARTICIPANTS_DIR:", Path(config.PARTICIPANTS_DIR).resolve())
+#     print("GT_DIR:", Path(config.GT_DIR).resolve())
+#     index = {}
+#     if root.exists():
+#         for p in root.rglob("*"):
+#             if p.is_file() and p.suffix.lower() in IMG_EXTS:
+#                 # key_raw  = p.name # I don't need it as the key is always seedless
+#                 key_norm = normalize_name(p.name)
+#                 # index[key_raw] = p
+#                 # don’t overwrite an existing raw key, but ensure the norm key exists
+#                 index.setdefault(key_norm, p) # we get a dict where key is full path (seedless)
+#     # small debug
+#     print(f"Indexed {len(index)} files for uid={uid}. Example keys: {list(index.keys())[:3]}")
+#     return index
 
+def path_from_row_jatos(row) -> Path:
+    """Reconstruct the full path from JATOS-style row."""
+    filename = normalize_name(str(row["gen"])) # revoming seed tag if any
+
+    study_result     = str(row["study_result"]).strip()
+    comp_result  = str(row["comp_result"]).strip()
+    full_path = Path(config.PARTICIPANTS_DIR) / "jatos_results_files_20251210075934" /study_result / comp_result / "files" / filename
+    print(full_path)
+    return full_path
+        
 
 #reconstructing path by the direct path how it was saved - from csv to full path
-def path_from_row(row) -> Path:
+def path_from_row_for_streamlit(row) -> Path:
     filename = normalize_name(str(row["gen"])) # revoming seed tag if any
 
     uid      = str(row["uid"]).strip() # I changed the name of gpt-5 folder form the uid to this name, should look in the future if that causes some bugs...
@@ -97,23 +116,23 @@ FILENAME_RE = re.compile(
 )
 
 #not in use currently
-def path_from_gen_col(row) -> Path:
-    """Reconstruct the full path from the 'gen' column value."""
-    # Extract the UID and session from the 'gen' string
-    filename = normalize_name(str(row["gen"]).strip()) # revoming seed tag if any
-    m = FILENAME_RE.match(filename)
-    if not m:
-        raise ValueError(f"Invalid 'gen' format: {row['gen']}") # if pattern isn't matched
-    uid = m.group("uid") #extract uid
-    session = int(m.group("session"))
+# def path_from_gen_col(row) -> Path:
+#     """Reconstruct the full path from the 'gen' column value."""
+#     # Extract the UID and session from the 'gen' string
+#     filename = normalize_name(str(row["gen"]).strip()) # revoming seed tag if any
+#     m = FILENAME_RE.match(filename)
+#     if not m:
+#         raise ValueError(f"Invalid 'gen' format: {row['gen']}") # if pattern isn't matched
+#     uid = m.group("uid") #extract uid
+#     session = int(m.group("session"))
     
-    return (
-        Path(config.PARTICIPANTS_DIR)
-        / uid
-        / "gen_images"
-        / f"session_{session:02d}"
-        / filename
-    )
+#     return (
+#         Path(config.PARTICIPANTS_DIR)
+#         / uid
+#         / "gen_images"
+#         / f"session_{session:02d}"
+#         / filename
+#     )
 
 
 
@@ -195,9 +214,8 @@ def panel_for_uid(uid: str, df_uid: pd.DataFrame, gt_list: List[str], out_dir: P
 
             if not row.empty:
                 row = row.iloc[0]
-                img_p = path_from_row(row)
+                img_p = path_from_row_jatos(row)
                 print(img_p)
-                # img_p = resolve_gen_path_from_row(row, uid_index)
                 ax.imshow(np.asarray(read_image(img_p)))
                 hide_axes(ax)
 
@@ -216,6 +234,7 @@ def panel_for_uid(uid: str, df_uid: pd.DataFrame, gt_list: List[str], out_dir: P
     return out_path
 
 def main_uid(csv_path: Path, ge_list, out_dir: Path):
+    out_dir.mkdir(parents=True, exist_ok=True)
     df = load_all_logs(csv_path)
 
     # enforce dtypes we rely on
@@ -343,12 +362,13 @@ def main_gt_panels(csv_path: Path, gt_list: List[str], out_dir: Path):
 
 
 if __name__ == "__main__":
-    gt_list = ['farm_h.jpg', 'fountain_l.jpg', 'garden_h.jpg', 'kitchen_l.jpg',
-       'dam_l.jpg', 'conference_room_l.jpg', 'badlands_h.jpg',
-       'bedroom_h.jpg']
-    csv_path = config.PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025_gpt-image-1_generation.csv" # "participants_log_with_gpt_pilot_08092025.csv"
-    uid_out_dir = config.PANELS_DIR / "by_uid"
-    gt_out_dir = config.PANELS_DIR  / "by_gt"
+
+    csv_path = config.PROCESSED_DIR / "ppt_w_gpt_trials.csv"
+    PANELS_DIR = config.ANALYSIS_DIR / "panels"
+    PANELS_DIR.mkdir(parents=True, exist_ok=True)
+
+    uid_out_dir = PANELS_DIR / "by_uid"
+    gt_out_dir = PANELS_DIR  / "by_gt"
    
     main_uid(Path(csv_path), gt_list, Path(uid_out_dir))
     # main_gt_panels(Path(csv_path), gt_list, Path(gt_out_dir))
