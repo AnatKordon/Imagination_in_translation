@@ -18,8 +18,8 @@ from torchvision.models import vgg16, VGG16_Weights
 from similarity.LPIPS_similarity import compute_lpips_score
 
 #change the paths acccording to task
-CSV_PATH = config.PROCESSED_DIR / "participants_log_cleaned_pilot_08092025_shuffled.csv" # this is the original good file with participant data: "participants_log_with_gpt_pilot_08092025.csv"  # Path to my CSV for analysis
-OUTPUT_CSV = config.PROCESSED_DIR / "participants_log_cleaned_pilot_08092025_shuffled_with_distances_and_alignment_pilot_08092025_.csv"
+CSV_PATH = config.PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025_gpt-image-1_generation.csv" # this is the original good file with participant data: "participants_log_with_gpt_pilot_08092025.csv"  # Path to my CSV for analysis
+OUTPUT_CSV = config.PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025_gpt-image-1_generation_with_distances_and_alignment_pilot_08092025_.csv"
 
 # ---- Process CSV ----
 df = pd.read_csv(CSV_PATH)

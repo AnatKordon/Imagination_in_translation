@@ -19,8 +19,9 @@ import config  # uses your project-level config.py
 
 IMG_EXTS = {".png", ".jpg", ".jpeg"}
 
-
+# if there's a seed in the end of the filename - ignore it for matching purposes
 SEED_TAG = re.compile(r"_seed\d+(?=\.\w+$)", re.IGNORECASE)
+#if _gpt-image is in the name's ending
 
 # --- caption + axes helpers ---
 CAPTION_WIDTH = 40       # characters per line before wrapping
@@ -31,8 +32,17 @@ CAPTION_YOFFSET = -0.16   # how far below the axes to draw the caption (negative
 
 #helper - remove's seed from name
 def normalize_name(name: str) -> str:
-    """Remove trailing `_seed123456` just before the extension."""
-    return SEED_TAG.sub("", name).strip()
+    """
+    Normalize filenames:
+      - always remove `_seed1234` - This can be changed in the future if needed
+      - optionally add `_gpt-image` before the extension, for example in my analysis of gpt-images in filename
+    """
+    name = name.strip()
+
+    # Remove _seedNNNN if present
+    name = SEED_TAG.sub("", name)
+
+    return name
 
 def load_all_logs(csv_path: Path) -> pd.DataFrame:
     df = pd.read_csv(csv_path)
@@ -46,6 +56,7 @@ def load_all_logs(csv_path: Path) -> pd.DataFrame:
 
 #find all images by this ppt - creates a dict mapping row and path by the uid
 # a dictionary that maps generated image filenames (both the raw name and a “normalized” name with _seedNNN stripped) → full filesystem Path for that single UID’s folder.
+#currently not in use
 def build_uid_image_index(uid: str) -> Dict[str, Path]:
     root = Path(config.PARTICIPANTS_DIR) / uid
     print("PARTICIPANTS_DIR:", Path(config.PARTICIPANTS_DIR).resolve())
@@ -66,7 +77,7 @@ def build_uid_image_index(uid: str) -> Dict[str, Path]:
 
 #reconstructing path by the direct path how it was saved - from csv to full path
 def path_from_row(row) -> Path:
-    filename = normalize_name(str(row["gen"]).strip())
+    filename = normalize_name(str(row["gen"])) # revoming seed tag if any
 
     uid      = str(row["uid"]).strip() # I changed the name of gpt-5 folder form the uid to this name, should look in the future if that causes some bugs...
     session  = int(row["session"]) # same as int(str(filename)[45:47]) - but more robust to use the csv value
@@ -84,6 +95,8 @@ def path_from_row(row) -> Path:
 FILENAME_RE = re.compile(
     r"^(?P<uid>[^_]+)_session(?P<session>\d{2})_.*\.png$"
 )
+
+#not in use currently
 def path_from_gen_col(row) -> Path:
     """Reconstruct the full path from the 'gen' column value."""
     # Extract the UID and session from the 'gen' string
@@ -183,6 +196,7 @@ def panel_for_uid(uid: str, df_uid: pd.DataFrame, gt_list: List[str], out_dir: P
             if not row.empty:
                 row = row.iloc[0]
                 img_p = path_from_row(row)
+                print(img_p)
                 # img_p = resolve_gen_path_from_row(row, uid_index)
                 ax.imshow(np.asarray(read_image(img_p)))
                 hide_axes(ax)
@@ -332,8 +346,9 @@ if __name__ == "__main__":
     gt_list = ['farm_h.jpg', 'fountain_l.jpg', 'garden_h.jpg', 'kitchen_l.jpg',
        'dam_l.jpg', 'conference_room_l.jpg', 'badlands_h.jpg',
        'bedroom_h.jpg']
-    csv_path = config.PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025.csv"
+    csv_path = config.PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025_gpt-image-1_generation.csv" # "participants_log_with_gpt_pilot_08092025.csv"
     uid_out_dir = config.PANELS_DIR / "by_uid"
     gt_out_dir = config.PANELS_DIR  / "by_gt"
-    # main_uid(Path(csv_path), gt_list, Path(uid_out_dir))
-    main_gt_panels(Path(csv_path), gt_list, Path(gt_out_dir))
+   
+    main_uid(Path(csv_path), gt_list, Path(uid_out_dir))
+    # main_gt_panels(Path(csv_path), gt_list, Path(gt_out_dir))

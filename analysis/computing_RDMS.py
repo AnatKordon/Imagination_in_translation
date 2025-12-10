@@ -88,7 +88,7 @@ def build_rdm_alignment(
     """
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-
+    out_dir.mkdir(parents=True, exist_ok=True)
     
     # 1) Precompute/cache VGG embeddings for all GT images present
     vgg = VGGEmbedder(model=vgg_imagenet, layer=vgg_layer)
@@ -201,9 +201,9 @@ def build_rdm_alignment(
 
 if __name__ == "__main__":
     # Example usage
-    CSV_PATH = config.PROCESSED_DIR / 'participants_log_with_gpt_with_distances_and_alignment_and_len_pilot_08092025_.csv'
-    OUT_DIR = config.ANALYSIS_DIR / "rdms"
-    OUTPUT_CSV = "/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/08092025_pilot/rdm_alignment_results.csv" # it is a smaller csv
+    CSV_PATH = config.PROCESSED_DIR / 'participants_log_with_gpt_pilot_08092025_gpt-image-1_generation_with_distances_and_alignment_pilot_08092025.csv'
+    OUT_DIR = config.ANALYSIS_DIR / "pilot_gpt-image-1" / "rdms"
+    OUTPUT_CSV = "/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/08092025_pilot/rdm_alignment_results_gpt-image-1-generation.csv" # it is a smaller csv
 
     df = pd.read_csv(CSV_PATH)
     df_rdm = build_rdm_alignment(df, gt_root=config.GT_DIR, out_dir=OUT_DIR)

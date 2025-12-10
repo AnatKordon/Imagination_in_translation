@@ -34,7 +34,7 @@ GPT_IMAGES_DATA = PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025_gpt-
 #looping through all prompts to generate an image for each using gpt-image-1 and saving them for further analysis
 # modifying the df to include the paths to the generated images
 
-df = pd.read_csv(DATA) 
+df = pd.read_csv(DATA)
 #building the folders for saving the images the same way as originally with the users
 
 def build_gpt_image_filename(uid: str, session: int, attempt: int, img_index: int) -> str:
@@ -99,27 +99,46 @@ def generate_gpt_image_from_prompt(prompt: str,
 
     return out_path, revised_prompt
 
-def regenerate_images_with_gpt(df, overwrite: bool = False):
-    df = df.copy()
-    filenames = []
-    revised_prompts = []
 
-    for _, row in tqdm(df.iterrows(), total=len(df)):
+def regenerate_images_with_gpt(
+    df: pd.DataFrame,
+    overwrite: bool = False,
+    save_every: int = 10,
+    save_path: Optional[Path] = None,
+) -> pd.DataFrame:
+    # Work on a copy so we don't mutate the original df in-place
+    df = df.copy()
+
+    # Make sure columns exist
+    if "gen_gpt_image" not in df.columns:
+        df["gen_gpt_image"] = pd.NA
+    if "revised_prompt" not in df.columns:
+        df["revised_prompt"] = pd.NA
+
+    # enumerate gives a clean 1..N counter for save_every logic
+    for n, (idx, row) in enumerate(tqdm(df.iterrows(), total=len(df)), start=1):
         out_path = build_gpt_image_path(row)
 
         if out_path.exists() and not overwrite:
-            # Reuse existing file if present
-            filenames.append(str(out_path.name)) # this only returns filenames
-            revised_prompts.append(None)
-            continue
+            # File already exists: just record the filename, leave revised_prompt as-is/NA
+            df.at[idx, "gen_gpt_image"] = out_path.name
+        else:
+            prompt = str(row["prompt"])
+            # make sure your generate_gpt_image_from_prompt returns (out_path, revised_prompt)
+            _, revised_prompt = generate_gpt_image_from_prompt(prompt, out_path)
+            df.at[idx, "gen_gpt_image"] = out_path.name
+            df.at[idx, "revised_prompt"] = revised_prompt
 
-        prompt = str(row["prompt"])
-        _, revised_prompt = generate_gpt_image_from_prompt(prompt, out_path)
-        filenames.append(str(out_path.name))
-        revised_prompts.append(revised_prompt)
-    df["gen_gpt_image"] = filenames # include new paths in df
-    df["revised_prompt"] = revised_prompts
+        # Periodic save every N images
+        if save_path is not None and (n % save_every == 0):
+            df.to_csv(save_path, index=False)
+            print(f"💾 Progress saved after {n} images → {save_path}")
+
+    # Final save
+    if save_path is not None:
+        df.to_csv(save_path, index=False)
+        print(f"✅ Final save complete → {save_path}")
+
     return df
 
-new_df = regenerate_images_with_gpt(df, overwrite=False)
-new_df.to_csv(GPT_IMAGES_DATA, index=False)
+new_df = regenerate_images_with_gpt(df, overwrite=False, save_every=10, save_path=GPT_IMAGES_DATA)

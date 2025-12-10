@@ -17,7 +17,7 @@ PROLIFIC_URL = "https://app.prolific.com/submissions/complete?cc=C1OJX362"  # Pr
 
 #analysis
 ANALYSIS_DIR = ROOT / "analysis"  
-PARTICIPANTS_DIR = ROOT / "Data" / "participants_data" / "pilot_08092025_SD" # original pilot data with sd3.5 generations
+PARTICIPANTS_DIR = ROOT / "Data" / "participants_data" / "pilot_08092025_gpt-image-1" #"pilot_08092025_SD" # original pilot data with sd3.5 generations
 PROCESSED_DIR = ROOT / "Data" / "processed_data" / "08092025_pilot"
 PANELS_DIR = ANALYSIS_DIR / "pilot_gpt-image-1" / "panels" # This is changed according to the model used
 
