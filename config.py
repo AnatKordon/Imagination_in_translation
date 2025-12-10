@@ -17,11 +17,11 @@ PROLIFIC_URL = "https://app.prolific.com/submissions/complete?cc=C1OJX362"  # Pr
 
 #analysis
 ANALYSIS_DIR = ROOT / "analysis"  
-PARTICIPANTS_DIR = ROOT / "Data" / "participants_data" / "pilot-2_10122025_gpt-image-1" / "jatos_results_files_20251210075934"  # JATOS export with one folder per participant
+PARTICIPANTS_DIR = ROOT / "Data" / "participants_data" / "pilot-2_10122025_gpt-image-1"  # JATOS export with one folder per participant
 PROCESSED_DIR = ROOT / "Data" / "processed_data" / "10122025_pilot_2"
 PANELS_DIR = ANALYSIS_DIR / "pilot-2_gpt-image-1" / "panels" # This is changed according to the model used
 # GPT_IMAGES = ROOT / "Data" / "participants_data" / "pilot_08092025_gpt-image-1"  # folder with gpt-image-1 generations for the pilot participants data
-GPT_DESCRIPTIONS = "gpt-5_descriptions_as_ppt"
+
 
 
 ## for error handling

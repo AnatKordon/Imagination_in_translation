@@ -1,4 +1,5 @@
-# Analysis/aggregate.py
+# currently this one doesn't work properly
+# Analysis/aggregate_gpt.py
 from pathlib import Path
 import sys
 import pandas as pd
