@@ -3,7 +3,7 @@ from pathlib import Path
 
 # Directories (MIGHT NEED TO BE CHANGED)
 ROOT = Path(__file__).resolve().parent  # root of the project, where this file is located
-GT_DIR = ROOT / "GT_images" / "wilma_ground_truth" / "chosen" # folder with target images
+GT_DIR = ROOT / "GT_images" / "wilma_ground_truth" / "chosen_pilot_2" # folder with target images
 LOG_DIR = ROOT / "logs" / "users_data" # folder with CSV log files per user/session
 # GEN_DIR = ROOT / "logs"/"gen_images"  # folder where generated images are saved
 DRIVE_FOLDER = "https://drive.google.com/drive/folders/1bbDtQ7WrDTyaoMTJfIlgix7QUG3is78U?usp=drive_link"
@@ -17,12 +17,11 @@ PROLIFIC_URL = "https://app.prolific.com/submissions/complete?cc=C1OJX362"  # Pr
 
 #analysis
 ANALYSIS_DIR = ROOT / "analysis"  
-PARTICIPANTS_DIR = ROOT / "Data" / "participants_data" / "pilot-2_08092025_gpt-image-1" #"pilot_08092025_SD" # original pilot data with sd3.5 generations
-PROCESSED_DIR = ROOT / "Data" / "processed_data" / "10122015_pilot"
+PARTICIPANTS_DIR = ROOT / "Data" / "participants_data" / "pilot-2_10122025_gpt-image-1" / "jatos_results_files_20251210075934"  # JATOS export with one folder per participant
+PROCESSED_DIR = ROOT / "Data" / "processed_data" / "10122025_pilot_2"
 PANELS_DIR = ANALYSIS_DIR / "pilot-2_gpt-image-1" / "panels" # This is changed according to the model used
-
 # GPT_IMAGES = ROOT / "Data" / "participants_data" / "pilot_08092025_gpt-image-1"  # folder with gpt-image-1 generations for the pilot participants data
-
+GPT_DESCRIPTIONS = "gpt-5_descriptions_as_ppt"
 
 
 ## for error handling

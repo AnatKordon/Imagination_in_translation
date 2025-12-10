@@ -10,59 +10,59 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import config  # now we can reuse your paths
 
+def _add_source_columns(df: pd.DataFrame, csv_path: Path) -> pd.DataFrame:
+    """Attach JATOS folder identifiers so we can trace provenance."""
+    study_result = csv_path.parents[2].name if len(csv_path.parents) >= 3 else ""
+    comp_result = csv_path.parents[1].name if len(csv_path.parents) >= 2 else ""
+    df = df.copy()
+    df["study_result"] = study_result
+    df["comp_result"] = comp_result
+    return df
+
+
 def load_all_participant_csvs():
-    logs, infos, feedbacks = [], [], []
+    """Load all trials/participants CSVs from the nested JATOS export."""
+    trials_frames, participant_frames = [], []
     pdir = config.PARTICIPANTS_DIR
 
     if not pdir.exists():
         raise FileNotFoundError(f"Participants directory not found: {pdir}")
 
-    for participant_folder in sorted(pdir.iterdir()):
-        if not participant_folder.is_dir():
-            continue
+    # Each participant lives under study_result_*/comp-result_*/files/
+    trial_files = sorted(pdir.glob("**/trials.csv"))
+    participant_files = sorted(pdir.glob("**/participants.csv"))
 
-        # log
-        for f in participant_folder.glob("participant_*_log.csv"):
-            df = pd.read_csv(f)
-            logs.append(df)
+    for f in participant_files:
+        df = pd.read_csv(f)
+        participant_frames.append(_add_source_columns(df, f))
 
-        # info
-        for f in participant_folder.glob("participant_*_info.csv"):
-            df = pd.read_csv(f)
-            infos.append(df)
+    for f in trial_files:
+        df = pd.read_csv(f)
+        trials_frames.append(_add_source_columns(df, f))
 
-        # optional feedback (if you saved it)
-        for f in participant_folder.glob("participant_*_feedback.csv"):
-            df = pd.read_csv(f)
-            feedbacks.append(df)
+    all_trials = pd.concat(trials_frames, ignore_index=True) if trials_frames else pd.DataFrame()
+    all_participants = pd.concat(participant_frames, ignore_index=True) if participant_frames else pd.DataFrame()
 
-    all_logs  = pd.concat(logs, ignore_index=True) if logs else pd.DataFrame()
-    all_infos = pd.concat(infos, ignore_index=True) if infos else pd.DataFrame()
-    all_fb    = pd.concat(feedbacks, ignore_index=True) if feedbacks else pd.DataFrame()
-
-    return all_logs, all_infos, all_fb
+    return all_trials, all_participants
 
 def main():
-    logs, infos, fb = load_all_participant_csvs()
+    trials, participants = load_all_participant_csvs()
 
     # Quick sanity prints
-    print("Logs shape:", logs.shape)
-    print("Infos shape:", infos.shape)
-    print("Feedback shape:", fb.shape)
+    print("Trials shape:", trials.shape)
+    print("Participants shape:", participants.shape)
 
     # Save combined datasets
-    out_dir = config.ANALYSIS_DIR
-    if not logs.empty:
-        logs.to_csv(out_dir / "all_participants_log.csv", index=False)
-    if not infos.empty:
-        infos.to_csv(out_dir / "all_participants_info.csv", index=False)
-    if not fb.empty:
-        fb.to_csv(out_dir / "all_participants_feedback.csv", index=False)
+    out_dir = config.PROCESSED_DIR
+    if not trials.empty:
+        trials.to_csv(out_dir / "all_trials.csv", index=False)
+    if not participants.empty:
+        participants.to_csv(out_dir / "all_participants.csv", index=False)
 
     # Example: simple summary by user
-    if not logs.empty and "uid" in logs and "subjective_score" in logs:
+    if not trials.empty and "uid" in trials and "subjective_score" in trials:
         summary = (
-            logs.groupby("uid")
+            trials.groupby("uid")
                 .agg(
                     n_rows=("uid", "size"),
                     n_sessions=("session", "nunique"),

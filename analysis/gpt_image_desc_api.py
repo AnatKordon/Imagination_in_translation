@@ -1,3 +1,4 @@
+# gernerating GPT-5 Image Description for for all images, as ceiling of description quality
 import sys
 from pathlib import Path
 # Add project root to sys.path
@@ -64,7 +65,7 @@ def generate_diffusion_prompt(image_path: Path) -> str:
         # max_output_tokens=800,
         # Reasoning control for GPT-5 models
         reasoning={"effort": "high"},   # can change 
-        text={ "verbosity": "low" }, 
+        text={ "verbosity": verbosity }, 
         # # Optional hygiene:
         store=False,
         # metadata={"task": "diffusion_prompt"}
@@ -95,6 +96,7 @@ def describe_all_images(gt_dir: Path) -> List[dict]:
     return all_descriptions
 
 if __name__ == "__main__":
+    verbosity = "high" # can be "low", "medium", "high"
     image_dir = config.GT_DIR
 
     all_descriptions = describe_all_images(image_dir)
@@ -103,4 +105,4 @@ if __name__ == "__main__":
     for r in all_descriptions:
         print(f"\n🖼️ {r['image']}\n📜 {r['description']}")
    
-    pd.DataFrame(all_descriptions).to_csv("gpt-5_image_descriptions_verbosity-low.csv", index=False)
+    pd.DataFrame(all_descriptions).to_csv(f"gpt-5_image_descriptions_verbosity-{verbosity}.csv", index=False)
