@@ -17,11 +17,11 @@ PROLIFIC_URL = "https://app.prolific.com/submissions/complete?cc=C1OJX362"  # Pr
 
 #analysis
 ANALYSIS_DIR = ROOT / "analysis"  
-PARTICIPANTS_DIR = ROOT / "Data" / "participants_data" / "pilot_08092025_gpt-image-1" #"pilot_08092025_SD" # original pilot data with sd3.5 generations
-PROCESSED_DIR = ROOT / "Data" / "processed_data" / "08092025_pilot"
-PANELS_DIR = ANALYSIS_DIR / "pilot_gpt-image-1" / "panels" # This is changed according to the model used
+PARTICIPANTS_DIR = ROOT / "Data" / "participants_data" / "pilot-2_08092025_gpt-image-1" #"pilot_08092025_SD" # original pilot data with sd3.5 generations
+PROCESSED_DIR = ROOT / "Data" / "processed_data" / "10122015_pilot"
+PANELS_DIR = ANALYSIS_DIR / "pilot-2_gpt-image-1" / "panels" # This is changed according to the model used
 
-GPT_IMAGES = ROOT / "Data" / "participants_data" / "pilot_08092025_gpt-image-1"  # folder with gpt-image-1 generations for the pilot participants data
+# GPT_IMAGES = ROOT / "Data" / "participants_data" / "pilot_08092025_gpt-image-1"  # folder with gpt-image-1 generations for the pilot participants data
 
 
 
