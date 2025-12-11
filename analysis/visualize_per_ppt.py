@@ -24,8 +24,8 @@ SEED_TAG = re.compile(r"_seed\d+(?=\.\w+$)", re.IGNORECASE)
 #if _gpt-image is in the name's ending
 
 # --- caption + axes helpers ---
-CAPTION_WIDTH = 40       # characters per line before wrapping
-CAPTION_MAX_LINES = 9     # show up to N lines under each image
+CAPTION_WIDTH = 55       # characters per line before wrapping
+CAPTION_MAX_LINES = 25    # show up to N lines under each image
 CAPTION_FONTSIZE = 8
 CAPTION_YOFFSET = -0.16   # how far below the axes to draw the caption (negative = below)
 
@@ -188,12 +188,12 @@ def panel_for_uid(uid: str, df_uid: pd.DataFrame, gt_list: List[str], out_dir: P
 
     rows = len(gt_list)
     cols = 4
-    fig, axes = plt.subplots(rows, cols, figsize=(cols*3.4, rows*4.6))
+    fig, axes = plt.subplots(rows, cols, figsize=(cols*6.0, rows*7.0))
     if rows == 1:
         axes = np.array([axes])
 
 
-    plt.subplots_adjust(hspace=1.10, wspace=0.06, top=0.96, bottom=0.04)
+    plt.subplots_adjust(hspace=1.10, wspace=0.06, top=0.96, bottom=0.12)
 
     for r, gt_name in enumerate(gt_list):
 
@@ -287,9 +287,10 @@ def panel_for_gt(gt_name: str, df: pd.DataFrame, out_dir: Path, uid_order: List[
     n_cols = 4
 
     # Nice-ish sizing: each image ~3.4 wide, each row ~4.6 tall (like your other panel)
-    fig_w = n_cols * 3.4
-    fig_h = (1 + n_rows) * 4.6
+    fig_w = n_cols * 6.0
+    fig_h = (1 + n_rows) * 7.0
     fig = plt.figure(figsize=(fig_w, fig_h))
+    fig.subplots_adjust(bottom=0.12)
 
     gs = fig.add_gridspec(
         nrows=1 + n_rows, ncols=n_cols,
@@ -327,7 +328,7 @@ def panel_for_gt(gt_name: str, df: pd.DataFrame, out_dir: Path, uid_order: List[
 
             if not row.empty:
                 row = row.iloc[0]
-                img_p = path_from_row(row)
+                img_p = path_from_row_jatos(row)
                 ax.imshow(np.asarray(read_image(img_p)))
                 hide_axes(ax)
 
@@ -370,5 +371,5 @@ if __name__ == "__main__":
     uid_out_dir = PANELS_DIR / "by_uid"
     gt_out_dir = PANELS_DIR  / "by_gt"
    
-    main_uid(Path(csv_path), gt_list, Path(uid_out_dir))
-    # main_gt_panels(Path(csv_path), gt_list, Path(gt_out_dir))
+    #main_uid(Path(csv_path), gt_list, Path(uid_out_dir))
+    main_gt_panels(Path(csv_path), gt_list, Path(gt_out_dir))

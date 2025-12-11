@@ -12,17 +12,17 @@ if str(PROJECT_ROOT) not in sys.path:
 import config as config
 from similarity.CLIP_similarity import get_clip_visual_embedding, get_clip_text_embedding, cosine_similarity
 from similarity.vgg_similarity import compute_similarity_score, VGGEmbedder
-from visualize_per_ppt import path_from_row, path_from_gen_col
+from visualize_per_ppt import path_from_row_jatos
 from torchvision import models
 from torchvision.models import vgg16, VGG16_Weights
 from similarity.LPIPS_similarity import compute_lpips_score
 
 #change the paths acccording to task
-CSV_PATH = config.PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025_gpt-image-1_generation.csv" # this is the original good file with participant data: "participants_log_with_gpt_pilot_08092025.csv"  # Path to my CSV for analysis
-OUTPUT_CSV = config.PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025_gpt-image-1_generation_with_distances_and_alignment_pilot_08092025_.csv"
+CSV_PATH = config.PROCESSED_DIR /"ppt_w_gpt_trials.csv" # this is the original good file with participant data: "participants_log_with_gpt_pilot_08092025.csv"  # Path to my CSV for analysis
+OUTPUT_CSV = config.PROCESSED_DIR / "ppt_w_gpt_w_similarity_trials.csv"  # Path to save the output CSV with similarity scores
 
 # ---- Process CSV ----
-df = pd.read_csv(CSV_PATH)
+df = pd.read_csv(CSV_PATH).copy()
 
 
 #vgg setup
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     for idx, row in df.iterrows():
         # path for gt and gen per row
         gt_path = config.GT_DIR / row['gt']
-        gen_path = path_from_gen_col(row) # in the function it knows to use the 'gen' row and turn it into a full path (Previously I used function: path_from_row that worked but failed for shuffled data as it can't be reconstructed)
+        gen_path = path_from_row_jatos(row) # in the function it knows to use the 'gen' row and turn it into a full path (Previously I used function: path_from_row that worked but failed for shuffled data as it can't be reconstructed)
         gt__clip_embed = get_clip_visual_embedding(gt_path)
         gen__clip_embed = get_clip_visual_embedding(gen_path)
         prompt_clip_embed, token_num = get_clip_text_embedding(row['prompt']) # Note that for prompts longer than 77 words it is truncated
