@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 import torch
 from scipy.spatial.distance import pdist, squareform
-from scipy.stats import spearmanr
+from scipy.stats import spearmanr, pearsonr
 from transformers import AutoTokenizer, AutoModel
 from torchvision import transforms, models
 from torchvision.models import VGG16_Weights
@@ -58,6 +58,46 @@ def save_rdm_csv(rdm: np.ndarray, labels: List[str], path: Path):
     df = pd.DataFrame(rdm, index=labels, columns=labels)
     path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(path, encoding="utf-8")
+
+# changing image indices and resampling to get a more accurate estimate
+
+def bootstrap_rdm_corr(rdm_v: np.ndarray,
+                       rdm_t: np.ndarray,
+                       n_boot: int = 1000,
+                       random_state: int = 0):
+    """
+    Bootstrap CI for Spearman correlation between two RDMs.
+
+    rdm_v, rdm_t: square NxN distance matrices with same item order.
+    Returns:
+      boot_rs: np.ndarray of bootstrap correlations
+      (ci_low, ci_high): 2.5 and 97.5 percentiles of boot_rs
+    """
+    rng = np.random.default_rng(random_state)
+    n_items = rdm_v.shape[0]
+    idx = np.arange(n_items)
+
+    boot_rs = []
+    for _ in range(n_boot):
+        # sample items with replacement
+        res = rng.choice(idx, size=n_items, replace=True)
+        sub_v = rdm_v[np.ix_(res, res)]
+        sub_t = rdm_t[np.ix_(res, res)]
+
+        v1 = upper_tri(sub_v)
+        v2 = upper_tri(sub_t)
+        if len(v1) < 3:
+            continue  # just in case; shouldn't happen with n_items>=3
+        r, _ = spearmanr(v1, v2)
+        boot_rs.append(r)
+    
+    boot_rs = np.array(boot_rs) # convert to np.ndarray - what is boot_rs? 
+    if len(boot_rs) == 0:
+        return np.array([np.nan]), (np.nan, np.nan)
+    # confidence intervals after bootstrapping
+    ci_low, ci_high = np.percentile(boot_rs, [2.5, 97.5])
+    return boot_rs, (ci_low, ci_high)
+
 
 # -----------------------------
 # RDM pipeline
@@ -145,6 +185,7 @@ def build_rdm_alignment(
             img_embs = np.stack([gt2vgg[g] for g in gts], axis=0)   # [N,D_img]
             txt_embs = sgpt.encode(prompts)                         # [N,D_txt]
 
+            # compute RDMs - v for visual, t for text
             rdm_v = cosine_rdm(img_embs)
             rdm_t = cosine_rdm(txt_embs)
 
@@ -159,10 +200,26 @@ def build_rdm_alignment(
 
             # Spearman correlation of upper triangles
             v1, v2 = upper_tri(rdm_v), upper_tri(rdm_t)
-            r, p = (np.nan, np.nan) if len(v1) < 3 else spearmanr(v1, v2)
-            results.append({"uid": uid, "attempt": a, "n_items": len(gts),
-                            "rdm_corr_spearman": r, "rdm_corr_p": p})
+            if len(v1) < 3:
+                r, p = np.nan, np.nan
+                ci_low, ci_high = np.nan, np.nan
+                bootstrap_corr = np.nan
+            else:
+                r, p = spearmanr(v1, v2)
+                bootstrap_corr, (ci_low, ci_high) = bootstrap_rdm_corr(rdm_v, rdm_t, n_boot=1000)
 
+            results.append({
+                "uid": uid,
+                "attempt": a,
+                "n_items": len(gts),
+                "rdm_corr_spearman": r,
+                "rdm_corr_p": p,
+                "bootstrap_corr_spearman": float(np.mean(bootstrap_corr)),
+                "rdm_corr_boot_ci_low": ci_low,
+                "rdm_corr_boot_ci_high": ci_high,
+            })
+
+         
         # draw a panel per uid (2 rows × 3 attempts)
         if len(rdms_vgg) > 0:
             ncols = len(attempts)
@@ -201,9 +258,9 @@ def build_rdm_alignment(
 
 if __name__ == "__main__":
     # Example usage
-    CSV_PATH = config.PROCESSED_DIR / 'participants_log_with_gpt_pilot_08092025_gpt-image-1_generation_with_distances_and_alignment_pilot_08092025.csv'
-    OUT_DIR = config.ANALYSIS_DIR / "pilot_gpt-image-1" / "rdms"
-    OUTPUT_CSV = "/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/08092025_pilot/rdm_alignment_results_gpt-image-1-generation.csv" # it is a smaller csv
+    CSV_PATH = config.PROCESSED_DIR / "ppt_w_gpt_w_similarity_trials.csv"
+    OUT_DIR = config.ANALYSIS_DIR / "pilot-2_gpt-image-1" / "rdms"
+    OUTPUT_CSV = config.PROCESSED_DIR / "rdm_alignment_results_gpt-image-1-generation.csv" # it is a smaller csv
 
     df = pd.read_csv(CSV_PATH)
     df_rdm = build_rdm_alignment(df, gt_root=config.GT_DIR, out_dir=OUT_DIR)
