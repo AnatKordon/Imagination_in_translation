@@ -41,6 +41,10 @@ google-auth-httplib2
 # #analysis
 # tabulate
 
+
+# nlp analyses
+spacy
+
 # #development tools
 # #pip==19.2.3
 # bump2version==0.5.11
