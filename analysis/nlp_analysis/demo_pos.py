@@ -1,5 +1,6 @@
 from pathlib import Path
 import sys
+from annotated_types import doc
 import pandas as pd
 
 # Make sure we can import config.py from project root
@@ -15,18 +16,18 @@ nlp = spacy.load("en_core_web_sm")
 
 # load participant data
 from config import PROCESSED_DIR
-# df = pd.read_csv(PROCESSED_DIR / "ppt_w_gpt_w_similarity_trials.csv").copy()
+df = pd.read_csv(PROCESSED_DIR / "ppt_w_gpt_w_similarity_trials.csv").copy()
 OUT_PATH = PROCESSED_DIR / "nlp_analysis"
 
-# # Create a stable document id (I'm not sure it's nessecary)
-# # This keeps merges easy later.
-# df = df.reset_index(drop=True)
-# df["doc_id"] = df.index
+# Create a stable document id (I'm not sure it's nessecary)
+# This keeps merges easy later.
+df = df.reset_index(drop=True)
+df["doc_id"] = df.index
 
 import pandas as pd
 import spacy
 from spacy import displacy
-# df = df.head(2) # For testing; remove in real runs
+df = df.head(3) # For testing; remove in real runs
 
 
 
@@ -50,50 +51,87 @@ POS_COLORS = {
     "VERB": "#f7b2d9",
     "AUX":  "#f0d0b0",
     "ADP":  "#e3c9ff",
-    "DET":  "#dddddd",
     "PRON": "#fff1a8",
     "NUM":  "#c7f0ff",
-    "CCONJ":"#e6e6e6",
-    "SCONJ":"#e6e6e6",
     "PART": "#e6e6e6",
-    "PUNCT":"#ffffff",
-    "SPACE":"#ffffff",
 }
+    #unused tags:
+    # "PUNCT":"#ffffff",
+    # "SPACE":"#ffffff",
+    # "DET":  "#dddddd",
+    # "CCONJ":"#e6e6e6",
+    # "SCONJ":"#e6e6e6",
+
 
 NP_COLORS = {"NP": "#c7f0ff"}
 
+POS_KEEP = set(POS_COLORS.keys())  # only POS you defined colors for
+# If you also want DET, CCONJ etc later, add them to POS_COLORS (or POS_KEEP)
+ 
 CSS_TWEAKS = """
 <style>
   body { font-family: Arial, sans-serif; margin: 24px; }
-  .block-title { margin: 14px 0 6px; font-weight: 700; font-size: 16px; }
   .spans { line-height: 2.6 !important; }
   .spans span { margin-right: 0.25rem; }
   .spans .label { font-size: 10px !important; padding: 2px 6px !important; border-radius: 6px !important; }
   hr { margin: 18px 0; }
+
+  /* --- Hide the sentence text in the second (NP) layer, but keep spacing --- */
+  .np-layer .token-text { visibility: hidden !important; }
 </style>
 """
 
-def _render_span(doc, spans, colors, title):
-    """Helper: render one displaCy span block."""
-    data = {
-        "text": doc.text,
-        "tokens": [t.text for t in doc],
-        "spans": spans,
-        "title": title,
-    }
-    # displacy.render returns an HTML fragment; we wrap it in a div for clarity
+def _mark_token_text(html: str) -> str:
+    # displaCy span markup contains the token text inside a <span class="token-text"> in newer versions,
+    # but not always. If not present, we add a class to the first inner span that contains the token.
+    if 'class="token-text"' in html:
+        return html
+    # heuristic: wrap token text spans
+    return html.replace("<span>", '<span class="token-text">', 1)
+
+
+def hide_token_text_in_html(html: str) -> str:
+    """
+    Remove visible token text from a displaCy span render,
+    but keep the underline/labels. Works across spaCy versions.
+    """
+    try:
+        from bs4 import BeautifulSoup
+    except ImportError:
+        # Fallback: no-op if bs4 isn't installed
+        return html
+
+    soup = BeautifulSoup(html, "html.parser")
+
+    # In displaCy span markup, each token is typically inside a <span> element
+    # and the token text is a text node inside it. We replace text nodes with a non-breaking space.
+    for span in soup.find_all("span"):
+        # If the span contains direct text (not just child tags), blank it out
+        if span.string and span.string.strip():
+            span.string.replace_with("\u00A0")  # &nbsp;
+
+    return str(soup)
+
+
+def _render_span(doc, spans, colors, wrapper_class="layer", hide_text=False):
+    data = {"text": doc.text, "tokens": [t.text for t in doc], "spans": spans}
     html = displacy.render(data, style="span", manual=True, options={"colors": colors})
-    return f'<div class="block-title">{title}</div>{html}'
+    if hide_text:
+        html = hide_token_text_in_html(html)
+    return f'<div class="{wrapper_class}">{html}</div>'
+
+
 
 def render_pos_and_np_report(prompt: str, title: str = "POS + Noun chunks"):
     doc = nlp(prompt)
 
     # --- POS spans: one span per token (excluding SPACE)
     pos_spans = [
-        {"start_token": i, "end_token": i + 1, "label": t.pos_}
-        for i, t in enumerate(doc)
-        if not t.is_space
-    ]
+    {"start_token": i, "end_token": i + 1, "label": t.pos_}
+    for i, t in enumerate(doc)
+    if (not t.is_space) and (t.pos_ in POS_KEEP) and (not t.is_punct)
+]
+
 
     # --- NP spans: one span per noun chunk
     noun_chunks = list(doc.noun_chunks)
@@ -126,9 +164,9 @@ def render_pos_and_np_report(prompt: str, title: str = "POS + Noun chunks"):
     """
 
     # --- Render blocks (stacked)
-    html_pos = _render_span(doc, pos_spans, POS_COLORS, "Layer 1: POS for every token")
-    html_np  = _render_span(doc, np_spans,  NP_COLORS,  "Layer 2: Noun chunks (NP)")
-
+    html_pos = _render_span(doc, pos_spans, POS_COLORS, wrapper_class="pos-layer", hide_text=False)
+    html_np = _render_span(doc, np_spans,  NP_COLORS,  wrapper_class="np-layer",  hide_text=True)
+   
     full = f"""
     <h2>{title}</h2>
     {CSS_TWEAKS}
@@ -141,8 +179,7 @@ def render_pos_and_np_report(prompt: str, title: str = "POS + Noun chunks"):
 
 from pathlib import Path
 
-prompt = "A living room with white walls. There are circular floor mats. The floor mats are blue and purple."
-html = render_pos_and_np_report(prompt, title="Demo: POS + noun chunks")
+html = render_pos_and_np_report(df.loc[0, "prompt"], title="Demo: POS + noun chunks")
 
 Path("pos_np_report.html").write_text(html, encoding="utf-8")
 print("Saved: pos_np_report.html")

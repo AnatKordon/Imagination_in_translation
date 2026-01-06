@@ -21,7 +21,7 @@ Pillow
 # Data visualization
 # matplotlib
 # altair
-
+beatifulsoup4
 # API requests and environment variables
 requests
 python-dotenv
