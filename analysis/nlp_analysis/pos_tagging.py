@@ -43,11 +43,22 @@ if "ner" in nlp.pipe_names:
 texts = df["prompt"].fillna("").tolist()
 
 token_rows = []
-
+np_rows = [] # counting noun chukn heads
 # nlp.pipe is much faster than looping nlp(text) one by one
 for doc_id, doc in zip(df["doc_id"], nlp.pipe(texts, batch_size=16)):
     # metadata to carry into token table
     meta = df.loc[doc_id, ["uid", "gt", "session", "attempt"]].to_dict()
+
+    noun_chunks = list(doc.noun_chunks)
+    np_heads = [nc.root.lemma_.lower() for nc in noun_chunks]
+    unique_np_heads = sorted(set(np_heads))
+
+    np_rows.append({
+        "doc_id": doc_id,
+        "n_noun_chunks": len(noun_chunks),
+        "n_unique_np_heads": len(unique_np_heads),
+        "np_heads": ", ".join(unique_np_heads),  # optional
+    })
 
     for tok in doc:
         token_rows.append({
@@ -106,6 +117,13 @@ docs_df[count_cols] = docs_df[count_cols].fillna(0).astype(int)
 for c in count_cols:
     docs_df[c + "_prop"] = docs_df[c] / docs_df["n_tokens"].replace(0, pd.NA)
 
+np_df = pd.DataFrame(np_rows)
+docs_df = docs_df.merge(np_df, on="doc_id", how="left")
+
+#fill na if missing:
+docs_df["n_noun_chunks"] = docs_df["n_noun_chunks"].fillna(0).astype(int)
+docs_df["n_unique_np_heads"] = docs_df["n_unique_np_heads"].fillna(0).astype(int)
+docs_df["np_heads"] = docs_df["np_heads"].fillna("")
 # ---------- Save ----------
 # tokens_df can be big-ish; parquet is ideal (fast, preserves types).
 # tokens_df.to_parquet("tokens_df.parquet", index=False)
