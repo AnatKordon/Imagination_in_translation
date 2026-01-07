@@ -27,7 +27,7 @@ df["doc_id"] = df.index
 import pandas as pd
 import spacy
 
-df = df.head(4) # For testing; remove in real runs
+
 
 
 

@@ -23,7 +23,7 @@ def _add_source_columns(df: pd.DataFrame, csv_path: Path) -> pd.DataFrame:
 def load_all_participant_csvs():
     """Load all trials/participants CSVs from the nested JATOS export."""
     trials_frames, participant_frames = [], []
-    pdir = config.PARTICIPANTS_DIR / "jatos_results_files_20251210075934"
+    pdir = config.PARTICIPANTS_DIR / "jatos_results_files_20260106132307"
 
     if not pdir.exists():
         raise FileNotFoundError(f"Participants directory not found: {pdir}")
