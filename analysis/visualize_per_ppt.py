@@ -89,7 +89,7 @@ def path_from_row_jatos(row) -> Path:
 
     study_result     = str(row["study_result"]).strip()
     comp_result  = str(row["comp_result"]).strip()
-    full_path = Path(config.PARTICIPANTS_DIR) / "jatos_results_files_20251210075934" /study_result / comp_result / "files" / filename
+    full_path = Path(config.PARTICIPANTS_DIR) /study_result / comp_result / "files" / filename
     print(full_path)
     return full_path
         
@@ -371,5 +371,5 @@ if __name__ == "__main__":
     uid_out_dir = PANELS_DIR / "by_uid"
     gt_out_dir = PANELS_DIR  / "by_gt"
    
-    #main_uid(Path(csv_path), gt_list, Path(uid_out_dir))
-    main_gt_panels(Path(csv_path), gt_list, Path(gt_out_dir))
+    main_uid(Path(csv_path), gt_list, Path(uid_out_dir))
+    #main_gt_panels(Path(csv_path), gt_list, Path(gt_out_dir))

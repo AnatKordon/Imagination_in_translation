@@ -9,6 +9,9 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
 import config  # now we can reuse your paths
+pdir = config.PARTICIPANTS_DIR
+out_dir = config.PROCESSED_DIR
+
 
 def _add_source_columns(df: pd.DataFrame, csv_path: Path) -> pd.DataFrame:
     """Attach JATOS folder identifiers so we can trace provenance."""
@@ -20,10 +23,10 @@ def _add_source_columns(df: pd.DataFrame, csv_path: Path) -> pd.DataFrame:
     return df
 
 
-def load_all_participant_csvs():
+def load_all_participant_csvs(pdir: Path):
     """Load all trials/participants CSVs from the nested JATOS export."""
     trials_frames, participant_frames = [], []
-    pdir = config.PARTICIPANTS_DIR / "jatos_results_files_20260106132307"
+   
 
     if not pdir.exists():
         raise FileNotFoundError(f"Participants directory not found: {pdir}")
@@ -45,15 +48,14 @@ def load_all_participant_csvs():
 
     return all_trials, all_participants
 
-def main():
-    trials, participants = load_all_participant_csvs()
+def main(pdir: Path = config.PARTICIPANTS_DIR, out_dir: Path = config.PROCESSED_DIR):
+    trials, participants = load_all_participant_csvs(pdir=pdir)
 
     # Quick sanity prints
     print("Trials shape:", trials.shape)
     print("Participants shape:", participants.shape)
 
     # Save combined datasets
-    out_dir = config.PROCESSED_DIR
     if not trials.empty:
         trials.to_csv(out_dir / "all_trials.csv", index=False)
     if not participants.empty:

@@ -117,6 +117,7 @@ venv311
 *.jpeg
 *.csv
 *.html
+*.jsonlines
 client_secrets.json
 service_account.json
 *.txt

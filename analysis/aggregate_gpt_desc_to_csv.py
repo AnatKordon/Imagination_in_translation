@@ -10,14 +10,14 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
 import config
+gpt_dir = config.EXPERIMENT_DIR / "gpt-5_descriptions_as_ppt"  # These are generations in the same imagination in translation app as participants, only with gpt descriptions differing in verbosity
 
-def load_and_transform_gpt_descriptions():
+def load_and_transform_gpt_descriptions(gpt_dir: Path):
     """
     Load the 3 GPT description CSVs (low, medium, high verbosity) and transform them
     to match the all_trials.csv format.
     """
-    gpt_dir = config.PARTICIPANTS_DIR / "gpt-5_descriptions_as_ppt"
-    
+
     if not gpt_dir.exists():
         raise FileNotFoundError(f"GPT descriptions directory not found: {gpt_dir}")
     

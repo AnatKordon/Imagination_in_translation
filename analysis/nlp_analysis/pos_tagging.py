@@ -18,6 +18,8 @@ nlp = spacy.load("en_core_web_sm")
 from config import PROCESSED_DIR
 df = pd.read_csv(PROCESSED_DIR / "ppt_w_gpt_w_similarity_trials.csv").copy()
 OUT_PATH = PROCESSED_DIR / "nlp_analysis"
+# make sure path exists using mkdir:
+OUT_PATH.mkdir(parents=True, exist_ok=True)
 
 # Create a stable document id (I'm not sure it's nessecary)
 # This keeps merges easy later.

@@ -17,7 +17,8 @@ PROLIFIC_URL = "https://app.prolific.com/submissions/complete?cc=C1OJX362"  # Pr
 
 #analysis
 ANALYSIS_DIR = ROOT / "analysis"  / "pilot-2_gpt-image-1_memory" # specific ofr the experiment
-PARTICIPANTS_DIR = ROOT / "Data" / "participants_data" / "pilot-2_05012026_gpt-image-1_memory" / "jatos_results_files_20260106132307"  # JATOS export with one folder per participant
+EXPERIMENT_DIR = ROOT / "Data" / "participants_data" / "pilot-2_05012026_gpt-image-1_memory"   # JATOS export with one folder per participant
+PARTICIPANTS_DIR = ROOT / "Data" / "participants_data" / "pilot-2_05012026_gpt-image-1_memory" / "jatos_results_files_20260106132307" 
 PROCESSED_DIR = ROOT / "Data" / "processed_data" / "05012026_pilot_2_memory"  # This is changed according to the model used
 # GPT_IMAGES = ROOT / "Data" / "participants_data" / "pilot_08092025_gpt-image-1"  # folder with gpt-image-1 generations for the pilot participants data
 
