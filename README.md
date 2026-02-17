@@ -84,10 +84,12 @@ Analysis scripts are located in the `analysis` folder.
 *gpt_image_desc_api.py* allows to receive gpt descriptions for all ground truth images - we can choose verbosity level. Currently 3 verbosity levels were used with gpt-5.
 *aggregate_gpt_desc_to_csv.py* transforms the 3 gpt description csvs to match the all_trials.csv format (you still need to concat the participant and gpt dataframes manually)
 *gpt_gen.py* generates images using gpt-image-1 for descriptions (either all or only gpt descriptions) saving time from running all experiment on our own for the gpt images
+*data_preparation.ipynb* aggregates ppt and gpt datarames
 *Analysis:*
 *Visualize per ppt.py* allows for a visual inspection of the results - all ground truth, generated images and description - per participant and per ground truth image.
 *add_similarity_scores.py* takes ppts and gpt csv and adds cosine distances scores for visual clip and vgg fc7 (similarity is 1 - cosine distance)
 
+## NLP analysis
 
 
 ## License

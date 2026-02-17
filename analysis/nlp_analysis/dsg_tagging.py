@@ -72,25 +72,25 @@ Input prompt:
 #they talk about negation handling but i don't think it makes sense according to paper:
 # where does the id come from?
 
-# 2. 
-QUESTION_EXTRACTION_PROMPT = """
-Task: given input prompts and skill-specific tuples, re-write tuple each in natural language question.
-Output format: id | question
+# # 2. 
+# QUESTION_EXTRACTION_PROMPT = """
+# Task: given input prompts and skill-specific tuples, re-write tuple each in natural language question.
+# Output format: id | question
 
-Rules:
-- One tuple -> one atomic yes/no question.
-- Keep questions short and visually answerable.
-- For COUNT use: "Are there exactly N <objects>?"
-- For TEXT-RENDERING use: "Is the text '<exact text>' written on <surface>?"
-- Do not add new details.
+# Rules:
+# - One tuple -> one atomic yes/no question.
+# - Keep questions short and visually answerable.
+# - For COUNT use: "Are there exactly N <objects>?"
+# - For TEXT-RENDERING use: "Is the text '<exact text>' written on <surface>?"
+# - Do not add new details.
 
-Input prompt:
-{TEXT_PROMPT}
+# Input prompt:
+# {TEXT_PROMPT}
 
-Tuples:
-{ID2TUPLES}
+# Tuples:
+# {ID2TUPLES}
 
-"""
+# """
 
 # 3. ***this part isn't needed unless i also perform the 4th step***
 # TUPLE_DEPENDENCY_EXTRACTION = """
@@ -118,7 +118,7 @@ Tuples:
 # function for extracting the 3 types of information and printing them out for now
 
 
-MODEL_NAME = "gpt-4o-mini"  # replace with your open LLM name if different
+MODEL_NAME = "gpt-4o"  # replace with your open LLM name if different
 
 def call_llm_text(prompt: str, model: str = MODEL_NAME) -> str:
     """

@@ -24,14 +24,15 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 from config import PROCESSED_DIR
-# df = pd.read_csv(PROCESSED_DIR / "ppt_w_gpt_w_similarity_trials.csv").copy()
-# df = df 
-# # save new df:
-# OUT_PATH = PROCESSED_DIR / "nlp_analysis" / "ppt_w_gpt_semantic_tags.csv"
+df = pd.read_csv(PROCESSED_DIR / "ppt_w_gpt_w_similarity_trials.csv").copy()
+df = df[df['gt_corrected'].notna()]
+print(f"Number of rows to process: {len(df)}")
+# save new df:
+OUT_PATH = PROCESSED_DIR / "nlp_analysis" / "ppt_w_gpt_semantic_tags.csv"
 
 #perception data
-df = pd.read_csv("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/10122025_pilot_2/ppt_w_gpt_trials.csv").copy()
-OUT_PATH = Path("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/10122025_pilot_2/nlp_analysis") / "ppt_w_gpt_semantic_tags.csv"
+# df = pd.read_csv("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/10122025_pilot_2/ppt_w_gpt_trials.csv").copy()
+# OUT_PATH = Path("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/10122025_pilot_2/nlp_analysis") / "ppt_w_gpt_semantic_tags.csv"
 
 SYSTEM_PROMPT = """
 You are a STRICT semantic tagger for text descriptions of images.
@@ -113,6 +114,9 @@ tqdm.pandas()
 df["extraction"] = df["prompt"].progress_apply(extract_semantics)
 
 out = pd.json_normalize(df["extraction"])
+
+out.index = df.index
+
 tagged_df = pd.concat([df, out], axis=1) # does this
 #save
 tagged_df.to_csv(OUT_PATH, index=False)

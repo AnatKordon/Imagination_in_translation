@@ -18,12 +18,33 @@ from torchvision.models import vgg16, VGG16_Weights
 from similarity.LPIPS_similarity import compute_lpips_score
 
 #change the paths acccording to task
-CSV_PATH = config.PROCESSED_DIR /"ppt_w_gpt_trials.csv" # this is the original good file with participant data: "participants_log_with_gpt_pilot_08092025.csv"  # Path to my CSV for analysis
+CSV_PATH = config.PROCESSED_DIR /"ppt_w_gpt_trials_corrected.csv" # should use corrected gt if nesseceary, this is the original good file with participant data: "participants_log_with_gpt_pilot_08092025.csv"  # Path to my CSV for analysis
 OUTPUT_CSV = config.PROCESSED_DIR / "ppt_w_gpt_w_similarity_trials.csv"  # Path to save the output CSV with similarity scores
+
+USE_CORRECTED = True  # <-- set this based on whether gt column was corrected "corrected: True/False"
 
 # ---- Process CSV ----
 df = pd.read_csv(CSV_PATH).copy()
 
+# handling missing gt values:
+import numpy as np
+import pandas as pd
+
+USE_CORRECTED = True  # <-- set this based on your "corrected: True/False"
+
+def pick_gt_name(row: pd.Series, use_corrected: bool) -> str | None:
+    """Return the filename/title to use for GT, or None if missing."""
+    if use_corrected:
+        val = row.get("gt_corrected")
+        # if gt_corrected missing, you said: "ignore nan" => no similarity
+        if pd.isna(val) or str(val).strip() == "":
+            return None
+        return str(val)
+    else:
+        val = row.get("gt")
+        if pd.isna(val) or str(val).strip() == "":
+            return None
+        return str(val)
 
 #vgg setup
 weights = VGG16_Weights.IMAGENET1K_V1
@@ -47,12 +68,28 @@ if __name__ == "__main__":
     token_nums = []
     for idx, row in df.iterrows():
         # path for gt and gen per row
-        gt_path = config.GT_DIR / row['gt']
+        gt_name = pick_gt_name(row, USE_CORRECTED)
         gen_path = path_from_row_jatos(row) # in the function it knows to use the 'gen' row and turn it into a full path (Previously I used function: path_from_row that worked but failed for shuffled data as it can't be reconstructed)
-        gt__clip_embed = get_clip_visual_embedding(gt_path)
-        gen__clip_embed = get_clip_visual_embedding(gen_path)
+        #extract prompt earlier
         prompt_clip_embed, token_num = get_clip_text_embedding(row['prompt']) # Note that for prompts longer than 77 words it is truncated
         token_nums.append(token_num)
+
+        #handle missing GT case: if no GT, we can't compute similarity, so we can either skip or assign a default value (e.g., NaN)
+        if gt_name is None:
+            # no GT => no similarity
+            clip_distances.append(pd.NA)
+            vgg_fc7_distances.append(pd.NA)
+            clip_vis_text_similarities.append(pd.NA)  # up to you if you still want prompt alignment
+            continue
+
+        gt_path = config.GT_DIR / gt_name
+
+        
+        
+        gt__clip_embed = get_clip_visual_embedding(gt_path)
+        gen__clip_embed = get_clip_visual_embedding(gen_path)
+        
+        
         # Compute cosine similarity for images
         _, _, clip_cosine_distance = compute_similarity_score(gt__clip_embed, gen__clip_embed)
         clip_distances.append(clip_cosine_distance)

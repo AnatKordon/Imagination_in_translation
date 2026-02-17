@@ -44,6 +44,9 @@ google-auth-httplib2
 
 # nlp analyses
 spacy
+nltk
+contractions 
+num2words
 
 # #development tools
 # #pip==19.2.3

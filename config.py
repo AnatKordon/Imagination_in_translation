@@ -13,13 +13,13 @@ MAX_LENGTH = 10000  # Maximum length of the prompt text
 N_OUT = 1  # Number of images to generate per prompt (1 or 4)
 MAX_SESSIONS = 8             # total sessions per participant
 REQUIRED_ATTEMPTS = 3         # exactly 3 attempts per session
-PROLIFIC_URL = "https://app.prolific.com/submissions/complete?cc=C1OJX362"  # Prolific completion URL
+# PROLIFIC_URL = "https://app.prolific.com/submissions/complete?cc=C1OJX362"  # Prolific completion URL
 
 #analysis
-ANALYSIS_DIR = ROOT / "analysis"  / "pilot-2_gpt-image-1_memory" # specific ofr the experiment
-EXPERIMENT_DIR = ROOT / "Data" / "participants_data" / "pilot-2_05012026_gpt-image-1_memory"   # JATOS export with one folder per participant
-PARTICIPANTS_DIR = ROOT / "Data" / "participants_data" / "pilot-2_05012026_gpt-image-1_memory" / "jatos_results_files_20260106132307" 
-PROCESSED_DIR = ROOT / "Data" / "processed_data" / "05012026_pilot_2_memory"  # This is changed according to the model used
+ANALYSIS_DIR = ROOT / "analysis"  / "pilot-2_gpt-image-1_delayed_memory" # specific ofr the experiment
+EXPERIMENT_DIR = ROOT / "Data" / "participants_data" / "pilot-2_09022026_gpt-image-1_delayed_memory"   # JATOS export with one folder per participant
+PARTICIPANTS_DIR = ROOT / "Data" / "participants_data" / "pilot-2_09022026_gpt-image-1_delayed_memory" / "jatos_results_files_20260210073118"
+PROCESSED_DIR = ROOT / "Data" / "processed_data" / "09022026_pilot_2_delayed_memory"  # This is changed according to the model used
 # GPT_IMAGES = ROOT / "Data" / "participants_data" / "pilot_08092025_gpt-image-1"  # folder with gpt-image-1 generations for the pilot participants data
 
 
