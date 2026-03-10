@@ -371,5 +371,5 @@ if __name__ == "__main__":
     uid_out_dir = PANELS_DIR / "by_uid"
     gt_out_dir = PANELS_DIR  / "by_gt"
    
-    # main_uid(Path(csv_path), gt_list, Path(uid_out_dir))
-    main_gt_panels(Path(csv_path), gt_list, Path(gt_out_dir))
+    main_uid(Path(csv_path), gt_list, Path(uid_out_dir))
+    # main_gt_panels(Path(csv_path), gt_list, Path(gt_out_dir))

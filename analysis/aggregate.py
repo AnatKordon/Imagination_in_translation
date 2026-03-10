@@ -25,7 +25,7 @@ def _add_source_columns(df: pd.DataFrame, csv_path: Path) -> pd.DataFrame:
 
 def load_all_participant_csvs(pdir: Path):
     """Load all trials/participants CSVs from the nested JATOS export."""
-    trials_frames, participant_frames = [], []
+    trials_frames, participant_frames, digit_span_frames = [], [], []
    
 
     if not pdir.exists():
@@ -34,7 +34,7 @@ def load_all_participant_csvs(pdir: Path):
     # Each participant lives under study_result_*/comp-result_*/files/
     trial_files = sorted(pdir.glob("**/trials.csv"))
     participant_files = sorted(pdir.glob("**/participants.csv"))
-
+    digit_span_files = sorted(pdir.glob("**/digit_span.csv"))
     for f in participant_files:
         df = pd.read_csv(f)
         participant_frames.append(_add_source_columns(df, f))
@@ -43,23 +43,32 @@ def load_all_participant_csvs(pdir: Path):
         df = pd.read_csv(f)
         trials_frames.append(_add_source_columns(df, f))
 
+    for f in digit_span_files:
+        df = pd.read_csv(f)
+        digit_span_frames.append(_add_source_columns(df, f))
+
     all_trials = pd.concat(trials_frames, ignore_index=True) if trials_frames else pd.DataFrame()
     all_participants = pd.concat(participant_frames, ignore_index=True) if participant_frames else pd.DataFrame()
+    all_digit_span = pd.concat(digit_span_frames, ignore_index=True) if digit_span_frames else pd.DataFrame()
 
-    return all_trials, all_participants
+    return all_trials, all_participants, all_digit_span 
 
 def main(pdir: Path = config.PARTICIPANTS_DIR, out_dir: Path = config.PROCESSED_DIR):
-    trials, participants = load_all_participant_csvs(pdir=pdir)
+    trials, participants, digit_span = load_all_participant_csvs(pdir=pdir)
 
     # Quick sanity prints
     print("Trials shape:", trials.shape)
     print("Participants shape:", participants.shape)
+    print("digit span shape:", digit_span.shape)
 
     # Save combined datasets
     if not trials.empty:
         trials.to_csv(out_dir / "all_trials.csv", index=False)
     if not participants.empty:
         participants.to_csv(out_dir / "all_participants.csv", index=False)
+    if not digit_span.empty:
+        digit_span.to_csv(out_dir / "all_digit_span.csv", index=False)
+
 
     # Example: simple summary by user
     if not trials.empty and "uid" in trials and "subjective_score" in trials:
