@@ -91,6 +91,8 @@ Analysis scripts are located in the `analysis` folder.
 
 ## NLP analysis
 
+## Comparing conditions
+
 
 ## License
 MIT – see `LICENSE` for full text.
