@@ -17,6 +17,7 @@ pandas
 matplotlip
 seaborn
 plotly
+pingouin
 
 #UI packages
 streamlit
