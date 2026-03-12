@@ -90,8 +90,9 @@ Analysis scripts are located in the `analysis` folder.
 *add_similarity_scores.py* takes ppts and gpt csv and adds cosine distances scores for visual clip and vgg fc7 (similarity is 1 - cosine distance)
 
 ## NLP analysis
-
+nlp_analysis/semantic_tagging.py - adds semantic tags to the descriptions (e.g. whether they include color, shape, etc.) using gpt-5. it outputs additions to the df where each column is a type of tag (objects, attribute color...)
 ## Comparing conditions
+nlp_analysis/nlp_notebook.ipynb is designed to make analyses per condition and is not fully developed yet
 
 
 ## License

@@ -115,6 +115,7 @@ venv311
 *.png
 # *.jpg
 *.jpeg
+*.jpg
 *.csv
 *.html
 *.jsonlines

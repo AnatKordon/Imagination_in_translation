@@ -25,10 +25,11 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 
 from config import PROCESSED_DIR
 df = pd.read_csv(PROCESSED_DIR / "ppt_w_gpt_w_similarity_trials.csv").copy()
-df = df[df['gt_corrected'].notna()]
+# df = df[df['gt_corrected'].notna()]
 print(f"Number of rows to process: {len(df)}")
 # save new df:
 OUT_PATH = PROCESSED_DIR / "nlp_analysis" / "ppt_w_gpt_semantic_tags.csv"
+OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 #perception data
 # df = pd.read_csv("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/10122025_pilot_2/ppt_w_gpt_trials.csv").copy()
@@ -120,3 +121,4 @@ out.index = df.index
 tagged_df = pd.concat([df, out], axis=1) # does this
 #save
 tagged_df.to_csv(OUT_PATH, index=False)
+print(f"Saved tagged data to {OUT_PATH}")
