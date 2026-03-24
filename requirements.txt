@@ -18,7 +18,9 @@ matplotlip
 seaborn
 plotly
 pingouin
-
+pymer # (for GLMM, demands downloading R to computer first)
+polars # for pymer
+rpy
 #UI packages
 streamlit
 # langdetect
