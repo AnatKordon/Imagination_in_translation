@@ -30,21 +30,30 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-# from config import PROCESSED_DIR
+from config import PROCESSED_DIR
 
-df = pd.read_csv("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/10122025_pilot_2/ppt_w_gpt_trials.csv").copy()
-df = df.head(2) # for testing
+df = pd.read_csv("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/comparing_conditions/3_conditions_with_digit_span.csv").copy()
+# df = df.head(2) # for testing
+
+
 
 def correct_text(prompt: str) -> str:
     if pd.isna(prompt):
         return prompt
     
     SYSTEM = """
-    You are a helpful assistant that corrects spelling and grammar errors in text descriptions of images.
-    Your task is to take the input PROMPT and return a corrected version with proper spelling and grammar.
-    Do NOT change the meaning or content of the prompt, only fix errors.
-    If uncertain, keep the original text as much as possible.
-    Return ONLY the corrected text, no explanations or additional content.
+    You are a helpful assistant that corrects spelling, grammar, punctuation, and capitalization errors in text descriptions of images.
+
+    Your task is to take the input PROMPT and return a corrected version with proper spelling, grammar, punctuation, and sentence casing.
+
+    Rules:
+    - Do NOT change the meaning or content of the prompt.
+    - Only fix errors.
+    - Capitalize the first letter of each sentence when appropriate.
+    - Preserve intentional style choices if they do not interfere with correctness.
+    - If the input is a fragment rather than a full sentence, keep it as a fragment but correct obvious errors.
+    - If uncertain, keep the original text as much as possible.
+    - Return ONLY the corrected text, with no explanations or additional content.
     """
     USER_PROMPT = f"Correct the following prompt:\n{prompt}"
 
@@ -55,10 +64,16 @@ def correct_text(prompt: str) -> str:
             {"role": "user", "content": USER_PROMPT},
             ],
         temperature=0.0,  
-        top_p=1.0,
+#         top_p=1.0,
         max_output_tokens=5000,
     )
     return resp.output_text.strip()
 
-df["prompt_corrected"] = df["prompt"].apply(correct_text)
-df.to_csv("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/10122025_pilot_2/ppt_w_gpt_prompt_corrected.csv", index=False)
+from tqdm import tqdm
+# 1. Initialize tqdm for pandas
+tqdm.pandas(desc="Correcting Prompts")
+
+# 2. Swap .apply() for .progress_apply()
+df["prompt_corrected"] = df["prompt"].progress_apply(correct_text)
+
+df.to_csv("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/comparing_conditions/3_conditions_with_digit_span_prompt_corrected.csv", index=False)

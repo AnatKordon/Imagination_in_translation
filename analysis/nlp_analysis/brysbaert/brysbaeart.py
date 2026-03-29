@@ -11,7 +11,7 @@ import sys
 import pandas as pd
 
 # Make sure we can import config.py from project root
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
@@ -240,8 +240,8 @@ def compute_concreteness(df, text_col="prompt"):
 
 # ---------------- Example usage ----------------
 # df = pd.read_csv(config.PROCESSED_DIR / "ppt_w_gpt_w_similarity_trials.csv").copy()
-df = pd.read_csv("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/10122025_pilot_2/ppt_w_gpt_trials.csv").copy()
-out = compute_concreteness(df, text_col="prompt")
+df = pd.read_csv("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/comparing_conditions/3_conditions_with_digit_span_prompt_corrected.csv").copy()
+out = compute_concreteness(df, text_col="prompt_corrected") # applied on corrected text so that typos don't cause missing tokens; you can also run on original text to see the difference in coverage and scores
 #OUT_PATH = config.PROCESSED_DIR / "nlp_analysis" / "ppt_w_gpt_brysbaert_concreteness.csv"
-OUT_PATH = "/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/10122025_pilot_2/ppt_w_gpt_brysbaert_concreteness.csv"
+OUT_PATH = "/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/comparing_conditions/3_conditions_with_digit_span_prompt_corrected_brysbaert_concreteness.csv"
 out.to_csv(OUT_PATH, index=False)

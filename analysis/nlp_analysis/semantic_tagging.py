@@ -24,11 +24,16 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 from config import PROCESSED_DIR
-df = pd.read_csv(PROCESSED_DIR / "ppt_w_gpt_w_similarity_trials.csv").copy()
+
+# df = pd.read_csv(PROCESSED_DIR / "ppt_w_gpt_w_similarity_trials.csv").copy()
+df = pd.read_csv("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/wilmas_drawings_2019/delayed_memory_drawing_descriptions.csv").copy()
 # df = df[df['gt_corrected'].notna()]
 print(f"Number of rows to process: {len(df)}")
+#change the "description column to "prompt" for consistency with the function
+df.rename(columns={"description": "prompt"}, inplace=True)
 # save new df:
-OUT_PATH = PROCESSED_DIR / "nlp_analysis" / "ppt_w_gpt_semantic_tags.csv"
+# OUT_PATH = PROCESSED_DIR / "nlp_analysis" / "ppt_w_gpt_semantic_tags.csv"
+OUT_PATH = Path("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/wilmas_drawings_2019//nlp_analysis/delayed_memory_drawing_descriptions_semantic_tags.csv")
 OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 #perception data

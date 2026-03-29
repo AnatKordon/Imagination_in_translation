@@ -40,10 +40,9 @@ SCENE_MAP = {
     "high_living_room": "living_room_h.jpg",
     "low_tower": "tower_l.jpg",
 }
-
+condition = "delayed_memory" # "perception" or "immediate_memory" - this is just for the output file name, the code is the same for both conditions, only the input folder changes (see config.py)
 IMAGE_DIR = Path(config.WILMA_IMAGES)
-OUTPUT_CSV = Path("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/wilmas_drawings_2019/perception_drawing_descriptions.csv")
-
+OUTPUT_CSV = Path(f"/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/wilmas_drawings_2019/{condition}_drawing_descriptions.csv")
 
 # --------------------------------------------------
 # 2. Find relevant images

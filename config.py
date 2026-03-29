@@ -21,7 +21,7 @@ EXPERIMENT_DIR = ROOT / "Data" / "participants_data" / "pilot-2_09032026_gpt-ima
 PARTICIPANTS_DIR = ROOT / "Data" / "participants_data" / "pilot-2_09032026_gpt-image-1_delayed_memory_digit-span" / "jatos_results_files_20260310064715"
 PROCESSED_DIR = ROOT / "Data" / "processed_data" / "09032026_pilot_2_delayed_memory_digit-span"  # This is changed according to the model used
 # GPT_IMAGES = ROOT / "Data" / "participants_data" / "pilot_08092025_gpt-image-1"  # folder with gpt-image-1 generations for the pilot participants data
-WILMA_IMAGES = ROOT / "Data" / "other_datasets" / "wilmas_drawings_2019" / "perception_drawings" # only perception condition for now
+WILMA_IMAGES = ROOT / "Data" / "other_datasets" / "wilmas_drawings_2019" / "delayed_memory_drawings" # only perception condition for now
 
 
 ## for error handling
