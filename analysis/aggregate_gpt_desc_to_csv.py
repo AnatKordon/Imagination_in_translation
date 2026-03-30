@@ -11,7 +11,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import config
 gpt_dir = config.EXPERIMENT_DIR / "gpt-5_descriptions_as_ppt"  # These are generations in the same imagination in translation app as participants, only with gpt descriptions differing in verbosity
-
+print(gpt_dir)
 def load_and_transform_gpt_descriptions(gpt_dir: Path):
     """
     Load the 3 GPT description CSVs (low, medium, high verbosity) and transform them
@@ -70,7 +70,7 @@ def load_and_transform_gpt_descriptions(gpt_dir: Path):
 
 def main():
     try:
-        gpt_trials = load_and_transform_gpt_descriptions()
+        gpt_trials = load_and_transform_gpt_descriptions(gpt_dir=gpt_dir)
         
         print("GPT trials shape:", gpt_trials.shape)
         print("\nFirst few rows:")
