@@ -36,7 +36,7 @@ from config import WILMA_IMAGES
 SCENE_MAP = {
     "low_bedroom": "bedroom_l.jpg",
     "high_conference_room": "conference_room_h.jpg",
-    "high_lighthouse": "lighthouse_l.jpg",
+    "high_lighthouse": "lighthouse_h.jpg",
     "high_living_room": "living_room_h.jpg",
     "low_tower": "tower_l.jpg",
 }

@@ -21,15 +21,15 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 
 from config import PROCESSED_DIR, GT_DIR
 #measure for each condition seperately
-folder_path = Path("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/comparing_conditions")
-condition = "gpt_descs" # "immediate_memory_with_feedback" # change this according to the condition you want to analyze, e.g. "perception_no_feedback", "gpt-5_descriptions_as_ppt", "translation_imagination"
-df = pd.read_csv(folder_path / "gpt_descs.csv").copy() # "ppt_w_gpt_semantic_tags.csv").copy()
-# df = df[df['uid'] != "gpt-5"]
+folder_path = Path("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/wilmas_drawings_2019/nlp_analysis")
+condition = "wilmas descriptions" # change this according to the condition you want to analyze, e.g. "perception_no_feedback", "gpt-5_descriptions_as_ppt", "translation_imagination"
+df = pd.read_csv(folder_path / "ppt_w_gpt_semantic_tags.csv").copy()
+df = df[df['uid'] != "gpt-5"]
 print(f"Number of rows to process in full df: {len(df)}")
 # df = df.head(2) # for testing
 print(f"Number of rows to process: {len(df)}")
 
-OUT_PATH = folder_path / "gpt_trials_w_object_validation.csv" # "ppt_trials_w_object_validation.csv"
+OUT_PATH = folder_path / "ppt_trials_w_object_validation.csv"
 OUT_PATH.parent.mkdir(parents=True, exist_ok=True)  
 
 
