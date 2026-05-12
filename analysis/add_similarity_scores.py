@@ -19,7 +19,7 @@ from similarity.LPIPS_similarity import compute_lpips_score
 
 #change the paths acccording to task
 CSV_PATH = config.PROCESSED_DIR /"all_trials.csv" # should use corrected gt if nesseceary, this is the original good file with participant data: "participants_log_with_gpt_pilot_08092025.csv"  # Path to my CSV for analysis
-OUTPUT_CSV = config.PROCESSED_DIR / "all_trials_w_similarity_trials.csv"  # Path to save the output CSV with similarity scores
+OUTPUT_CSV = config.PROCESSED_DIR / "ppt_trials_w_similarity_trials.csv"  # Path to save the output CSV with similarity scores
 
 USE_CORRECTED = False  # <-- set this based on whether gt column was corrected "corrected: True/False"
 
@@ -71,7 +71,7 @@ if __name__ == "__main__":
         # path for gt and gen per row
         gt_name = pick_gt_name(row, USE_CORRECTED)
         
-        gen_path = path_from_row_jatos(row) # in the function it knows to use the 'gen' row and turn it into a full path (Previously I used function: path_from_row that worked but failed for shuffled data as it can't be reconstructed)
+        # gen_path = path_from_row_jatos(row) # in the function it knows to use the 'gen' row and turn it into a full path (Previously I used function: path_from_row that worked but failed for shuffled data as it can't be reconstructed)
         #extract prompt earlier
         prompt_clip_embed, token_num = get_clip_text_embedding(row['prompt']) # Note that for prompts longer than 77 words it is truncated
         token_nums.append(token_num)
@@ -87,17 +87,17 @@ if __name__ == "__main__":
         gt_path = config.GT_DIR / gt_name
 
 
-        gt__clip_embed = get_clip_visual_embedding(gt_path)
-        gen__clip_embed = get_clip_visual_embedding(gen_path)
+        # gt__clip_embed = get_clip_visual_embedding(gt_path)
+        # gen__clip_embed = get_clip_visual_embedding(gen_path)
         
         
-        # Compute cosine similarity for images
-        _, _, clip_cosine_distance = compute_similarity_score(gt__clip_embed, gen__clip_embed)
-        clip_distances.append(clip_cosine_distance)
+        # # Compute cosine similarity for images
+        # _, _, clip_cosine_distance = compute_similarity_score(gt__clip_embed, gen__clip_embed)
+        # clip_distances.append(clip_cosine_distance)
 
-        #compute visual_text alighnment using clip
-        clip_visual_text_alignment = cosine_similarity(gen__clip_embed, prompt_clip_embed)
-        clip_vis_text_similarities.append(clip_visual_text_alignment) # note that this is similarity, not distance
+        # #compute visual_text alighnment using clip
+        # clip_visual_text_alignment = cosine_similarity(gen__clip_embed, prompt_clip_embed)
+        # clip_vis_text_similarities.append(clip_visual_text_alignment) # note that this is similarity, not distance
 
 
         # # LPIPS (based on vgg)
@@ -108,26 +108,26 @@ if __name__ == "__main__":
         # clip_text_embedding, real_token_num = get_clip_text_embedding(row['prompt'])
         # #clip_text_embeddings.append(clip_text_embedding)
         # token_nums.append(real_token_num)
-        embedding_gt = vgg_fc7_embedder.get_embedding(img_path=str(gt_path))
-        embedding_gen = vgg_fc7_embedder.get_embedding(img_path=str(gen_path))
+    #     embedding_gt = vgg_fc7_embedder.get_embedding(img_path=str(gt_path))
+    #     embedding_gen = vgg_fc7_embedder.get_embedding(img_path=str(gen_path))
 
-        # Compute similarity score
-        _, _, vgg_fc7_distance = compute_similarity_score(embedding1=embedding_gt, embedding2=embedding_gen)
+    #     # Compute similarity score
+    #     _, _, vgg_fc7_distance = compute_similarity_score(embedding1=embedding_gt, embedding2=embedding_gen)
 
-        # add logging for distance score (not the simialrity we show the user - UserID, SessionID, Iteration, cosine_distance)
-        vgg_fc7_distances.append(vgg_fc7_distance)
+    #     # add logging for distance score (not the simialrity we show the user - UserID, SessionID, Iteration, cosine_distance)
+    #     vgg_fc7_distances.append(vgg_fc7_distance)
 
-    #append to csv
-    df["clip_cosine_distance"] = clip_distances
-    # df["clip_scaled_similarity"] = clip_scaled_similarities
+    # #append to csv
+    # df["clip_cosine_distance"] = clip_distances
+    # # df["clip_scaled_similarity"] = clip_scaled_similarities
 
-    # df["lpips_distance"] = lpips_distances
+    # # df["lpips_distance"] = lpips_distances
 
-    df["vgg_fc7_distance"] = vgg_fc7_distances
-    # df["vgg_fc7_similarity"] = vgg_fc7_similarities
-    # df["vgg_fc7_scaled_similarity"] = vgg_fc7_scaled_similarities
+    # df["vgg_fc7_distance"] = vgg_fc7_distances
+    # # df["vgg_fc7_similarity"] = vgg_fc7_similarities
+    # # df["vgg_fc7_scaled_similarity"] = vgg_fc7_scaled_similarities
 
-    df["clip_vis_text_similarity"] = clip_vis_text_similarities
+    # df["clip_vis_text_similarity"] = clip_vis_text_similarities
     df["token_num"] = token_nums
 
     df.to_csv(OUTPUT_CSV, index=False)

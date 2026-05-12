@@ -91,6 +91,7 @@ Analysis scripts are located in the `analysis` folder.
 
 ## NLP analysis
 nlp_analysis/semantic_tagging.py - adds semantic tags to the descriptions (e.g. whether they include color, shape, etc.) using gpt-5. it outputs additions to the df where each column is a type of tag (objects, attribute color...)
+nlp_analysis/object_accuracy_detector.py - validated objects - seperates to errors by model and subject hallucinations
 ## Comparing conditions
 nlp_analysis/nlp_notebook.ipynb is designed to make analyses per condition and is not fully developed yet
 

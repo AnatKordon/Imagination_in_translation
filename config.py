@@ -16,10 +16,11 @@ REQUIRED_ATTEMPTS = 3         # exactly 3 attempts per session
 # PROLIFIC_URL = "https://app.prolific.com/submissions/complete?cc=C1OJX362"  # Prolific completion URL
 
 #analysis
-ANALYSIS_DIR = ROOT / "analysis"  / "pilot-2_29032026_perception_no-feedback" # specific ofr the experiment
-EXPERIMENT_DIR = ROOT / "Data" / "participants_data" / "pilot-2_29032026_perception_no-feedback"   # JATOS export with one folder per participant
-PARTICIPANTS_DIR = ROOT / "Data" / "participants_data" / "pilot-2_29032026_perception_no-feedback" / "jatos_results_files_20260330080745"
-PROCESSED_DIR = ROOT / "Data" / "processed_data" / "29032026_pilot_2_perception_no_feedback"  # This is changed according to the model used
+CONDITION = "delayed-memory-no-feeback"
+ANALYSIS_DIR = ROOT / "analysis"  / "pilot-2_delayed-memory-no-feedback" # specific ofr the experiment
+EXPERIMENT_DIR = ROOT / "Data" / "participants_data" / "pilot-2_07052026_delayed-memory_digit-span_no-feedback"   # JATOS export with one folder per participant
+PARTICIPANTS_DIR = ROOT / "Data" / "participants_data" / "pilot-2_07052026_delayed-memory_digit-span_no-feedback" / "jatos_results_files_20260507103630"
+PROCESSED_DIR = ROOT / "Data" / "processed_data" / "07052026_pilot_2_delayed_memory_digit_span_no_feedback"  # This is changed according to the model used
 # GPT_IMAGES = ROOT / "Data" / "participants_data" / "pilot_08092025_gpt-image-1"  # folder with gpt-image-1 generations for the pilot participants data
 WILMA_IMAGES = ROOT / "Data" / "other_datasets" / "wilmas_drawings_2019" / "delayed_memory_drawings" # we have differenet conditions for wilma and also a mixed one
 

@@ -12,7 +12,6 @@ import config  # now we can reuse your paths
 pdir = config.PARTICIPANTS_DIR
 out_dir = config.PROCESSED_DIR
 
-
 def _add_source_columns(df: pd.DataFrame, csv_path: Path) -> pd.DataFrame:
     """Attach JATOS folder identifiers so we can trace provenance."""
     study_result = csv_path.parents[2].name if len(csv_path.parents) >= 3 else ""
