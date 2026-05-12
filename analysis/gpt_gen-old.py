@@ -28,46 +28,48 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 from config import PROCESSED_DIR, PANELS_DIR # uses your project-level config.py
-OUT_PATH = Path("/mnt/hdd/anatkorol/Imagination_in_translation/Data/participants_data/pilot-2_10122025_gpt-image-1/jatos_results_files_20251210075934/study_result_gpt-5/comp_result_gpt-5/files")
-DATA = OUT_PATH / "gpt_trials.csv" # participants and gpt descriptions
+condition = "delay no feedback"
+print(condition)
+# OUT_PATH = Path("/mnt/hdd/anatkorol/Imagination_in_translation/Data/participants_data/pilot-2_10122025_gpt-image-1/jatos_results_files_20251210075934/study_result_gpt-5/comp_result_gpt-5/files")
+# DATA = OUT_PATH / "gpt_trials.csv" # participants and gpt descriptions
  # path for all the generated images
-# #DATA = PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025.csv" # participants and gpt descriptions
-# # GPT_IMAGES_DATA = PROCESSED_DIR / "participants_log_with_gpt_pilot_08092025_gpt-image-1_generation.csv" # this is how to save it
-# #looping through all prompts to generate an image for each using gpt-image-1 and saving them for further analysis
-# # modifying the df to include the paths to the generated images
+DATA = PROCESSED_DIR / "ppt_trials_w_similarity_trials.csv" # participants only
+DATA_W_GEN = PROCESSED_DIR / "ppt_trials_w_similarity_trials_w_generation.csv" # this is how to save it
+#looping through all prompts to generate an image for each using gpt-image-1 and saving them for further analysis
+# modifying the df to include the paths to the generated images
 
-# df = pd.read_csv(DATA).copy()
-# #building the folders for saving the images the same way as originally with the users
+df = pd.read_csv(DATA).copy()
+#building the folders for saving the images the same way as originally with the users
 
-# def build_gpt_image_filename(uid: str, session: int, attempt: int, img_index: int) -> str:
-#     """
-#     like this: 00aeccd632c742d48a9ffe94da201493_session01_attempt01_img01_gpt-image.png
-#     """
-#     return (
-#         f"{uid}_session{session:02d}_"
-#         f"attempt{attempt:02d}_"
-#         f"img{img_index:02d}_gpt-image.png"
-#     )
+def build_gpt_image_filename(uid: str, session: int, attempt: int, img_index: int) -> str:
+    """
+    like this: 00aeccd632c742d48a9ffe94da201493_session01_attempt01.png
+    """
+    return (
+        f"{uid}_session{session:02d}_"
+        f"attempt{attempt:02d}_"
+        .png"
+    )
 
 
-# def build_gpt_image_path(row) -> Path:
-#     """
-#     Data/<PARTICIPANTS_DIR>/<uid>/gen_images/session_01/<filename>
-#     """
-#     uid        = str(row["uid"])
-#     session    = int(row["session"])
-#     attempt    = int(row["attempt"])
-#     img_index  = int(row["img_index"])
+def build_gpt_image_path(row) -> Path:
+    """
+    Data/<PARTICIPANTS_DIR>/<uid>/gen_images/session_01/<filename>
+    """
+    uid        = str(row["uid"])
+    session    = int(row["session"])
+    attempt    = int(row["attempt"])
 
-#     filename   = build_gpt_image_filename(uid, session, attempt, img_index)
 
-#     return (
-#         GPT_IMAGES
-#         / uid
-#         / "gen_images"
-#         / f"session_{session:02d}"
-#         / filename
-#     )
+    filename   = build_gpt_image_filename(uid, session, attempt, img_index)
+
+    return (
+        GPT_IMAGES
+        / uid
+        / "gen_images"
+        / f"session_{session:02d}"
+        / filename
+    )
 
 
 # a new generation function for single image generation and saving it to a given path
