@@ -18,7 +18,8 @@ if str(PROJECT_ROOT) not in sys.path:
 import config  # uses your project-level config.py
 
 IMG_EXTS = {".png", ".jpg", ".jpeg"}
-csv_path = config.PROCESSED_DIR / "ppt_w_gpt_trials.csv"
+type = "no_feedback"
+csv_path = config.PROCESSED_DIR / "ppt_trials_w_similarity_trials_with_gen.csv" # a changed path for the no feedback generations in retrospect
 # if there's a seed in the end of the filename - ignore it for matching purposes
 SEED_TAG = re.compile(r"_seed\d+(?=\.\w+$)", re.IGNORECASE)
 #if _gpt-image is in the name's ending
@@ -364,7 +365,6 @@ def main_gt_panels(csv_path: Path, gt_list: List[str], out_dir: Path):
 
 if __name__ == "__main__":
 
-    csv_path = config.PROCESSED_DIR / "ppt_w_gpt_trials.csv"
     PANELS_DIR = config.ANALYSIS_DIR / "panels"
     PANELS_DIR.mkdir(parents=True, exist_ok=True)
 

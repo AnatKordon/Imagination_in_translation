@@ -18,6 +18,7 @@ from torchvision.models import vgg16, VGG16_Weights
 from similarity.LPIPS_similarity import compute_lpips_score
 
 #change the paths acccording to task
+condition = "immediate memory no feedback)"
 CSV_PATH = config.PROCESSED_DIR /"all_trials.csv" # should use corrected gt if nesseceary, this is the original good file with participant data: "participants_log_with_gpt_pilot_08092025.csv"  # Path to my CSV for analysis
 OUTPUT_CSV = config.PROCESSED_DIR / "ppt_trials_w_similarity_trials.csv"  # Path to save the output CSV with similarity scores
 

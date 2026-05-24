@@ -22,7 +22,7 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 from config import PROCESSED_DIR, GT_DIR
 #measure for each condition seperately
 folder_path = PROCESSED_DIR / "nlp_analysis"
-condition = "delayed-memory-no-feedback" # change this according to the condition you want to analyze, e.g. "perception_no_feedback", "gpt-5_descriptions_as_ppt", "translation_imagination"
+condition = "immediate-memory-no-feedback-no-atetmpts" # change this according to the condition you want to analyze, e.g. "perception_no_feedback", "gpt-5_descriptions_as_ppt", "translation_imagination"
 df = pd.read_csv(folder_path / "ppt_trials_w_similarity_semantic_tags.csv").copy()
 df = df[df['uid'] != "gpt-5"]
 print(f"Number of rows to process in full df: {len(df)}")
