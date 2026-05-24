@@ -11,9 +11,9 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Your new condition directory
-condition = "delay no feedback"
-BASE_DIR = Path("/mnt/hdd/anatkorol/Imagination_in_translation/Data/participants_data/pilot-2_07052026_delayed-memory_digit-span_no-feedback")
-DATA_PATH = Path("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/07052026_pilot_2_delayed_memory_digit_span_no_feedback")
+condition = "perception no feedback"
+BASE_DIR = Path("/mnt/hdd/anatkorol/Imagination_in_translation/Data/participants_data/pilot-2_29032026_perception_no-feedback")
+DATA_PATH = Path("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/29032026_pilot_2_perception_no_feedback")
 DATA = DATA_PATH / "ppt_trials_w_similarity_trials.csv"
 OUT_PATH = DATA_PATH / "ppt_trials_w_similarity_trials_with_gen.csv"
 
@@ -64,64 +64,47 @@ def generate_gpt_image_from_prompt(prompt: str, out_path: Path):
     
     return getattr(resp.data[0], "revised_prompt", None)
 
+
 def main():
-    # 1. Choose the smart source path: pick OUT_PATH if recovery is needed, otherwise original DATA
-    src_csv = OUT_PATH if OUT_PATH.exists() else DATA
-    
-    if not src_csv.exists():
-        print(f"❌ Input CSV not found: {src_csv}")
+    if not DATA.exists():
+        print(f"❌ Original input CSV not found: {DATA}")
         return
 
-    print(f"📂 Reading data from: {src_csv.name}")
-    df = pd.read_csv(src_csv).copy()
-    
-    # Optional: Remove or adjust this line if you want to process the whole dataset!
-    df = df.head(5) 
+    print(f"📂 Reading complete fresh data from: {DATA.name}")
+    df = pd.read_csv(DATA).copy()
+    #  df = df.head(3)
 
-    # Initialize column tracking structure if missing
-    if "gen" not in df.columns:
-        df["gen"] = pd.NA
-    if "revised_prompt" not in df.columns:
-        df["revised_prompt"] = pd.NA
-
-
-    print(f"🚀 Processing images for: {BASE_DIR.name}")
+    print(f"🚀 Processing images for entire dataset ({len(df)} total rows)...")
 
     for idx, row in tqdm(df.iterrows(), total=len(df)):
-        # 1. Build the explicit filename using your function
+        # 1. Dynamically build and assign the explicit filename for this row
         filename = build_gpt_image_filename(row['uid'], int(row['session']), int(row['attempt']))
-        # 2. Assign it to the dataframe copy and local dictionary
         df.at[idx, 'gen'] = filename
-        row['gen'] = filename
-      
+        
         try:
-            # 3. Reconstruct the full path
-            out_path = build_jatos_path(row, BASE_DIR)
+            # 2. Reconstruct the target path on your HDD
+            out_path = build_jatos_path(df.loc[idx], BASE_DIR)
             
-            # CRASH RECOVERY: If the image is on disk AND we already saved a prompt metadata, skip safely
+            # 3. PURE DISK SKIP LOGIC: If the image is already there, don't pay the API to make it again
             if out_path.exists():
-                print(f"⏭️ Skipping entry {idx} (Image and metadata already exist on disk)")
                 continue
 
-            # 4. Generate and Save (only runs if the check above falls through)
+            # 4. Generate and Save (Only runs if file doesn't exist)
             prompt = str(row["prompt"])
             revised = generate_gpt_image_from_prompt(prompt, out_path)
             df.at[idx, "revised_prompt"] = revised
             
-            # Periodic file save to trace execution progress accurately
+            # Periodic save to disk every 5 entries to preserve text records/filenames
             if idx % 5 == 0:
                 df.to_csv(OUT_PATH, index=False)
-
-            # Periodic save to backup text data after every successful image generation
-            df.to_csv(OUT_PATH, index=False)
 
         except Exception as e:
             print(f"❌ Error at index {idx}: {e}")
             continue
 
-    # Final save for all 'gen' filenames and 'revised_prompts'
+    # Final save to write the full table out to OUT_PATH
     df.to_csv(OUT_PATH, index=False)
-    print(f"✅ Finished! CSV updated and images saved to the correct 'files' subfolders.")
+    print(f"✅ Finished! Full CSV updated at {OUT_PATH.name} and missing images generated.")
 
 if __name__ == "__main__":
     main()

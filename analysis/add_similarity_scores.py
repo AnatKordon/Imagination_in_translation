@@ -53,6 +53,8 @@ vgg_imagenet = models.vgg16(weights=weights)
 
 vgg_fc7_embedder = VGGEmbedder(model=vgg_imagenet, layer='Classifier_4') # this is fc7, else: 'Layer_30'
 
+df['gen'] = pd.NA
+
 if __name__ == "__main__":
     # CLIP
 
