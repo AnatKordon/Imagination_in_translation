@@ -35,15 +35,15 @@ def load_all_participant_csvs(pdir: Path):
     participant_files = sorted(pdir.glob("**/participants.csv"))
     digit_span_files = sorted(pdir.glob("**/digit_span.csv"))
     for f in participant_files:
-        df = pd.read_csv(f)
+        df = pd.read_csv(f).copy()
         participant_frames.append(_add_source_columns(df, f))
 
     for f in trial_files:
-        df = pd.read_csv(f)
+        df = pd.read_csv(f).copy()
         trials_frames.append(_add_source_columns(df, f))
 
     for f in digit_span_files:
-        df = pd.read_csv(f)
+        df = pd.read_csv(f).copy()
         digit_span_frames.append(_add_source_columns(df, f))
 
     all_trials = pd.concat(trials_frames, ignore_index=True) if trials_frames else pd.DataFrame()

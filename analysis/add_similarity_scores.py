@@ -33,6 +33,12 @@ import pandas as pd
 
 USE_CORRECTED = False  # <-- set this based on your "corrected: True/False"
 
+df = df.copy()  # avoid SettingWithCopyWarning
+
+# NOTE: THIS IS FOR THE NO FEEDBACK TRIALS
+# df['gen'] = pd.NA  # initialize 'gen' column with NA
+
+
 def pick_gt_name(row: pd.Series, use_corrected: bool) -> str | None:
     """Return the filename/title to use for GT, or None if missing."""
     if use_corrected:
