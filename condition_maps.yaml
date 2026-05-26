@@ -1,0 +1,16 @@
+# Active condition switch
+CURRENT_CONDITION: "immediate-memory-no-feedback"
+
+# The mappings
+CONDITIONS:
+  immediate-memory-no-feedback:
+    analysis_sub: "pilot-2_immediate-memory-no-feedback"
+    exp_sub: "pilot-2_07052026_immediate-memory_no-feedback"
+    jatos_sub: "jatos_results_files_20260507103445"
+    processed_sub: "07052026_pilot_2_immediate_memory_no_feedback"
+
+  delayed-memory-with-feedback:
+    analysis_sub: "pilot-2_delayed-memory-feedback"
+    exp_sub: "pilot-2_14052026_delayed-memory_feedback"
+    jatos_sub: "jatos_results_files_20260514112233"
+    processed_sub: "14052026_pilot_2_delayed_memory_feedback"
