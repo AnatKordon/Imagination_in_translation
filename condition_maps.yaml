@@ -3,14 +3,46 @@ CURRENT_CONDITION: "immediate-memory-no-feedback"
 
 # The mappings
 CONDITIONS:
+  perception:
+    analysis_sub: "pilot-2_gpt-image-1"
+    exp_sub: "pilot-2_10122025_gpt-image-1"
+    jatos_sub: "jatos_results_files_20251210075934"
+    processed_sub: "10122025_pilot_2"
+
+  immediate-memory:
+    analysis_sub: "pilot-2_gpt-image-1_memory"
+    exp_sub: "pilot-2_05012026_gpt-image-1_immediate-memory"
+    jatos_sub: "jatos_results_files_20260106132307"
+    processed_sub: "05012026_pilot_2_memory"
+
+  delayed-memory-digit-span:
+    analysis_sub: "pilot-2_gpt-image-1_delayed_memory_digit-span"
+    exp_sub: "pilot-2_09032026_gpt-image-1_delayed_memory_digit-span"
+    jatos_sub: "jatos_results_files_20260310064715"
+    processed_sub: "09032026_pilot_2_delayed_memory_digit-span"
+
+
+  perception-no-feedback:
+    analysis_sub: "pilot-2_perception-no-feedback"
+    exp_sub: "pilot-2_29032026_perception_no-feedback"
+    jatos_sub: "jatos_results_files_20260330080745"
+    processed_sub: "29032026_pilot_2_perception_no_feedback"
+
   immediate-memory-no-feedback:
     analysis_sub: "pilot-2_immediate-memory-no-feedback"
     exp_sub: "pilot-2_07052026_immediate-memory_no-feedback"
     jatos_sub: "jatos_results_files_20260507103445"
     processed_sub: "07052026_pilot_2_immediate_memory_no_feedback"
 
-  delayed-memory-with-feedback:
-    analysis_sub: "pilot-2_delayed-memory-feedback"
-    exp_sub: "pilot-2_14052026_delayed-memory_feedback"
-    jatos_sub: "jatos_results_files_20260514112233"
-    processed_sub: "14052026_pilot_2_delayed_memory_feedback"
+  delayed-memory-digit-span-no-feedback:
+    analysis_sub: "pilot-2_delayed-memory-no-feedback"
+    exp_sub: "pilot-2_07052026_delayed-memory_digit-span_no-feedback"
+    jatos_sub: "jatos_results_files_20260507103630"
+    processed_sub: "07052026_pilot_2_delayed_memory_digit_span_no_feedback"
+
+
+  immediate-memory-no-feedback-no-attempts:
+    analysis_sub: "pilot-2_immediate-memory-no-feedback-no-attempts"
+    exp_sub: "pilot-2_240526_immediate-memory_no-feedback_no-attempts"
+    jatos_sub: "jatos_results_files_20260524151949"
+    processed_sub: "240526_pilot_2_immediate_memory_no_feedback_no_attempts"

@@ -36,7 +36,7 @@ Pillow
 
 #path
 Pathlib
-
+pyyaml
 #DB
 supabase==2.3.4
 
