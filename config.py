@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import yaml
 
 # Directories (MIGHT NEED TO BE CHANGED)
 ROOT = Path(__file__).resolve().parent  # root of the project, where this file is located
@@ -16,14 +17,21 @@ REQUIRED_ATTEMPTS = 3         # exactly 3 attempts per session
 # PROLIFIC_URL = "https://app.prolific.com/submissions/complete?cc=C1OJX362"  # Prolific completion URL
 
 #analysis
-CONDITION = "immediate-memory-no-feeback"
-ANALYSIS_DIR = ROOT / "analysis"  / "pilot-2_immediate-memory-no-feedback" # specific ofr the experiment
-EXPERIMENT_DIR = ROOT / "Data" / "participants_data" / "pilot-2_07052026_immediate-memory_no-feedback"   # JATOS export with one folder per participant
-PARTICIPANTS_DIR = ROOT / "Data" / "participants_data" / "pilot-2_07052026_immediate-memory_no-feedback" / "jatos_results_files_20260507103445"
-PROCESSED_DIR = ROOT / "Data" / "processed_data" / "07052026_pilot_2_immediate_memory_no_feedback"  # This is changed according to the model used
-# GPT_IMAGES = ROOT / "Data" / "participants_data" / "pilot_08092025_gpt-image-1"  # folder with gpt-image-1 generations for the pilot participants data
-WILMA_IMAGES = ROOT / "Data" / "other_datasets" / "wilmas_drawings_2019" / "delayed_memory_drawings" # we have differenet conditions for wilma and also a mixed one
+# 2. Load the external YAML mapping file
+YAML_PATH = ROOT / "condition_maps.yaml"
+with open(YAML_PATH, "r") as f:
+    mapping_data = yaml.safe_load(f)
 
+# 3. Extract the active condition and its specific sub-folders
+CONDITION = mapping_data["CURRENT_CONDITION"]
+cfg = mapping_data["CONDITIONS"][CONDITION]
+
+# 4. Construct the actual paths dynamically
+ANALYSIS_DIR = ROOT / "analysis" / cfg["analysis_sub"]
+EXPERIMENT_DIR = ROOT / "Data" / "participants_data" / cfg["exp_sub"]
+PARTICIPANTS_DIR = EXPERIMENT_DIR / cfg["jatos_sub"]  # Nesting safely
+PROCESSED_DIR = ROOT / "Data" / "processed_data" / cfg["processed_sub"]
+CSV_PATH = PROCESSED_DIR / cfg["df"]  # Path to the CSV file for analysis
 
 ## for error handling
 websites = [".com", ".net", ".org", ".edu", ".gov", ".io", ".co", ".uk", ".de", ".fr", ".jp", ".ru","https", "http", "www."]
