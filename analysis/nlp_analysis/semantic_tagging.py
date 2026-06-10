@@ -116,6 +116,9 @@ def extract_semantics(prompt: str) -> dict:
   return json.loads(resp.output_text)
 
 
+
+
+
 from tqdm.auto import tqdm
 tqdm.pandas()
 df["extraction"] = df["prompt"].progress_apply(extract_semantics)
