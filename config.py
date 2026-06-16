@@ -6,7 +6,7 @@ import pandas as pd
 
 # Directories (MIGHT NEED TO BE CHANGED)
 ROOT = Path(__file__).resolve().parent  # root of the project, where this file is located
-GT_DIR = ROOT / "GT_images" / "wilma_ground_truth" / "chosen_pilot_2" # folder with target images
+GT_DIR = ROOT / "GT_images" / "wilma_ground_truth" / "CHOSEN_IMAGES" # folder with target images
 LOG_DIR = ROOT / "logs" / "users_data" # folder with CSV log files per user/session
 # GEN_DIR = ROOT / "logs"/"gen_images"  # folder where generated images are saved
 DRIVE_FOLDER = "https://drive.google.com/drive/folders/1bbDtQ7WrDTyaoMTJfIlgix7QUG3is78U?usp=drive_link"
