@@ -53,6 +53,8 @@ def load_all_participant_csvs(pdir: Path):
     return all_trials, all_participants, all_digit_span 
 
 def main(pdir: Path = config.PARTICIPANTS_DIR, out_dir: Path = config.PROCESSED_DIR):
+    # processed_data/<DATASET>/<gen>/<task>/ — created on first aggregation.
+    out_dir.mkdir(parents=True, exist_ok=True)
     trials, participants, digit_span = load_all_participant_csvs(pdir=pdir)
 
     # Quick sanity prints

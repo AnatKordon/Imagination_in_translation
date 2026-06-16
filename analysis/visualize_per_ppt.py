@@ -19,7 +19,8 @@ import config  # uses your project-level config.py
 
 IMG_EXTS = {".png", ".jpg", ".jpeg"}
 type = "no_feedback"
-csv_path = config.PROCESSED_DIR / "ppt_trials_w_similarity_trials_with_gen.csv" # a changed path for the no feedback generations in retrospect
+# Panels show generated images, so read the with-similarity analysis table.
+csv_path = config.PROCESSED_DIR / config.FILES["trials_final_sim"]
 # if there's a seed in the end of the filename - ignore it for matching purposes
 SEED_TAG = re.compile(r"_seed\d+(?=\.\w+$)", re.IGNORECASE)
 #if _gpt-image is in the name's ending

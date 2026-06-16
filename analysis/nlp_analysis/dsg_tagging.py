@@ -29,7 +29,8 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 from config import PROCESSED_DIR
-df = pd.read_csv(PROCESSED_DIR / "ppt_w_gpt_w_similarity_trials.csv").copy()
+# Text-based tagging: read the no-similarity analysis table (canonical name).
+df = pd.read_csv(PROCESSED_DIR / config.FILES["trials_final"]).copy()
 df = df.head(2) # for testing 
 # save new df:
 OUT_PATH = PROCESSED_DIR / "nlp_analysis" / "ppt_w_gpt_dsg_tagging.csv"

@@ -1,68 +1,112 @@
-# Active condition switch
-CURRENT_CONDITION: "immediate-memory"
+# =====================================================================
+# Full-experiment condition map.
+#
+# Roles:
+#   - This YAML declares WHAT EXISTS (conditions, their generation/task,
+#     canonical filenames).
+#   - config.py turns it into usable paths + helpers (paths_for, load).
+#
+# Folder layout (same nesting in all three trees):
+#   Data/participants_data/<DATASET>/<gen>/<task>/jatos_results_files_*/...
+#   Data/processed_data/<DATASET>/<gen>/<task>/        # canonical CSVs
+#   Data/processed_data/<DATASET>/combined/            # cross-condition CSVs
+#   analysis/outputs/<DATASET>/<gen>/<task>/           # panels, rdms, graphs
+#   analysis/outputs/<DATASET>/combined/               # cross-condition outputs
+#   (analysis/ root holds the shared, condition-agnostic code.)
+#
+# A condition slug is "<gen>_<task>" (e.g. aigen_perc); the folder path is
+# just the slug split on "_". The JATOS export folder is auto-discovered by
+# glob, so no timestamp lives here.
+# =====================================================================
 
-# The mappings
+# Active condition for single-condition scripts (set via the slug).
+CURRENT_CONDITION: "aigen_perc"
+
+DATASET: "Full_experiment"
+
+# Canonical pipeline filenames — identical for every condition.
+FILENAMES:
+  all_trials: all_trials.csv
+  all_participants: all_participants.csv
+  all_digit_span: all_digit_span.csv
+  summary_by_uid: summary_by_uid.csv
+  trials_final: trials_final.csv          # analysis df, no visual similarity
+  trials_final_sim: trials_final_sim.csv  # analysis df + visual similarity
+
+# 3 generation types x 3 memory tasks = 9 conditions.
+#   generation: aigen (AI image gen) | nogen (no AI, text feedback) | plain (baseline, single attempt)
+#   task:       perception | immediate | delay
+#   feedback:   image | text | none
 CONDITIONS:
+  aigen_perc: {generation: aigen, task: perception, feedback: image}
+  aigen_imm:  {generation: aigen, task: immediate,  feedback: image}
+  aigen_del:  {generation: aigen, task: delay,      feedback: image}
+  nogen_perc: {generation: nogen, task: perception, feedback: text}
+  nogen_imm:  {generation: nogen, task: immediate,  feedback: text}
+  nogen_del:  {generation: nogen, task: delay,      feedback: text}
+  plain_perc: {generation: plain, task: perception, feedback: none}
+  plain_imm:  {generation: plain, task: immediate,  feedback: none}
+  plain_del:  {generation: plain, task: delay,      feedback: none}
+
+# =====================================================================
+# Frozen pilots. Names are messy and inconsistent on purpose (left as-is).
+# Paths include the real Pilot_2/ (participants_data) and pilot_2/
+# (processed_data) parents; analysis_sub lives under analysis/outputs/legacy_pilots/.
+# To run an old pilot analysis, set CURRENT_CONDITION to one of these keys;
+# config.py builds the single-condition globals from the explicit *_sub/df
+# fields instead of deriving them from a slug.
+# =====================================================================
+LEGACY:
   perception:
     task: "perception"
     feedback: "feedback"
-    analysis_sub: "pilot-2_gpt-image-1"
-    exp_sub: "pilot-2_10122025_gpt-image-1"
+    analysis_sub: "outputs/legacy_pilots/pilot-2_gpt-image-1"
+    exp_sub: "Pilot_2/pilot-2_10122025_gpt-image-1"
     jatos_sub: "jatos_results_files_20251210075934"
-    processed_sub: "10122025_pilot_2"
+    processed_sub: "pilot_2/10122025_pilot_2"
     df: "ppt_w_gpt_w_similarity_trials.csv"
 
   immediate-memory:
     task: "immediate memory"
     feedback: "feedback"
-    analysis_sub: "pilot-2_gpt-image-1_memory"
-    exp_sub: "pilot-2_05012026_gpt-image-1_immediate-memory"
+    analysis_sub: "outputs/legacy_pilots/pilot-2_gpt-image-1_memory"
+    exp_sub: "Pilot_2/pilot-2_05012026_gpt-image-1_immediate-memory"
     jatos_sub: "jatos_results_files_20260106132307"
-    processed_sub: "05012026_pilot_2_memory"
+    processed_sub: "pilot_2/05012026_pilot_2_memory"
     df: "ppt_w_gpt_w_similarity_trials.csv"
-  
+
   delayed-memory-digit-span:
     task: "delayed memory"
     feedback: "feedback"
-    analysis_sub: "pilot-2_gpt-image-1_delayed_memory_digit-span"
-    exp_sub: "pilot-2_09032026_gpt-image-1_delayed_memory_digit-span"
+    analysis_sub: "outputs/legacy_pilots/pilot-2_gpt-image-1_delayed_memory_digit-span"
+    exp_sub: "Pilot_2/pilot-2_09032026_gpt-image-1_delayed_memory_digit-span"
     jatos_sub: "jatos_results_files_20260310064715"
-    processed_sub: "09032026_pilot_2_delayed_memory_digit-span"
+    processed_sub: "pilot_2/09032026_pilot_2_delayed_memory_digit-span"
     df: "ppt_w_gpt_w_similarity_trials.csv"
-###### no feedback conditions ######
 
   perception-no-feedback:
     task: "perception"
     feedback: "no-feedback"
-    analysis_sub: "pilot-2_perception-no-feedback"
-    exp_sub: "pilot-2_29032026_perception_no-feedback"
+    analysis_sub: "outputs/legacy_pilots/pilot-2_perception-no-feedback"
+    exp_sub: "Pilot_2/pilot-2_29032026_perception_no-feedback"
     jatos_sub: "jatos_results_files_20260330080745"
-    processed_sub: "29032026_pilot_2_perception_no_feedback"
+    processed_sub: "pilot_2/29032026_pilot_2_perception_no_feedback"
     df: "ppt_trials_w_similarity_trials_with_gen_updated.csv"
 
   immediate-memory-no-feedback:
     task: "immediate memory"
     feedback: "no-feedback"
-    analysis_sub: "pilot-2_immediate-memory-no-feedback"
-    exp_sub: "pilot-2_07052026_immediate-memory_no-feedback"
+    analysis_sub: "outputs/legacy_pilots/pilot-2_immediate-memory-no-feedback"
+    exp_sub: "Pilot_2/pilot-2_07052026_immediate-memory_no-feedback"
     jatos_sub: "jatos_results_files_20260507103445"
-    processed_sub: "07052026_pilot_2_immediate_memory_no_feedback"
+    processed_sub: "pilot_2/07052026_pilot_2_immediate_memory_no_feedback"
     df: "ppt_trials_w_similarity_trials_with_gen_updated.csv"
 
   delayed-memory-digit-span-no-feedback:
     task: "delayed memory"
     feedback: "no-feedback"
-    analysis_sub: "pilot-2_delayed-memory-no-feedback"
-    exp_sub: "pilot-2_07052026_delayed-memory_digit-span_no-feedback"
+    analysis_sub: "outputs/legacy_pilots/pilot-2_delayed-memory-no-feedback"
+    exp_sub: "Pilot_2/pilot-2_07052026_delayed-memory_digit-span_no-feedback"
     jatos_sub: "jatos_results_files_20260507103630"
-    processed_sub: "07052026_pilot_2_delayed_memory_digit_span_no_feedback"
+    processed_sub: "pilot_2/07052026_pilot_2_delayed_memory_digit_span_no_feedback"
     df: "ppt_trials_w_similarity_trials_with_gen_updated.csv"
-
-  # immediate-memory-no-feedback-no-attempts:
-  #   task: "immediate memory"
-  #   feedback: "no-feedback-no-attempts"
-  #   analysis_sub: "pilot-2_immediate-memory-no-feedback-no-attempts"
-  #   exp_sub: "pilot-2_240526_immediate-memory_no-feedback_no-attempts"
-  #   jatos_sub: "jatos_results_files_20260524151949"
-  #   processed_sub: "240526_pilot_2_immediate_memory_no_feedback_no_attempts"
-  #   df: "ppt_trials_w_similarity_trials.csv"

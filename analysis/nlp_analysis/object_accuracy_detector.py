@@ -20,16 +20,15 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 from config import PROCESSED_DIR, GT_DIR
-#measure for each condition seperately
+#measure for each condition seperately (set via config.CURRENT_CONDITION)
 folder_path = PROCESSED_DIR / "nlp_analysis"
-condition = "immediate-memory-no-feedback-no-atetmpts" # change this according to the condition you want to analyze, e.g. "perception_no_feedback", "gpt-5_descriptions_as_ppt", "translation_imagination"
-df = pd.read_csv(folder_path / "ppt_trials_w_similarity_semantic_tags.csv").copy()
+df = pd.read_csv(folder_path / "semantic_tags.csv").copy()
 df = df[df['uid'] != "gpt-5"]
 print(f"Number of rows to process in full df: {len(df)}")
 # df = df.head(2) # for testing
 print(f"Number of rows to process: {len(df)}")
 
-OUT_PATH = folder_path / "ppt_trials_w_object_validation.csv"
+OUT_PATH = folder_path / "object_validation.csv"
 OUT_PATH.parent.mkdir(parents=True, exist_ok=True)  
 
 

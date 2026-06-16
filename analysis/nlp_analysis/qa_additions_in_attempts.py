@@ -48,25 +48,16 @@ sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / 'config'))
 print(f"Project root: {project_root}")
 
-import yaml
-#project_root = Path.cwd().resolve().parent 
-
-
- # 2. Load the YAML mapping file
-YAML_PATH = project_root / "condition_maps.yaml"
-with open(YAML_PATH, "r") as f:
-     mapping_data = yaml.safe_load(f)
-
-
-CONDITION   = mapping_data["CURRENT_CONDITION"]
-cfg         = mapping_data["CONDITIONS"][CONDITION]
-
-# Reconstruct all relevant paths exactly as config.py does
-ANALYSIS_DIR    = project_root / "analysis" / cfg["analysis_sub"]
-EXPERIMENT_DIR  = project_root / "Data" / "participants_data" / cfg["exp_sub"]
-PARTICIPANTS_DIR = EXPERIMENT_DIR / cfg["jatos_sub"]
-PROCESSED_DIR   = project_root / "Data" / "processed_data" / cfg["processed_sub"]
-CSV_PATH        = PROCESSED_DIR / cfg["df"]
+# Reuse the project config instead of re-parsing condition_maps.yaml.
+# Only the names this script actually uses are bound here.
+import config
+CONDITION        = config.CONDITION
+CSV_PATH         = config.CSV_PATH
+ANALYSIS_DIR     = config.ANALYSIS_DIR
+PARTICIPANTS_DIR = config.PARTICIPANTS_DIR
+# task/feedback metadata for the active condition (current grid or legacy pilot)
+_cm = config.mapping_data["CONDITIONS"].get(CONDITION) or config.LEGACY.get(CONDITION, {})
+TASK, FEEDBACK = _cm.get("task"), _cm.get("feedback")
 
 print(f"Condition     : {CONDITION}")
 print(f"CSV           : {CSV_PATH}")
@@ -465,8 +456,8 @@ def compute_summary_metrics(df: pd.DataFrame) -> pd.DataFrame:
                 'session':    session,
                 'transition': label,
                 'condition':  CONDITION,
-                'task':       cfg['task'],
-                'feedback':   cfg['feedback'],
+                'task':       TASK,
+                'feedback':   FEEDBACK,
             }
             rec.update(m)
             records.append(rec)

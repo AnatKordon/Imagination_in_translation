@@ -257,10 +257,11 @@ def build_rdm_alignment(
     return df_rdm
 
 if __name__ == "__main__":
-    # Example usage
-    CSV_PATH = config.PROCESSED_DIR / "ppt_w_gpt_w_similarity_trials.csv"
-    OUT_DIR = config.ANALYSIS_DIR / "pilot-2_gpt-image-1" / "rdms"
-    OUTPUT_CSV = config.PROCESSED_DIR / "rdm_alignment_results_gpt-image-1-generation.csv" # it is a smaller csv
+    # Example usage. RDMs are built on visual similarity, so read the
+    # with-similarity table; outputs go under the condition's analysis dir.
+    CSV_PATH = config.PROCESSED_DIR / config.FILES["trials_final_sim"]
+    OUT_DIR = config.ANALYSIS_DIR / "rdms"
+    OUTPUT_CSV = config.PROCESSED_DIR / "rdm_alignment_results.csv" # it is a smaller csv
 
     df = pd.read_csv(CSV_PATH)
     df_rdm = build_rdm_alignment(df, gt_root=config.GT_DIR, out_dir=OUT_DIR)

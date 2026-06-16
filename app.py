@@ -6,7 +6,7 @@ import streamlit.components.v1 as components
 from models import api_model # the model API wrapper for Stability AI
 # removed it for now as we are not using it and i don't wantit to be imported
 #from models import gpt_model # the model API wrapper for open ai
-from drive_utils import build_drive_from_token_dict, ensure_folder, ensure_path, update_or_insert_file, extract_folder_id, get_token_dict_from_secrets_or_env
+from OLD.drive_utils import build_drive_from_token_dict, ensure_folder, ensure_path, update_or_insert_file, extract_folder_id, get_token_dict_from_secrets_or_env
 # from similarity import vgg_similarity # the similarity function 
 from uuid import uuid4 # used to create session / user IDs
 # from drive_utils import get_drive_service, create_folder, upload_file, extract_folder_id_from_url
