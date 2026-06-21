@@ -58,9 +58,9 @@ def main(pdir: Path = config.PARTICIPANTS_DIR, out_dir: Path = config.PROCESSED_
     trials, participants, digit_span = load_all_participant_csvs(pdir=pdir)
 
     # Quick sanity prints
-    print("Trials shape:", trials.shape)
-    print("Participants shape:", participants.shape)
-    print("digit span shape:", digit_span.shape)
+    # print("Trials shape:", trials.shape)
+    # print("participants csv shape:", participants.shape)
+    # print("digit span shape:", digit_span.shape)
 
     # Save combined datasets
     if not trials.empty:

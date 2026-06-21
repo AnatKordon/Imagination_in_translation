@@ -7,16 +7,6 @@ import pandas as pd
 # Directories - old data, currently experiment runs in jatos (MIGHT NEED TO BE CHANGED)
 ROOT = Path(__file__).resolve().parent  # root of the project, where this file is located
 GT_DIR = ROOT / "GT_images" / "wilma_ground_truth" / "CHOSEN_IMAGES" # folder with target images
-LOG_DIR = ROOT / "logs" / "users_data" # folder with CSV log files per user/session
-# GEN_DIR = ROOT / "logs"/"gen_images"  # folder where generated images are saved
-# DRIVE_FOLDER = "https://drive.google.com/drive/folders/1bbDtQ7WrDTyaoMTJfIlgix7QUG3is78U?usp=drive_link"
-# STYLE_IMAGE = GT_DIR / "sample_image" / "bridge_l.jpg"  # Path to the style image
-# IMG_H = 260  # The height of images is limited to 260 px so the user doesn't need to scroll
-MAX_LENGTH = 10000  # Maximum length of the prompt text
-N_OUT = 1  # Number of images to generate per prompt (1 or 4)
-MAX_SESSIONS = 5            # total sessions per participant
-REQUIRED_ATTEMPTS = 3         # exactly 3 attempts per session
-# PROLIFIC_URL = "https://app.prolific.com/submissions/complete?cc=C1OJX362"  # Prolific completion URL
 
 # =====================================================================
 # Analysis paths.
@@ -148,3 +138,16 @@ params = {
 }
 
 #API_CALL = "stability_ai"  # ["open_ai", "stability_ai"]
+
+
+## old - unused
+LOG_DIR = ROOT / "logs" / "users_data" # folder with CSV log files per user/session
+# GEN_DIR = ROOT / "logs"/"gen_images"  # folder where generated images are saved
+# DRIVE_FOLDER = "https://drive.google.com/drive/folders/1bbDtQ7WrDTyaoMTJfIlgix7QUG3is78U?usp=drive_link"
+# STYLE_IMAGE = GT_DIR / "sample_image" / "bridge_l.jpg"  # Path to the style image
+# IMG_H = 260  # The height of images is limited to 260 px so the user doesn't need to scroll
+MAX_LENGTH = 10000  # Maximum length of the prompt text
+N_OUT = 1  # Number of images to generate per prompt (1 or 4)
+MAX_SESSIONS = 5            # total sessions per participant
+REQUIRED_ATTEMPTS = 3         # exactly 3 attempts per session
+# PROLIFIC_URL = "https://app.prolific.com/submissions/complete?cc=C1OJX362"  # Prolific completion URL

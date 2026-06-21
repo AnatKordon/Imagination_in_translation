@@ -15,8 +15,10 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
 import config  # noqa: E402
+from analysis import aggregate  # noqa: E402
 
-from .report import run_condition  # noqa: E402
+from .build_trials_final import run_condition as build_trials_final  # noqa: E402
+from .report import run_condition as classify_and_reconstruct  # noqa: E402
 
 
 def main():
@@ -28,11 +30,16 @@ def main():
 
     summaries = []
     for condition in conditions:
-        summary_df, participants_df = run_condition(condition)
+        summary_df, participants_df = classify_and_reconstruct(condition)
         summaries.append(summary_df)
         print(f"[{condition}] full={summary_df['full'][0]} "
               f"partial={summary_df['partial'][0]} unusable={summary_df['unusable'][0]} "
               f"total={summary_df['total'][0]}")
+
+        paths = config.paths_for(condition)
+        if paths.participants_dir is not None and paths.participants_dir.exists():
+            aggregate.main(pdir=paths.participants_dir, out_dir=paths.processed_dir)
+            build_trials_final(condition)
 
     if len(summaries) > 1:
         combined = pd.concat(summaries, ignore_index=True)
