@@ -35,11 +35,18 @@ JUDGES = [
 ]
 
 
-def _score_unique(unique: pd.DataFrame, prefix: str, module, client, limit: int | None) -> pd.DataFrame:
+def _score_unique(
+    unique: pd.DataFrame,
+    prefix: str,
+    module,
+    client,
+    limit: int | None,
+    usage: common.UsageAccumulator,
+) -> pd.DataFrame:
     """Score the unique-prompt frame with one judge, returning prefixed score/expl columns."""
     scored = common.score_dataframe(
         unique,
-        lambda p: module.score_prompt(client, p),
+        lambda p: module.score_prompt(client, p, usage=usage),
         score_col=f"{prefix}_score",
         expl_col=f"{prefix}_explanation",
         limit=limit,
@@ -62,9 +69,14 @@ def run_consensus(condition: str, limit: int | None = None) -> pd.DataFrame:
     unique = trials[["prompt"]].drop_duplicates().reset_index(drop=True)
 
     merged = unique
+    usage_by_model: dict[str, common.UsageAccumulator] = {}
     for prefix, module, make_client in JUDGES:
-        scored = _score_unique(unique, prefix, module, make_client(), limit)
+        acc = common.UsageAccumulator()
+        usage_by_model[module.DEFAULT_MODEL] = acc
+        scored = _score_unique(unique, prefix, module, make_client(), limit, acc)
         merged = merged.merge(scored, on="prompt", how="left")
+
+    common.print_usage_report(usage_by_model)
 
     score_cols = [f"{p}_score" for p, _, _ in JUDGES]
     flags = pd.concat([merged[c] >= common.THRESHOLD for c in score_cols], axis=1)

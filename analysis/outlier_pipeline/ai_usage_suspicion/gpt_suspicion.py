@@ -10,10 +10,15 @@ try:
 except ImportError:  # running as a plain script from inside this folder
     import common
 
-DEFAULT_MODEL = "gpt-5.4-nano"
+DEFAULT_MODEL = "gpt-5.4-mini"
 
 
-def score_prompt(client: OpenAI, prompt: str, model: str = DEFAULT_MODEL) -> common.PromptSuspicionResult:
+def score_prompt(
+    client: OpenAI,
+    prompt: str,
+    model: str = DEFAULT_MODEL,
+    usage: "common.UsageAccumulator | None" = None,
+) -> common.PromptSuspicionResult:
     response = client.responses.parse(
         model=model,
         input=[
@@ -22,6 +27,8 @@ def score_prompt(client: OpenAI, prompt: str, model: str = DEFAULT_MODEL) -> com
         ],
         text_format=common.PromptSuspicionResult,
     )
+    if usage is not None and response.usage is not None:
+        usage.add(response.usage.input_tokens, response.usage.output_tokens)
     return response.output_parsed
 
 

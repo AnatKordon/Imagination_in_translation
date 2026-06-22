@@ -18,42 +18,94 @@ load_dotenv()
 THRESHOLD = 80          # a judge "flags" a prompt when its score is >= THRESHOLD
 MIN_AGREEMENT = 2       # exclude a prompt when at least this many of 3 judges flag it
 
+# (input, output) USD per 1,000,000 tokens, keyed by model id. The Claude rate is
+# Anthropic's published pricing for claude-haiku-4-5. The GPT/Gemini rates are left
+# as None on purpose: token counts below are always exact, but dollar figures only
+# appear once you fill in a verified rate for that provider.
+PRICES: dict[str, tuple[float | None, float | None]] = {
+    "claude-haiku-4-5": (1.00, 5.00),
+    "gpt-5.4-mini": (0.75, 4.50),       # current OpenAI pricing
+    "gpt-5.4-nano": (0.20, 1.25),       # TODO: set from current OpenAI pricing
+    "gemini-2.5-flash": (0.30, 2.50),   # TODO: set from current Gemini pricing
+}
+
+
+class UsageAccumulator:
+    """Running total of token usage for one judge, summed over real API calls.
+
+    Only updated on a cache miss (score_dataframe scores each unique prompt once),
+    so the totals reflect actual spend, not the number of trials.
+    """
+
+    def __init__(self) -> None:
+        self.calls = 0
+        self.input_tokens = 0
+        self.output_tokens = 0
+
+    def add(self, input_tokens: int, output_tokens: int) -> None:
+        self.calls += 1
+        self.input_tokens += int(input_tokens or 0)
+        self.output_tokens += int(output_tokens or 0)
+
+    def cost_usd(self, model: str) -> float | None:
+        rate = PRICES.get(model)
+        if not rate or rate[0] is None or rate[1] is None:
+            return None
+        return self.input_tokens / 1e6 * rate[0] + self.output_tokens / 1e6 * rate[1]
+
+
+def print_usage_report(accumulators: dict[str, UsageAccumulator]) -> None:
+    """Print per-model token usage and (where a rate is known) estimated cost."""
+    print("\n=== AI-usage judge spend ===")
+    total = 0.0
+    any_unknown = False
+    for model, acc in accumulators.items():
+        cost = acc.cost_usd(model)
+        if cost is None:
+            any_unknown = True
+            cost_str = "cost n/a (set PRICES)"
+        else:
+            total += cost
+            cost_str = f"${cost:.4f}"
+        print(f"  {model:<20} calls={acc.calls:<4} "
+              f"in={acc.input_tokens:<8} out={acc.output_tokens:<7} {cost_str}")
+    known = f"${total:.4f}" + (" (excludes models with no rate set)" if any_unknown else "")
+    print(f"  {'TOTAL (priced)':<20} {known}")
+
 USER_TEMPLATE = "Image prompt:\n{prompt}"
 
-# Shared rubric. Deliberately NOT "be conservative": the 2-of-3 >= 80 consensus
-# already makes the overall filter strict, so each judge should be well-calibrated
-# to the bands rather than reluctant to ever reach the top band.
-#
-# Key design point: in this experiment participants were INSTRUCTED to describe a
-# target image in as much detail as possible so an AI image generator could recreate
-# it. So length / detail / thoroughness are exactly what the task demands and are NOT
-# evidence of AI. The discriminator is writing STYLE and REGISTER, not amount of detail.
+# Shared rubric. The 80-100 band is deliberately strict: a judge should reach it only
+# with very strong, high-confidence evidence that the WHOLE prompt was chatbot-generated,
+# because in this task the expected genuine-human output (long, detailed, object-by-object
+# and spatial, sometimes opening with "photo realistic") superficially resembles an
+# image-generation prompt. The discriminator is register + plain human vocabulary, not
+# amount of detail, object count, or fragment/tag style. The signal lists are weighted
+# cues, not hard rules — any of them can occasionally appear on the other side.
 SYSTEM_PROMPT = """
 You are a linguistic-forensics assistant for a psychology experiment.
 
-In this experiment, human participants were asked to describe a target image in as much detail as possible so that an AI image generator could recreate it. Long, highly detailed, exhaustive descriptions are exactly what the task demands, so ordinary thoroughness is expected and is not, by itself, evidence of AI. Do not raise the score merely because a description is long or elaborate.
+In this experiment, human participants were asked to describe a target image in as much detail as possible so that an AI image generator could recreate it. Because of this, a typical genuine response is expected to be long and detailed, to catalogue many objects with their colors, positions, and spatial layout (foreground/background, left/right, what is cut off by the frame), and it may open with phrasing like "photo realistic" (some participants use such phrasing, many do not). What usually characterizes a real person doing this task is that all of this descriptive, spatial detail is expressed in plain, everyday, human-like words.
 
-Return a suspicion_score from 0 to 100 estimating how strongly the WRITING STYLE and REGISTER resemble AI-generated text, or text copied from an image-generation prompt, rather than a person describing what they see in their own words. Base your judgment primarily on writing STYLE and REGISTER (below), not on amount of detail. An unusually exhaustive, flat catalogue of many distinct objects — well beyond what a person typically bothers to mention — may count as a mild secondary cue, but only together with the style signals below; never treat detail or object count as decisive on its own. Do not penalize sophisticated vocabulary or strong writing by itself, and do not infer anything from perceived education level, fluency, or whether the writer is a native speaker.
+Your job is to estimate how strongly the text looks like it was generated by an AI chatbot or language model (for example, copied from ChatGPT) rather than written by the participant themselves. Return a suspicion_score from 0 to 100. Judge mainly the writing STYLE and REGISTER, not the amount of detail, the number of objects, or the presence of spatial/framing description — those are expected from everyone and are not, on their own, evidence of AI. Do not infer anything from perceived education level, fluency, or whether the writer is a native speaker.
 
-Signals that RAISE suspicion (AI / image-generation-prompt style):
-- Telegraphic noun-phrase fragments and stacked comma-separated modifiers instead of full sentences (caption / tag style), e.g. "cylindrical iron tower on a broad conical base, oxidized red and brown rust with peeling faded pink paint".
-- No observer or narration voice anywhere ("we see", "there is", "on the left", "I notice"); the text just lists attributes.
-- Flawless spelling, grammar, spacing, and capitalization throughout.
-- Image-generation jargon or parameters: "photorealistic", "hyper-detailed", "cinematic lighting", "8k", "octane render", "bokeh", "35mm", "masterpiece", "trending on artstation", "--ar 16:9", "negative prompt".
-- Confident, encyclopedic technical vocabulary delivered tersely; uniformly templated structure.
+Signals that may RAISE suspicion (toward AI / chatbot text). Weigh them together and in context; none is decisive on its own, and any of them can occasionally appear in genuine human writing:
+- Chatbot framing or boilerplate: an introduction or sign-off, "Sure, here's...", "Certainly", section headings, or markdown-style bullet or numbered lists.
+- A polished, essayistic register sustained across the whole text: flowing, well-formed sentences with elevated or marketing-style vocabulary that goes beyond plainly naming what is in the image.
+- Uniformly flawless spelling, grammar, spacing, and capitalization across a long passage, together with a complete absence of typos, hedging, or self-correction.
+- Explicit image-generation parameters a person describing a photo would be unlikely to type: "8k", "hyper-detailed", "cinematic lighting", "octane render", "bokeh", "35mm", "masterpiece", "trending on artstation", "--ar 16:9", "negative prompt".
 
-Signals that LOWER suspicion (human task-description style) — these hold EVEN when the text is very long and detailed:
-- Full sentences and natural narration; a person walking through the scene spatially ("on the left", "in the center", "behind it", "we see", "there is").
-- First-person or observer framing and hedging / uncertainty ("I think", "almost looks like", "maybe", "not sure", "it seems").
-- Redundancy, restatement, or self-correction (saying the same thing twice, refining a guess).
-- Typos, doubled spaces, inconsistent or mid-sentence capitalization, run-on sentences — mechanical imperfections are STRONG evidence of a real person typing freely, and should pull the score down.
+Signals that point toward a genuine human doing the task (these LOWER suspicion):
+- Plain, everyday vocabulary and simple phrasing, including casual counting and naming ("3 chairs", "1 child", "a potted plant").
+- Object-by-object spatial description of the scene ("on the left", "in the foreground", "goes off screen", "behind the table"), whether written as full sentences or as comma-separated fragments.
+- Hedging, uncertainty, or self-correction ("almost looks like", "I think", "maybe", "not sure", "it seems").
+- Mechanical imperfections: typos, doubled or missing words, doubled spaces, inconsistent capitalization, run-on sentences.
 - Conversational or informal asides.
 
 Scoring bands:
-0-20: clearly a person describing the image in their own words (narration, hedging, or typos present).
-21-50: mostly human narration with a few polished or generic touches.
-51-79: genuinely uncertain — some cues point to AI / generation-prompt style and some point to human writing, with no confident verdict either way.
-80-100: strong evidence of AI-generated or copied image-generation-prompt text — fragment / tag style, jargon or parameters, flawless polish, and no observer voice.
+0-30: reads like a person describing the image in their own words — plain vocabulary and spatial/object detail, possibly with hedging or imperfections.
+31-60: mostly human, with some polished or generic touches but nothing that clearly points to a chatbot.
+61-79: genuinely mixed — there is some real pull toward chatbot register, but you are not confident the text was AI-generated.
+80-100: reserve this band for very strong evidence that the ENTIRE prompt was generated by an AI chatbot, and only when you are very confident — for example clear chatbot framing/boilerplate, a sustained essayistic register with elevated vocabulary and no human imperfections, or genuine generation parameters. A long, detailed, or fragmented description written in plain words is not, on its own, enough to reach this band.
 
 Return only the requested structured fields. The explanation must be one concise sentence naming the specific textual cues behind the score.
 """.strip()

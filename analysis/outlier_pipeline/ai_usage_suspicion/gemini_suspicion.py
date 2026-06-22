@@ -15,7 +15,12 @@ DEFAULT_MODEL = "gemini-2.5-flash"
 SEED = 42
 
 
-def score_prompt(client: genai.Client, prompt: str, model: str = DEFAULT_MODEL) -> common.PromptSuspicionResult:
+def score_prompt(
+    client: genai.Client,
+    prompt: str,
+    model: str = DEFAULT_MODEL,
+    usage: "common.UsageAccumulator | None" = None,
+) -> common.PromptSuspicionResult:
     response = client.models.generate_content(
         model=model,
         contents=common.USER_TEMPLATE.format(prompt=prompt),
@@ -27,6 +32,11 @@ def score_prompt(client: genai.Client, prompt: str, model: str = DEFAULT_MODEL) 
             seed=SEED,         # reproducibility
         ),
     )
+    if usage is not None and response.usage_metadata is not None:
+        usage.add(
+            response.usage_metadata.prompt_token_count,
+            response.usage_metadata.candidates_token_count,
+        )
     return response.parsed
 
 

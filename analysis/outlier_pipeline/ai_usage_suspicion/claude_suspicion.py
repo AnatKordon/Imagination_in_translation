@@ -13,7 +13,12 @@ except ImportError:  # running as a plain script from inside this folder
 DEFAULT_MODEL = "claude-haiku-4-5"
 
 
-def score_prompt(client: anthropic.Anthropic, prompt: str, model: str = DEFAULT_MODEL) -> common.PromptSuspicionResult:
+def score_prompt(
+    client: anthropic.Anthropic,
+    prompt: str,
+    model: str = DEFAULT_MODEL,
+    usage: "common.UsageAccumulator | None" = None,
+) -> common.PromptSuspicionResult:
     response = client.messages.parse(
         model=model,
         max_tokens=256,
@@ -21,6 +26,8 @@ def score_prompt(client: anthropic.Anthropic, prompt: str, model: str = DEFAULT_
         messages=[{"role": "user", "content": common.USER_TEMPLATE.format(prompt=prompt)}],
         output_format=common.PromptSuspicionResult,
     )
+    if usage is not None:
+        usage.add(response.usage.input_tokens, response.usage.output_tokens)
     return response.parsed_output
 
 
