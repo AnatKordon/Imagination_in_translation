@@ -12,47 +12,17 @@ if str(PROJECT_ROOT) not in sys.path:
 import config as config
 from similarity.CLIP_similarity import get_clip_visual_embedding, get_clip_text_embedding, cosine_similarity
 from similarity.vgg_similarity import compute_similarity_score, VGGEmbedder
-from visualize_per_ppt import path_from_row_jatos
+from analysis.visualize_per_ppt import path_from_row_jatos
 from torchvision import models
 from torchvision.models import vgg16, VGG16_Weights
 from similarity.LPIPS_similarity import compute_lpips_score
 
-# Read the no-similarity analysis table; write the with-similarity one.
-# Filenames are canonical (config.FILES), identical across all conditions.
-CSV_PATH = config.PROCESSED_DIR / config.FILES["trials_final"]      # input: analysis df, no similarity
-OUTPUT_CSV = config.PROCESSED_DIR / config.FILES["trials_final_sim"]  # output: + visual similarity
-
-USE_CORRECTED = False  # <-- set this based on whether gt column was corrected "corrected: True/False"
-
-
-# ---- Process CSV ----
-df = pd.read_csv(CSV_PATH).copy()
-
-# handling missing gt values:
-import numpy as np
-import pandas as pd
-
-USE_CORRECTED = False  # <-- set this based on your "corrected: True/False"
-
-df = df.copy()  # avoid SettingWithCopyWarning
-
-# NOTE: THIS IS FOR THE NO FEEDBACK TRIALS
-# df['gen'] = pd.NA  # initialize 'gen' column with NA
-
-
-def pick_gt_name(row: pd.Series, use_corrected: bool) -> str | None:
-    """Return the filename/title to use for GT, or None if missing."""
-    if use_corrected:
-        val = row.get("gt_corrected")
-        # if gt_corrected missing, you said: "ignore nan" => no similarity
-        if pd.isna(val) or str(val).strip() == "":
-            return None
-        return str(val)
-    else:
-        val = row.get("gt")
-        if pd.isna(val) or str(val).strip() == "":
-            return None
-        return str(val)
+def pick_gt_name(row: pd.Series) -> str | None:
+    """Return the GT filename/title to use, or None if missing (=> no similarity)."""
+    val = row.get("gt")
+    if pd.isna(val) or str(val).strip() == "":
+        return None
+    return str(val)
 
 #vgg setup
 weights = VGG16_Weights.IMAGENET1K_V1
@@ -61,6 +31,27 @@ vgg_imagenet = models.vgg16(weights=weights)
 vgg_fc7_embedder = VGGEmbedder(model=vgg_imagenet, layer='Classifier_4') # this is fc7, else: 'Layer_30'
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Add visual similarity scores to a condition's trials_final.csv")
+    parser.add_argument(
+        "--condition",
+        default=config.CONDITION,
+        choices=config.CONDITIONS,
+        help="condition slug, e.g. aigen_perc (default: CURRENT_CONDITION in condition_maps.yaml)",
+    )
+    args = parser.parse_args()
+
+    # Resolve paths for the requested condition. Filenames are canonical
+    # (config.FILES), identical across all conditions; only the folder changes.
+    paths = config.paths_for(args.condition)
+    CSV_PATH = paths.csv("trials_final")        # input: analysis df, no similarity
+    OUTPUT_CSV = paths.csv("trials_final_sim")  # output: + visual similarity
+    print(f"[{args.condition}] reading {CSV_PATH}")
+
+    # ---- Process CSV ----
+    df = pd.read_csv(CSV_PATH).copy()  # avoid SettingWithCopyWarning
+
     # CLIP
 
     clip_distances = []
@@ -76,9 +67,9 @@ if __name__ == "__main__":
     token_nums = []
     for idx, row in df.iterrows():
         # path for gt and gen per row
-        gt_name = pick_gt_name(row, USE_CORRECTED)
+        gt_name = pick_gt_name(row)
         
-        gen_path = path_from_row_jatos(row) # in the function it knows to use the 'gen' row and turn it into a full path (Previously I used function: path_from_row that worked but failed for shuffled data as it can't be reconstructed)
+        gen_path = path_from_row_jatos(row, paths.participants_dir) # in the function it knows to use the 'gen' row and turn it into a full path (Previously I used function: path_from_row that worked but failed for shuffled data as it can't be reconstructed)
         #extract prompt earlier
         prompt_clip_embed, token_num = get_clip_text_embedding(row['prompt']) # Note that for prompts longer than 77 words it is truncated
         token_nums.append(token_num)

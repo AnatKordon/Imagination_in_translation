@@ -85,13 +85,20 @@ def load_all_logs(csv_path: Path) -> pd.DataFrame:
 #     print(f"Indexed {len(index)} files for uid={uid}. Example keys: {list(index.keys())[:3]}")
 #     return index
 
-def path_from_row_jatos(row) -> Path:
-    """Reconstruct the full path from JATOS-style row."""
+def path_from_row_jatos(row, participants_dir=None) -> Path:
+    """Reconstruct the full path from JATOS-style row.
+
+    participants_dir defaults to config.PARTICIPANTS_DIR (the CURRENT_CONDITION
+    global); pass an explicit dir when processing a condition other than the
+    current one (e.g. config.paths_for(cond).participants_dir).
+    """
+    if participants_dir is None:
+        participants_dir = config.PARTICIPANTS_DIR
     filename = normalize_name(str(row["gen"])) # revoming seed tag if any
 
     study_result     = str(row["study_result"]).strip()
     comp_result  = str(row["comp_result"]).strip()
-    full_path = Path(config.PARTICIPANTS_DIR) /study_result / comp_result / "files" / filename
+    full_path = Path(participants_dir) /study_result / comp_result / "files" / filename
     print(full_path)
     return full_path
         
@@ -182,7 +189,7 @@ def wrap_lines(s: str, width: int = CAPTION_WIDTH, max_lines: int = CAPTION_MAX_
     return "\n".join(lines[:max_lines])
 
 #this finally creates a panel for a single ppt
-def panel_for_uid(uid: str, df_uid: pd.DataFrame, gt_list: List[str], out_dir: Path):
+def panel_for_uid(uid: str, df_uid: pd.DataFrame, gt_list: List[str], out_dir: Path, participants_dir=None):
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Build a per-UID filename -> path index once
@@ -216,7 +223,7 @@ def panel_for_uid(uid: str, df_uid: pd.DataFrame, gt_list: List[str], out_dir: P
 
             if not row.empty:
                 row = row.iloc[0]
-                img_p = path_from_row_jatos(row)
+                img_p = path_from_row_jatos(row, participants_dir)
                 print(img_p)
                 ax.imshow(np.asarray(read_image(img_p)))
                 hide_axes(ax)
@@ -235,7 +242,7 @@ def panel_for_uid(uid: str, df_uid: pd.DataFrame, gt_list: List[str], out_dir: P
     plt.close(fig)
     return out_path
 
-def main_uid(csv_path: Path, ge_list, out_dir: Path):
+def main_uid(csv_path: Path, ge_list, out_dir: Path, participants_dir=None):
     out_dir.mkdir(parents=True, exist_ok=True)
     df = load_all_logs(csv_path)
 
@@ -254,7 +261,7 @@ def main_uid(csv_path: Path, ge_list, out_dir: Path):
     outputs = []
     for uid in uids:
         df_uid = df[df["uid"] == uid]
-        p = panel_for_uid(uid, df_uid, gt_list, out_dir) # generating a panel per uid
+        p = panel_for_uid(uid, df_uid, gt_list, out_dir, participants_dir) # generating a panel per uid
         outputs.append(p)
         # print(f"✓ wrote {p}")
 
@@ -263,7 +270,7 @@ def main_uid(csv_path: Path, ge_list, out_dir: Path):
 #############################################################################333
 
 # Now constructing a panel based on gt image:
-def panel_for_gt(gt_name: str, df: pd.DataFrame, out_dir: Path, uid_order: List[str] | None = None):
+def panel_for_gt(gt_name: str, df: pd.DataFrame, out_dir: Path, uid_order: List[str] | None = None, participants_dir=None):
     """
     Build a panel for a single GT:
       - Top row: GT image spanning all columns
@@ -330,7 +337,7 @@ def panel_for_gt(gt_name: str, df: pd.DataFrame, out_dir: Path, uid_order: List[
 
             if not row.empty:
                 row = row.iloc[0]
-                img_p = path_from_row_jatos(row)
+                img_p = path_from_row_jatos(row, participants_dir)
                 ax.imshow(np.asarray(read_image(img_p)))
                 hide_axes(ax)
 
@@ -349,7 +356,7 @@ def panel_for_gt(gt_name: str, df: pd.DataFrame, out_dir: Path, uid_order: List[
     plt.close(fig)
     return out_path
 
-def main_gt_panels(csv_path: Path, gt_list: List[str], out_dir: Path):
+def main_gt_panels(csv_path: Path, gt_list: List[str], out_dir: Path, participants_dir=None):
     df = load_all_logs(csv_path)
     for col in ["uid", "gt", "session", "attempt"]:
         if col not in df.columns:
@@ -358,7 +365,7 @@ def main_gt_panels(csv_path: Path, gt_list: List[str], out_dir: Path):
 
     out_dir.mkdir(parents=True, exist_ok=True)
     for gt_name in gt_list:
-        p = panel_for_gt(gt_name, df, out_dir) # this is the function that generates a panel per gt
+        p = panel_for_gt(gt_name, df, out_dir, participants_dir=participants_dir) # this is the function that generates a panel per gt
         if p:
             print(f"✓ wrote {p}")
     print(f"\nGT panels saved in: {out_dir.resolve()}")
@@ -366,11 +373,26 @@ def main_gt_panels(csv_path: Path, gt_list: List[str], out_dir: Path):
 
 if __name__ == "__main__":
 
-    PANELS_DIR = config.ANALYSIS_DIR / "panels"
+    parser = argparse.ArgumentParser(description="Generate per-participant and per-GT panels for a condition")
+    parser.add_argument(
+        "--condition",
+        default=config.CONDITION,
+        choices=config.CONDITIONS,
+        help="condition slug, e.g. aigen_perc (default: CURRENT_CONDITION in condition_maps.yaml)",
+    )
+    args = parser.parse_args()
+
+    # Resolve all paths from the requested condition (overrides the frozen
+    # module-level globals so any --condition works without editing the YAML).
+    paths = config.paths_for(args.condition)
+    csv_path = paths.csv("trials_final_sim")        # panels read the +similarity table
+    participants_dir = paths.participants_dir       # JATOS export for the gen images
+    PANELS_DIR = paths.analysis_dir / "panels"
     PANELS_DIR.mkdir(parents=True, exist_ok=True)
+    print(f"[{args.condition}] reading {csv_path}\n  -> panels to {PANELS_DIR}")
 
     uid_out_dir = PANELS_DIR / "by_uid"
     gt_out_dir = PANELS_DIR  / "by_gt"
-   
-    main_uid(Path(csv_path), gt_list, Path(uid_out_dir))
-    main_gt_panels(Path(csv_path), gt_list, Path(gt_out_dir))
+
+    main_uid(Path(csv_path), gt_list, Path(uid_out_dir), participants_dir)
+    main_gt_panels(Path(csv_path), gt_list, Path(gt_out_dir), participants_dir)
