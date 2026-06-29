@@ -1,4 +1,3 @@
-# this is a simplified demo (not the DSG) which I planned - aimed to tet the abilities of a gpt-40mini to answer freely regarding a description and it's attributes.
 
 #LLM returns one JSON object per row (stable schema, low ambiguity).
 #code expands it into separate dataframe columns (adjacent columns).
@@ -37,13 +36,25 @@ OUT_PATH = PROCESSED_DIR / "nlp_analysis" / "trials_final_semantic_tags.csv"
 OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 # ── Default model for the full run ────────────────────────────────────────────
-DEFAULT_MODEL = "gpt-5.4-nano"  # upgrade to gpt-5.4-mini if validation shows errors
+DEFAULT_MODEL = "gpt-5.5" # or gpt-5.4-mini or gpt-5.5 - after experimenting with 3 models.
+
+# ── Resumable full run ────────────────────────────────────────────────────────
+# The full run (RUN_EXPERIMENT = False) is resumable: rows already present in
+# OUT_PATH are skipped, so re-running continues where a previous run stopped
+# instead of re-tagging (and re-billing) everything. Rows are matched on KEY_COLS
+# (a unique key per trial). Progress is written to OUT_PATH every CHECKPOINT_EVERY
+# rows, so an interruption (crash / Ctrl-C) keeps the work done so far.
+# Set MAX_NEW_ROWS to an int to tag only that many new rows this run (then resume
+# later); leave None to tag all remaining rows.
+KEY_COLS = ["uid", "session", "attempt"]
+CHECKPOINT_EVERY = 25
+MAX_NEW_ROWS = None
 
 # ── Model experiment: try several models on the SAME small random sample ──────
 # When RUN_EXPERIMENT is True the full output above is NOT written. Instead we
 # draw one fixed-seed sample (so every model sees identical prompts) and write
 # one CSV per model, with the model name in the filename, for side-by-side comparison.
-RUN_EXPERIMENT = True
+RUN_EXPERIMENT = False
 EXPERIMENT_N = 15
 EXPERIMENT_SEED = 42
 EXPERIMENT_MODELS = ["gpt-5.4-nano", "gpt-5.4-mini", "gpt-5.5"]  # <-- edit to the models you want
@@ -92,10 +103,10 @@ Concrete, countable, bounded, visually depictable entities.
 This category corresponds to "things" in the thing/stuff distinction, but the output key should be called "objects".
 
 Examples:
-person, woman, man, child, dog, cat, car, chair, table, cup, apple, tree, flower, bird, house, window, door, book, phone, bicycle.
+dog, cat, car, chair, table, painting, cup, apple, tree, flower, bird, house, window, door, book, phone, bicycle etc'.
 
 Include fictional but concrete visual entities if explicitly mentioned, e.g. dragon, monster, unicorn.
-Include body parts or object parts only if explicitly mentioned and visually salient, e.g. face, hand, eye, wheel, handle.
+Include object parts only if explicitly mentioned and visually salient, e.g. face, hand, eye, wheel, handle.
 
 Do NOT include:
 - stuff/background/surfaces/materials: sky, ceiling, wall, floor, road, grass, water, sand, snow, smoke, fog, shadow, light
@@ -208,7 +219,7 @@ def extract_semantics(prompt: str, model: str = DEFAULT_MODEL) -> dict:
                 },
             ],
             text={"format": SEMANTIC_TAG_SCHEMA},
-            max_output_tokens=2000,
+            max_output_tokens=4000,
         )
         u = getattr(resp, "usage", None)
         if u is not None:
@@ -245,6 +256,61 @@ def tag_dataframe(frame: pd.DataFrame, model: str) -> pd.DataFrame:
     return pd.concat([result, out], axis=1)
 
 
+def _row_keys(frame: pd.DataFrame, key_cols) -> pd.Series:
+    """Stable per-row key (as a tuple of strings) for resume matching."""
+    return frame[key_cols].astype(str).apply(tuple, axis=1)
+
+
+def tag_dataframe_resumable(frame: pd.DataFrame, model: str, out_path: Path,
+                            key_cols=KEY_COLS, checkpoint_every: int = CHECKPOINT_EVERY,
+                            max_new_rows: int | None = None) -> pd.DataFrame:
+    """Tag frame['prompt'] but skip rows already present in out_path.
+
+    Resumes from a previous (possibly interrupted) run: any row whose key_cols
+    already appear in out_path is left untouched, so it is never re-tagged or
+    re-billed. The output is re-written every `checkpoint_every` newly-tagged
+    rows so an interruption keeps completed work. Pass `max_new_rows` to tag only
+    that many new rows this run and resume the rest later.
+    """
+    if out_path.exists():
+        done_df = pd.read_csv(out_path)
+        done_keys = set(_row_keys(done_df, key_cols))
+        print(f"Resuming: {len(done_df)} rows already tagged in {out_path.name}")
+    else:
+        done_df = None
+        done_keys = set()
+
+    todo = frame[~_row_keys(frame, key_cols).isin(done_keys)]
+    if max_new_rows is not None:
+        todo = todo.head(max_new_rows)
+    print(f"Rows to tag this run: {len(todo)} (of {len(frame)} total)")
+    if len(todo) == 0:
+        print("Nothing to do — all rows already tagged.")
+        return done_df if done_df is not None else frame.iloc[0:0]
+
+    def _save(new_rows):
+        new_df = pd.DataFrame(new_rows)
+        combined = pd.concat([done_df, new_df], ignore_index=True) if done_df is not None else new_df
+        combined.to_csv(out_path, index=False)
+        return combined
+
+    new_rows = []
+    since_ckpt = 0
+    for _, row in tqdm(todo.iterrows(), total=len(todo), desc=model):
+        d = extract_semantics(row["prompt"], model=model)
+        rec = row.to_dict()
+        rec["extraction"] = json.dumps(d, ensure_ascii=False)
+        rec["tagger_model"] = model
+        rec.update(d)  # objects / stuff / spatial_relations / attr_color
+        new_rows.append(rec)
+        since_ckpt += 1
+        if since_ckpt >= checkpoint_every:
+            _save(new_rows)
+            since_ckpt = 0
+
+    return _save(new_rows)
+
+
 def print_usage_costs() -> None:
     """Print accumulated tokens per model and a dollar estimate where PRICING is set."""
     print("\n=== Token usage & estimated cost per model ===")
@@ -273,8 +339,18 @@ if RUN_EXPERIMENT:
         tagged.to_csv(out_path, index=False)
         print(f"Saved experiment output to {out_path}")
     print_usage_costs()
+
+    # Auto-build the by-field comparison so the merged view never goes stale.
+    try:
+        sys.path.append(str(Path(__file__).resolve().parent))
+        from compare_model_experiments import main as build_comparison
+        build_comparison()
+    except Exception as e:
+        print(f"  [warn] could not build comparison file: {e}")
 else:
-    tagged_df = tag_dataframe(df, DEFAULT_MODEL)
-    tagged_df.to_csv(OUT_PATH, index=False)
+    tagged_df = tag_dataframe_resumable(
+        df, DEFAULT_MODEL, OUT_PATH,
+        checkpoint_every=CHECKPOINT_EVERY, max_new_rows=MAX_NEW_ROWS,
+    )
     print(f"Saved tagged data to {OUT_PATH}")
     print_usage_costs()
