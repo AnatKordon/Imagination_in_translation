@@ -57,7 +57,7 @@ MAX_NEW_ROWS = None
 RUN_EXPERIMENT = False
 EXPERIMENT_N = 15
 EXPERIMENT_SEED = 42
-EXPERIMENT_MODELS = ["gpt-5.4-nano", "gpt-5.4-mini", "gpt-5.5"]  # <-- edit to the models you want
+EXPERIMENT_MODELS = ["gpt-5.4-mini", "gpt-5.5"]  # <-- i removed "gpt-5.4-nano" because it performed poorly
 EXPERIMENT_DIR = PROJECT_ROOT / "analysis" / "outputs" / "experiments" / "semantic_tagging_model"
 
 # ── Token usage & cost tracking ───────────────────────────────────────────────
@@ -113,7 +113,7 @@ dog, cat, car, chair, table, painting, cup, apple, tree, flower, bird, house, wi
 Do NOT include:
 
 * stuff, background regions, surfaces, materials, substances, weather, atmosphere, light, or shadow
-* scene labels: room, bedroom, living room, kitchen, bathroom, hotel suite, beach, forest, city, outdoors, indoors, scene, setting, atmosphere
+* scene labels: room, bedroom, living room, office room, kitchen, bathroom, hotel suite, beach, forest, city, outdoors, indoors, scene, setting, atmosphere
 * abstract or subjective concepts: happiness, beauty, loneliness, scary, peaceful
 * attributes alone: red, large, round, wooden, shiny, modern
 
@@ -129,7 +129,7 @@ sky, ceiling, wall, floor, ground, road, grass, water, sand, snow, smoke, fog, s
 Do NOT use stuff as a catch-all category.
 Do NOT include:
 
-* scene labels such as room, bedroom, living room, kitchen, bathroom, hotel suite, beach, forest, city, indoors, outdoors
+* scene labels such as room, bedroom, living room, office room, kitchen, bathroom, hotel suite, beach, forest, city, indoors, outdoors
 * subjective descriptions such as beautiful, scary, peaceful, cozy
 * styles such as modern, minimalist, fancy
 * colors, sizes, shapes, poses, actions, or states
@@ -347,21 +347,16 @@ if RUN_EXPERIMENT:
     EXPERIMENT_DIR.mkdir(parents=True, exist_ok=True)
     sample = df.sample(n=min(EXPERIMENT_N, len(df)), random_state=EXPERIMENT_SEED)
     print(f"Experiment: tagging {len(sample)} shared rows with {len(EXPERIMENT_MODELS)} model(s)")
-    for model in EXPERIMENT_MODELS:
-        model_slug = model.replace("/", "-").replace(":", "-")
-        tagged = tag_dataframe(sample, model)
-        out_path = EXPERIMENT_DIR / f"semantic_tags__{model_slug}.csv"
-        tagged.to_csv(out_path, index=False)
-        print(f"Saved experiment output to {out_path}")
+
+    # Tag each model in memory; we only persist the by-field comparison, not per-model CSVs.
+    frames = {model: tag_dataframe(sample, model) for model in EXPERIMENT_MODELS}
     print_usage_costs()
 
-    # Auto-build the by-field comparison so the merged view never goes stale.
-    try:
-        sys.path.append(str(Path(__file__).resolve().parent))
-        from compare_model_experiments import main as build_comparison
-        build_comparison()
-    except Exception as e:
-        print(f"  [warn] could not build comparison file: {e}")
+    sys.path.append(str(Path(__file__).resolve().parent))
+    from compare_model_experiments import build_comparison_df, OUT_PATH as COMPARISON_PATH
+    comparison = build_comparison_df(frames)
+    comparison.to_csv(COMPARISON_PATH, index=False)
+    print(f"Saved {len(comparison)} rows x {comparison.shape[1]} cols to {COMPARISON_PATH}")
 else:
     tagged_df = tag_dataframe_resumable(
         df, DEFAULT_MODEL, OUT_PATH,

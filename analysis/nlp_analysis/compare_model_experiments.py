@@ -29,22 +29,19 @@ def field_lists(df: pd.DataFrame) -> dict[str, list[list[str]]]:
     return {f: [p.get(f, []) for p in parsed] for f in FIELDS}
 
 
-def main() -> None:
-    files = sorted(EXPERIMENT_DIR.glob("semantic_tags__*.csv"))
-    if not files:
-        raise SystemExit(f"No experiment CSVs found in {EXPERIMENT_DIR}")
+def build_comparison_df(frames: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """Build the wide by-field comparison from in-memory tagged frames.
 
-    frames = {}
+    `frames` maps model name -> a tagged DataFrame (must have `prompt` and
+    `extraction` columns). No files are read or written here.
+    """
     prompts = None
-    for path in files:
-        df = pd.read_csv(path)
-        name = model_name(df, path)
-        frames[name] = df
+    for name, df in frames.items():
         if prompts is None:
             prompts = df["prompt"].tolist()
         elif df["prompt"].tolist() != prompts:
             # Same seed/sample should guarantee identical order; warn if it ever drifts.
-            print(f"  [warn] {name}: prompts differ from the first file's order")
+            print(f"  [warn] {name}: prompts differ from the first frame's order")
 
     models = [m for m in MODEL_ORDER if m in frames] + \
              sorted(m for m in frames if m not in MODEL_ORDER)
@@ -57,10 +54,23 @@ def main() -> None:
         for m in models:
             col = f"{field} [{m}]"
             out[col] = [", ".join(tags) for tags in per_model_fields[m][field]]
+    return out
 
+
+def main() -> None:
+    files = sorted(EXPERIMENT_DIR.glob("semantic_tags__*.csv"))
+    if not files:
+        raise SystemExit(f"No experiment CSVs found in {EXPERIMENT_DIR}")
+
+    frames = {}
+    for path in files:
+        df = pd.read_csv(path)
+        frames[model_name(df, path)] = df
+
+    out = build_comparison_df(frames)
+    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     out.to_csv(OUT_PATH, index=False)
     print(f"Saved {len(out)} rows x {out.shape[1]} cols to {OUT_PATH}")
-    print(f"Models (left->right): {models}")
 
 
 if __name__ == "__main__":
