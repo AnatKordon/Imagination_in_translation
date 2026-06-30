@@ -25,7 +25,7 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 from config import PROCESSED_DIR
 
 df = pd.read_csv(PROCESSED_DIR / config.FILES["trials_final"]).copy()
-# df = df.head(2)
+# df = df.head(7)
 # df = pd.read_csv("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/wilmas_drawings_2019/delayed_memory_drawing_descriptions.csv").copy()
 # df = df[df['gt_corrected'].notna()]
 print(f"Number of rows to process: {len(df)}")
@@ -113,6 +113,11 @@ Do NOT include:
 - scene labels: kitchen, beach, forest, city, outdoors, indoors
 - abstract or subjective concepts: happiness, beauty, loneliness, scary, peaceful
 - attributes: red, large, round, wooden, shiny
+
+Object naming / canonicalization:
+- In the objects list, return the canonical object noun, not the full descriptive phrase.
+- Remove color, material, size, texture, state, pose, location, and quantity modifiers from object names.
+- Keep a multiword object name only when the words form a conventional object category and removing a word would change the object type.
 
 2. stuff
 Visible non-object visual entities: amorphous regions, background areas, surfaces, materials, and environmental substances.
