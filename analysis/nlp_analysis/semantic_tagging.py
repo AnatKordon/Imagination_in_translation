@@ -25,7 +25,6 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 from config import PROCESSED_DIR
 
 df = pd.read_csv(PROCESSED_DIR / config.FILES["trials_final"]).copy()
-# df = df.head(7)
 # df = pd.read_csv("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/wilmas_drawings_2019/delayed_memory_drawing_descriptions.csv").copy()
 # df = df[df['gt_corrected'].notna()]
 print(f"Number of rows to process: {len(df)}")
@@ -36,7 +35,7 @@ OUT_PATH = PROCESSED_DIR / "nlp_analysis" / "trials_final_semantic_tags.csv"
 OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 # ── Default model for the full run ────────────────────────────────────────────
-DEFAULT_MODEL = "gpt-5.4-mini" # or gpt-5.4-mini or gpt-5.5 - after experimenting with 3 models.
+DEFAULT_MODEL = "gpt-5.4-mini" # valid: gpt-5.4-mini (fast/cheap) or gpt-5.5 (best) - after experimenting with 3 models.
 
 # ── Resumable full run ────────────────────────────────────────────────────────
 # The full run (RUN_EXPERIMENT = False) is resumable: rows already present in
@@ -48,7 +47,7 @@ DEFAULT_MODEL = "gpt-5.4-mini" # or gpt-5.4-mini or gpt-5.5 - after experimentin
 # later); leave None to tag all remaining rows.
 KEY_COLS = ["uid", "session", "attempt"]
 CHECKPOINT_EVERY = 25
-MAX_NEW_ROWS = None
+MAX_NEW_ROWS = 7 # limit new rows for testing
 
 # ── Model experiment: try several models on the SAME small random sample ──────
 # When RUN_EXPERIMENT is True the full output above is NOT written. Instead we
@@ -88,53 +87,87 @@ Return ONLY valid JSON with exactly these keys:
 
 * objects
 * stuff
+* scene_category
 * spatial_relations
 * attr_color
+* adjectives
 
 All values must be arrays of lowercase strings.
 Use [] when nothing is explicitly present.
 Do not return null.
-Keep outputs concise and deduplicated.
+Keep outputs concise.
+Deduplicate exact repeated strings within each category.
 
 Definitions:
 
 1. objects
    Concrete, countable, bounded, visually depictable entities explicitly mentioned in the prompt.
 
-This includes living beings, plants, animals, people, artifacts, furniture, vehicles, decorations, architectural parts, object parts, structural components, and visible bounded marks or localized surface details.
+This includes living beings, plants, animals, people, artifacts, furniture, vehicles, decorations, architectural parts, structural components, room features, object parts, and visible bounded marks or localized surface details.
 
 The category corresponds to "things" in the thing/stuff distinction, but the output key should be called "objects".
 
-Preserve meaningful multiword noun phrases when they identify the visual entity more clearly than the head noun alone.
+Room features and architectural features are objects when explicitly mentioned.
+This includes features such as wall, floor, ceiling, rug, carpet, door, window, staircase, counter, shelf, cabinet, fireplace.
 
-Examples are illustrative, not exhaustive:
-dog, cat, car, chair, table, painting, cup, apple, tree, flower, bird, house, window, door, book, phone, bicycle.
+Object parts are objects when explicitly mentioned.
+If both a parent object and one of its parts are explicitly mentioned, extract both.
+When an object part could be ambiguous by itself, preserve the parent object in the phrase.
+
+Examples:
+"a table with visible legs" -> objects: ["table", "table leg"]
+"a door with a handle" -> objects: ["door", "door handle"]
+
+Do NOT decompose ordinary compound object names into separate objects unless the participant explicitly describes a part/component relation.
+
+Examples:
+"coffee table" -> objects: ["coffee table"]
+"ceiling fan" -> objects: ["ceiling fan"]
 
 Do NOT include:
 
-* stuff, background regions, surfaces, materials, substances, weather, atmosphere, light, or shadow
-* scene labels: room, bedroom, living room, office room, kitchen, bathroom, hotel suite, beach, forest, city, outdoors, indoors, scene, setting, atmosphere
-* abstract or subjective concepts: happiness, beauty, loneliness, scary, peaceful
-* attributes alone: red, large, round, wooden, shiny, modern
+* stuff, amorphous substances, weather, atmosphere, light, or shadow
+* scene labels such as room, bedroom, living room, office room, kitchen, bathroom, hotel suite, beach, forest, city, outdoors, indoors, scene, setting, atmosphere
+* abstract concepts that are not visually bounded entities, such as happiness, beauty, loneliness
+* attributes alone, such as red, large, round, wooden, shiny, modern
 
 2. stuff
-   Visible non-object visual entities: amorphous regions, background areas, surfaces, materials, environmental substances, weather, atmosphere, light, and shadow.
+   Visible non-object visual entities: amorphous masses, non-cohesive materials, liquids, granular substances, atmospheric phenomena, weather, light, and shadow.
+
+Stuff refers to collections of matter or visual phenomena that do not behave as cohesive bounded objects, may deform, may spread continuously, or may naturally divide into multiple disconnected or non-interacting sub-masses.
 
 This is an open rule-based category, not a fixed list.
-Include explicitly mentioned visible content that forms part of the scene surface, background, terrain, atmosphere, or substance rather than an individual object.
+Include explicitly mentioned visible content that is substance-like, atmospheric, environmental, or amorphous rather than an individual bounded object.
 
-Examples are illustrative, not exhaustive:
-sky, ceiling, wall, floor, ground, road, grass, water, sand, snow, smoke, fog, shadow, light, background, pavement, dirt, clouds, rain.
+Examples:
+sky, grass, water, sand, snow, smoke, fog, shadow, light, dirt, mud, clouds, rain, dust, steam.
 
 Do NOT use stuff as a catch-all category.
+
 Do NOT include:
 
+* room features or architectural features such as wall, floor, ceiling, rug, carpet, door, window
 * scene labels such as room, bedroom, living room, office room, kitchen, bathroom, hotel suite, beach, forest, city, indoors, outdoors
 * subjective descriptions such as beautiful, scary, peaceful, cozy
 * styles such as modern, minimalist, fancy
 * colors, sizes, shapes, poses, actions, or states
 
-3. spatial_relations
+3. scene_category
+   Scene-level category labels explicitly stated by the participant.
+
+Include words or phrases that describe the overall type of scene, room, place, setting, or environment, rather than a bounded object.
+
+Examples:
+room, bedroom, living room, office room, kitchen, bathroom, conference room, playground, hotel room, classroom, beach, forest, city, street, outdoor scene, indoor scene, indoors, outdoors, restaurant, bar, library.
+
+Do NOT infer a scene category.
+Only extract a scene category if the participant explicitly states it.
+
+Examples:
+"a bedroom with a bed and a window" -> scene_category: ["bedroom"], objects: ["bed", "window"]
+"a room with a table" -> scene_category: ["room"], objects: ["table"]
+
+4. spatial_relations
    Explicit spatial or positional relations only.
 
 Include relation statements such as:
@@ -152,23 +185,70 @@ Do NOT infer spatial relations from common sense.
 If only a frame position is mentioned, include the phrase, e.g. "top right", "center", "foreground".
 Avoid returning bare prepositions such as "in", "on", or "near" when the related entities are available.
 
-4. attr_color
-   Explicit color terms or color phrases only.
+5. attr_color
+   Explicit color attributes only.
+
+Extract color mentions as color-attribute phrases when the colored entity is explicitly stated.
+This means the color should usually be preserved together with the bounded object, stuff item, or scene element it modifies.
 
 Examples:
-red, blue, dark green, pale yellow, black and white, gray, golden, multicolored, royal blue.
+"a black chair" -> attr_color: ["black chair"]
+"a black chair and a black glass" -> attr_color: ["black chair", "black glass"]
+"blue sky" -> attr_color: ["blue sky"]
+"white walls" -> attr_color: ["white wall"]
+
+If the color is explicitly mentioned without a clear modified entity, extract the color phrase alone.
+
+Examples:
+"the image is mostly blue" -> attr_color: ["blue"]
+"the scene is black and white" -> attr_color: ["black and white"]
 
 Do NOT include brightness, lighting, texture, material, or subjective adjectives unless they are part of an explicit color phrase.
+
+Important:
+Do NOT collapse the same color when it modifies different entities.
+Deduplicate only exact repeated color-attribute phrases.
+
+Examples:
+"a black chair and a black glass" -> attr_color: ["black chair", "black glass"]
+"a black chair and another black chair" -> attr_color: ["black chair"]
+
+6. adjectives
+   Explicit descriptors stated by the participant.
+
+This category includes adjective-like or modifier-like descriptions of objects, stuff, scene categories, or other explicitly mentioned visual entities.
+
+Descriptors include colors, sizes, shapes, materials, textures, styles, brightness terms, subjective descriptions, evaluative descriptions, and condition/state descriptions.
+
+Extract descriptors as descriptor-entity phrases when the described entity is explicitly stated.
+
+Examples:
+"black chair" -> adjectives: ["black chair"]
+"large wooden table" -> adjectives: ["large table", "wooden table"]
+"cozy bedroom" -> adjectives: ["cozy bedroom"]
+"blue sky" -> adjectives: ["blue sky"]
+
+If the descriptor is explicitly stated without a clear described entity, extract the descriptor phrase alone.
+
+Do NOT include nouns, objects, stuff items, scene categories, or spatial relations by themselves in adjectives.
+Do NOT infer descriptors from nouns or scene context.
+Do NOT collapse the same descriptor when it describes different entities.
+Deduplicate only exact repeated descriptor-entity phrases.
 
 Normalization rules:
 
 * lowercase everything
 * use singular nouns for objects and stuff where natural
 * remove articles: a, an, the
-* preserve meaningful multiword terms, e.g. "coffee table", "ceiling fan", "traffic light", "black and white", "top right"
-* if the same object, stuff item, spatial relation, or color is mentioned more than once, extract it only once
-  """
-
+* preserve meaningful multiword noun phrases when they identify the visual entity more clearly than the head noun alone
+* preserve meaningful multiword adjective and color phrases, such as "black and white", "dark green", "pale yellow"
+* preserve meaningful multiword spatial phrases, such as "top right", "in the foreground", "next to table"
+* do not split compound object names unless a part/component relation is explicitly stated
+* deduplicate exact repeated strings within each category
+* for attr_color, deduplicate by the full color-attribute phrase, not by the color word alone
+* for adjectives, deduplicate by the full descriptor-entity phrase
+* do not deduplicate across categories; the same color-attribute phrase may appear in both attr_color and adjectives
+"""
 
 USER_PROMPT = """
 Extract semantic tags from the participant PROMPT below.
@@ -183,11 +263,12 @@ Return ONLY this JSON object:
 {{
   "objects": [],
   "stuff": [],
+  "scene_category": [],
   "spatial_relations": [],
-  "attr_color": []
+  "attr_color": [],
+   "adjectives": []
 }}
 """
-
 SEMANTIC_TAG_SCHEMA = {
     "type": "json_schema",
     "name": "semantic_image_tags",
@@ -204,6 +285,10 @@ SEMANTIC_TAG_SCHEMA = {
                 "type": "array",
                 "items": {"type": "string"}
             },
+            "scene_category": {
+                "type": "array",
+                "items": {"type": "string"}
+            },
             "spatial_relations": {
                 "type": "array",
                 "items": {"type": "string"}
@@ -211,13 +296,19 @@ SEMANTIC_TAG_SCHEMA = {
             "attr_color": {
                 "type": "array",
                 "items": {"type": "string"}
+            },
+            "adjectives": {
+                "type": "array",
+                "items": {"type": "string"}
             }
         },
         "required": [
             "objects",
             "stuff",
+            "scene_category",
             "spatial_relations",
-            "attr_color"
+            "attr_color",
+            "adjectives"
         ]
     }
 }
@@ -247,7 +338,8 @@ def extract_semantics(prompt: str, model: str = DEFAULT_MODEL) -> dict:
         return json.loads(resp.output_text)
     except Exception as e:
         print(f"  [warn] tagging failed ({model}): {e}")
-        return {"objects": [], "stuff": [], "spatial_relations": [], "attr_color": []}
+        return {"objects": [], "stuff": [], "scene_category": [],
+                "spatial_relations": [], "attr_color": [], "adjectives": []}
 
 
 

@@ -11,7 +11,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 EXPERIMENT_DIR = PROJECT_ROOT / "analysis" / "outputs" / "experiments" / "semantic_tagging_model"
 OUT_PATH = EXPERIMENT_DIR / "comparison_by_field.csv"
 
-FIELDS = ["objects", "stuff", "spatial_relations", "attr_color"]
+FIELDS = ["objects", "stuff", "scene_category", "spatial_relations", "attr_color", "adjectives"]
 # Preferred left-to-right model order; anything else is appended alphabetically.
 MODEL_ORDER = ["gpt-5.4-nano", "gpt-5.4-mini", "gpt-5.5"]
 
