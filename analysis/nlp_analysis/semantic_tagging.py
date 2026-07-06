@@ -35,7 +35,7 @@ OUT_PATH = PROCESSED_DIR / "nlp_analysis" / "trials_final_semantic_tags.csv"
 OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 # ── Default model for the full run ────────────────────────────────────────────
-DEFAULT_MODEL = "gpt-5.4-mini" # valid: gpt-5.4-mini (fast/cheap) or gpt-5.5 (best) - after experimenting with 3 models.
+DEFAULT_MODEL = "gpt-5.5" # valid: gpt-5.4-mini (fast/cheap) or gpt-5.5 (best) - after experimenting with 3 models.
 
 # ── Resumable full run ────────────────────────────────────────────────────────
 # The full run (RUN_EXPERIMENT = False) is resumable: rows already present in
@@ -325,7 +325,7 @@ def extract_semantics(prompt: str, model: str = DEFAULT_MODEL) -> dict:
                 },
             ],
             text={"format": SEMANTIC_TAG_SCHEMA},
-            max_output_tokens=4000,
+            max_output_tokens=8000,
         )
         u = getattr(resp, "usage", None)
         if u is not None:
