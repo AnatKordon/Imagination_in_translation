@@ -20,7 +20,7 @@
 # =====================================================================
 
 # Active condition for single-condition scripts (set via the slug).
-CURRENT_CONDITION: "aigen_perc"
+CURRENT_CONDITION: "aigen_imm"
 
 DATASET: "Full_experiment"
 

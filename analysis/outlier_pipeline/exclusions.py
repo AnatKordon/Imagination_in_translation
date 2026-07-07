@@ -9,9 +9,19 @@ from .session_summary import REQUIRED_ATTEMPTS
 MIN_USABLE_SESSIONS = 3
 
 
-def session_table(trials_df: pd.DataFrame, digit_span_pass_fail: pd.DataFrame | None = None) -> pd.DataFrame:
+def session_table(
+    trials_df: pd.DataFrame,
+    digit_span_pass_fail: pd.DataFrame | None = None,
+    ai_flags: pd.DataFrame | None = None,
+) -> pd.DataFrame:
     """One row per (uid, session): attempts_present, is_full_session, is_short_session,
-    is_digitspan_failed, usable."""
+    is_digitspan_failed, is_ai_session, usable.
+
+    ai_flags: optional per-trial frame with [uid, session, attempt, ai_suspected]
+    (from ai_usage_suspicion consensus). A session is AI-suspected when ANY of its
+    attempts is flagged; sessions with no scored row default to not-suspected so that
+    scoring gaps never silently exclude anyone.
+    """
     df = trials_df.copy()
     df["is_short_attempt"] = flag_short_attempts(df)
 
@@ -36,13 +46,31 @@ def session_table(trials_df: pd.DataFrame, digit_span_pass_fail: pd.DataFrame | 
     else:
         sessions["is_digitspan_failed"] = False
 
+    if ai_flags is not None:
+        per_session_ai = (
+            ai_flags.assign(ai_suspected=ai_flags["ai_suspected"].fillna(False).astype(bool))
+            .groupby(["uid", "session"])["ai_suspected"]
+            .any()
+            .reset_index()
+            .rename(columns={"ai_suspected": "is_ai_session"})
+        )
+        merged = sessions.merge(per_session_ai, on=["uid", "session"], how="left")
+        sessions["is_ai_session"] = merged["is_ai_session"].fillna(False).astype(bool)
+    else:
+        sessions["is_ai_session"] = False
+
     sessions["usable"] = (
-        sessions["is_full_session"] & ~sessions["is_short_session"] & ~sessions["is_digitspan_failed"]
+        sessions["is_full_session"]
+        & ~sessions["is_short_session"]
+        & ~sessions["is_digitspan_failed"]
+        & ~sessions["is_ai_session"]
     )
     return sessions
 
 
-def participant_table(sessions: pd.DataFrame, has_digit_span: bool = False) -> pd.DataFrame:
+def participant_table(
+    sessions: pd.DataFrame, has_digit_span: bool = False, has_ai: bool = False
+) -> pd.DataFrame:
     """Per uid: breakdown of how many existing sessions pass each individual gate,
     plus usable_sessions (passes all gates) and excluded (usable_sessions < MIN_USABLE_SESSIONS)."""
     participants = (
@@ -51,12 +79,15 @@ def participant_table(sessions: pd.DataFrame, has_digit_span: bool = False) -> p
             full_sessions_structural=("is_full_session", "sum"),
             good_wordcount_sessions=("is_short_session", lambda s: (~s).sum()),
             good_digitspan_sessions=("is_digitspan_failed", lambda s: (~s).sum()),
+            good_nonai_sessions=("is_ai_session", lambda s: (~s).sum()),
             usable_sessions=("usable", "sum"),
         )
         .reset_index()
     )
     if not has_digit_span:
         participants["good_digitspan_sessions"] = pd.NA
+    if not has_ai:
+        participants["good_nonai_sessions"] = pd.NA
     participants["excluded"] = participants["usable_sessions"] < MIN_USABLE_SESSIONS
     return participants
 

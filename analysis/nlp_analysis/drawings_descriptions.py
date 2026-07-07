@@ -38,7 +38,7 @@ SCENE_MAP = {
     "high_conference_room": "conference_room_h.jpg",
     "high_lighthouse": "lighthouse_h.jpg",
     "high_living_room": "living_room_h.jpg",
-    "low_tower": "tower_l.jpg",
+    "high_playground": "playground_h.jpg",
 }
 condition = "delayed_memory" # "perception" or "immediate_memory" - this is just for the output file name, the code is the same for both conditions, only the input folder changes (see config.py)
 IMAGE_DIR = Path(config.WILMA_IMAGES)

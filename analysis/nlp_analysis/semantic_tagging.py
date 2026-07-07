@@ -16,6 +16,7 @@ import json
 import pandas as pd
 
 import os
+import argparse
 from openai import OpenAI
 from dotenv import load_dotenv
 load_dotenv()
@@ -47,13 +48,13 @@ DEFAULT_MODEL = "gpt-5.5" # valid: gpt-5.4-mini (fast/cheap) or gpt-5.5 (best) -
 # later); leave None to tag all remaining rows.
 KEY_COLS = ["uid", "session", "attempt"]
 CHECKPOINT_EVERY = 25
-MAX_NEW_ROWS = 7 # limit new rows for testing
+MAX_NEW_ROWS = 15 # limit new rows for testing
 
 # ── Model experiment: try several models on the SAME small random sample ──────
 # When RUN_EXPERIMENT is True the full output above is NOT written. Instead we
 # draw one fixed-seed sample (so every model sees identical prompts) and write
 # one CSV per model, with the model name in the filename, for side-by-side comparison.
-RUN_EXPERIMENT = False
+RUN_EXPERIMENT = True
 EXPERIMENT_N = 15
 EXPERIMENT_SEED = 42
 EXPERIMENT_MODELS = ["gpt-5.4-mini", "gpt-5.5"]  # <-- i removed "gpt-5.4-nano" because it performed poorly
@@ -313,6 +314,14 @@ SEMANTIC_TAG_SCHEMA = {
     }
 }
 
+# Low reasoning effort + low verbosity: this is mechanical extraction, so we cap
+# how much of max_output_tokens goes to internal reasoning (which caused the
+# empty-output "Expecting value" failures at default effort) and keep answers terse.
+# Valid gpt-5.x efforts: none, low, medium, high, xhigh ("minimal" is rejected).
+REASONING_EFFORT = "medium"
+VERBOSITY = "medium"
+
+
 def extract_semantics(prompt: str, model: str = DEFAULT_MODEL) -> dict:
     try:
         resp = client.responses.create(
@@ -324,8 +333,9 @@ def extract_semantics(prompt: str, model: str = DEFAULT_MODEL) -> dict:
                     "content": USER_PROMPT.format(PROMPT=str(prompt))
                 },
             ],
-            text={"format": SEMANTIC_TAG_SCHEMA},
-            max_output_tokens=8000,
+            text={"format": SEMANTIC_TAG_SCHEMA, "verbosity": VERBOSITY},
+            reasoning={"effort": REASONING_EFFORT},
+            max_output_tokens=10000,
         )
         u = getattr(resp, "usage", None)
         if u is not None:
@@ -435,6 +445,59 @@ def print_usage_costs() -> None:
         print(line)
 
 
+# ── CLI: pick which full-experiment condition(s) to tag ──────────────────────
+# The full run (RUN_EXPERIMENT = False) reads each condition's own trials_final.csv
+# and writes its tags next to it, under <condition>/nlp_analysis/. Pass one or more
+# condition slugs, or 'all' for every condition in config.CONDITIONS. With no flag
+# it falls back to config.CONDITION (the CURRENT_CONDITION in condition_maps.yaml).
+#   python semantic_tagging.py --condition aigen_perc
+#   python semantic_tagging.py --condition aigen_perc aigen_imm aigen_del
+#   python semantic_tagging.py --condition all
+def _parse_args():
+    ap = argparse.ArgumentParser(
+        description="Semantic-tag participant prompts for one or more full-experiment conditions."
+    )
+    ap.add_argument(
+        "--condition", "-c", nargs="+", default=None, metavar="SLUG",
+        help="Condition slug(s) (e.g. aigen_perc) or 'all' for every condition. "
+             "Default: config.CONDITION.",
+    )
+    return ap.parse_args()
+
+
+def _resolve_conditions(arg) -> list[str]:
+    """Turn the --condition value into a validated list of condition slugs."""
+    if not arg:
+        return [config.CONDITION]
+    if len(arg) == 1 and arg[0].lower() == "all":
+        return list(config.CONDITIONS)
+    unknown = [c for c in arg if c not in config.CONDITIONS]
+    if unknown:
+        raise SystemExit(
+            f"Unknown condition(s): {unknown}. "
+            f"Valid slugs: {list(config.CONDITIONS)} or 'all'."
+        )
+    return list(arg)
+
+
+def run_full_for_condition(condition: str, model: str = DEFAULT_MODEL) -> None:
+    """Resumably tag one condition's trials_final.csv, writing tags beside it."""
+    paths = config.paths_for(condition)
+    in_path = paths.csv("trials_final")
+    if not in_path.exists():
+        print(f"skip {condition}: {in_path.name} not found ({in_path})")
+        return
+    cond_df = pd.read_csv(in_path)
+    out_path = paths.processed_dir / "nlp_analysis" / "trials_final_semantic_tags.csv"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    print(f"\n=== {condition}: {len(cond_df)} rows -> {out_path} ===")
+    tag_dataframe_resumable(
+        cond_df, model, out_path,
+        checkpoint_every=CHECKPOINT_EVERY, max_new_rows=MAX_NEW_ROWS,
+    )
+    print(f"Saved tagged data to {out_path}")
+
+
 if RUN_EXPERIMENT:
     EXPERIMENT_DIR.mkdir(parents=True, exist_ok=True)
     sample = df.sample(n=min(EXPERIMENT_N, len(df)), random_state=EXPERIMENT_SEED)
@@ -450,9 +513,8 @@ if RUN_EXPERIMENT:
     comparison.to_csv(COMPARISON_PATH, index=False)
     print(f"Saved {len(comparison)} rows x {comparison.shape[1]} cols to {COMPARISON_PATH}")
 else:
-    tagged_df = tag_dataframe_resumable(
-        df, DEFAULT_MODEL, OUT_PATH,
-        checkpoint_every=CHECKPOINT_EVERY, max_new_rows=MAX_NEW_ROWS,
-    )
-    print(f"Saved tagged data to {OUT_PATH}")
+    conditions = _resolve_conditions(_parse_args().condition)
+    print(f"Full run over {len(conditions)} condition(s): {conditions}")
+    for cond in conditions:
+        run_full_for_condition(cond, DEFAULT_MODEL)
     print_usage_costs()

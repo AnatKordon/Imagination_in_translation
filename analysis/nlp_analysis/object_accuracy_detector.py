@@ -60,23 +60,39 @@ OBJECT_VALIDATION_SCHEMA = {
                 "additionalProperties": False,
                 "properties": {
                     "item": {"type": "string"},
-                    "is_object": {"type": "boolean"},
-                    "in_image": {"type": "boolean"},
-                    "valid": {"type": "boolean"},
+                    "is_object": {
+                        "type": "boolean",
+                        "description": "Semantic test judged from the item text alone (ignore the image): is it a concrete, countable, bounded, visually depictable object per the definition? False for stuff, scene/room labels, colors/attributes/materials, actions, relations, abstractions.",
+                    },
+                    "in_image": {
+                        "type": "boolean",
+                        "description": "Visual test judged from the image alone: is that object clearly, actually visible? Only meaningful when is_object is true. Be strict on presence and set false when uncertain. If is_object is false, set in_image to false.",
+                    },
+                    "valid": {
+                        "type": "boolean",
+                        "description": "True iff is_object AND in_image.",
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "One short sentence justifying is_object and in_image for this item.",
+                    },
                 },
-                "required": ["item", "is_object", "in_image", "valid"],
+                "required": ["item", "is_object", "in_image", "valid", "reason"],
             },
         },
         "validated_objects": {
             "type": "array",
+            "description": "Items with valid == true (is_object AND in_image).",
             "items": {"type": "string"},
         },
         "invalid_not_objects": {
             "type": "array",
+            "description": "Items with is_object == false (tagger/semantic errors). Checked first; such items never appear in invalid_not_in_image.",
             "items": {"type": "string"},
         },
         "invalid_not_in_image": {
             "type": "array",
+            "description": "Items with is_object == true but in_image == false (participant hallucinations / false memories).",
             "items": {"type": "string"},
         },
     },
@@ -89,29 +105,65 @@ OBJECT_VALIDATION_SCHEMA = {
 }
 
 SYSTEM_PROMPT = """
-You are a strict evaluator of extracted objects from a participant's description of an image.
+You are a STRICT evaluator of objects that were extracted from a participant's description of an image.
 
-Your task is to validate each extracted item using:
-1. the participant's original description
-2. the image itself
+For EACH extracted item you must decide two INDEPENDENT things, then route the item:
+1. is_object — is the item really an object? (a semantic test)
+2. in_image  — is that object actually visible in the image? (a visual test)
 
-Definitions:
-- A valid object is a concrete, visually identifiable entity in the image.
-- Examples of objects: couch, table, rug, lamp, dog, window.
-- Not objects: scene labels or room types (e.g. "living room", "kitchen"), attributes/adjectives
-  (e.g. "cozy", "red"), materials (e.g. "wood"), actions, relations, or abstract concepts.
+You are given the participant's original description and the ground-truth image. Evaluate ONLY the
+items provided. Do NOT add, infer, or invent objects that are not in the given list.
 
-Rules:
-- An item is VALID only if:
-  A. it is an object/entity, and
-  B. it is clearly visible in the image.
-- Be conservative.
-- Do not guess.
-- Use the description only as supporting context, not as proof that the object exists in the image.
-- If an item is not really an object, mark it invalid even if the description mentions it.
-- Evaluate only the extracted items given to you. Do not add missing objects.
+--------------------------------------------------------------------------------
+OBJECT DEFINITION (must match the semantic tagger that produced these items)
+--------------------------------------------------------------------------------
+An OBJECT is a concrete, countable, bounded, visually depictable entity: living beings, people,
+animals, plants, artifacts, furniture, vehicles, decorations, and structural / room features.
 
-Return only data matching the required schema.
+INCLUDES:
+- Room and architectural features when named, e.g. wall, floor, ceiling, rug, carpet, door,
+  window, staircase, counter, shelf, cabinet, fireplace.
+- Explicitly named object parts, e.g. "table leg", "door handle".
+- Do NOT split ordinary compound object names (e.g. "coffee table", "ceiling fan") — they are one object.
+
+NOT objects (these make is_object = false):
+- Stuff / amorphous substances and atmosphere: sky, water, sand, snow, smoke, fog, shadow, light,
+  clouds, rain, dust, steam, grass, dirt, mud.
+- Scene / room labels: living room, bedroom, kitchen, office, bathroom, beach, forest, city,
+  street, indoors, outdoors, "scene", "setting".
+- Bare attributes: colors, sizes, shapes, materials, textures, styles (red, large, round, wooden, modern).
+- Actions, spatial relations, and abstract concepts (happiness, beauty, loneliness).
+
+NOTE: the items you receive were already filtered by the tagger to be objects, so is_object = false
+should be RARE and reserved for genuine tagger mistakes.
+
+--------------------------------------------------------------------------------
+THE TWO TESTS
+--------------------------------------------------------------------------------
+is_object — judge from the ITEM TEXT ALONE, independent of the image. Apply the definition above.
+
+in_image — judge from the IMAGE ALONE. Is the object clearly, actually visible?
+- The description is only context; it is NOT proof that the object is in the image.
+- Be lenient on wording: a synonym or near-synonym of a clearly visible entity counts as present.
+- Be STRICT on presence: do NOT credit objects that are merely implied, occluded, plausible, or
+  "probably there". If you are uncertain whether the object is really visible, set in_image = false.
+- in_image is only meaningful when is_object is true. If is_object is false, set in_image = false.
+
+valid = is_object AND in_image.
+
+--------------------------------------------------------------------------------
+ROUTING (every item goes into EXACTLY ONE array — check is_object FIRST)
+--------------------------------------------------------------------------------
+1. is_object = false                    -> invalid_not_objects   (a tagger / semantic error)
+2. is_object = true  and in_image=false -> invalid_not_in_image  (a participant HALLUCINATION / false memory)
+3. is_object = true  and in_image=true  -> validated_objects
+
+An item that fails the object test goes ONLY to invalid_not_objects; never also to invalid_not_in_image.
+
+INVARIANT: len(validated_objects) + len(invalid_not_objects) + len(invalid_not_in_image) must equal
+the number of extracted items, and no item may appear in more than one array.
+
+Return only data matching the required schema, including a short `reason` per item.
 """
 
 USER_PROMPT = """

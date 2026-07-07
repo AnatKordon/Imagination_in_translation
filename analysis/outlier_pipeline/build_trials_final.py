@@ -34,6 +34,22 @@ def _write_digit_span_reports(digit_span_df: pd.DataFrame, outliers_dir: Path) -
     return digit_span_metrics.session_pass_fail(digit_span_df)
 
 
+def _load_ai_flags(outliers_dir: Path) -> pd.DataFrame | None:
+    """Load per-trial AI-suspicion verdicts written by ai_usage_suspicion/consensus.py.
+
+    Returns [uid, session, attempt, ai_suspected] or None if scores were never generated
+    (the AI gate is then skipped with a warning, mirroring the optional digit-span gate).
+    """
+    scores_path = outliers_dir / "ai_usage" / "ai_suspicion_scores.csv"
+    if not scores_path.exists():
+        print(f"skip AI gate: {scores_path} not found (run ai_usage_suspicion/consensus.py first)")
+        return None
+    ai = pd.read_csv(scores_path)
+    # to_csv writes booleans back as the strings "True"/"False"; coerce robustly.
+    ai["ai_suspected"] = ai["ai_suspected"].astype(str).str.lower() == "true"
+    return ai[["uid", "session", "attempt", "ai_suspected"]]
+
+
 def run_condition(condition: str) -> pd.DataFrame:
     """Apply exclusions for one condition slug, write trials_final.csv + reports.
 
@@ -58,8 +74,14 @@ def run_condition(condition: str) -> pd.DataFrame:
             digit_span_df = pd.read_csv(digit_span_path)
             digit_span_pass_fail = _write_digit_span_reports(digit_span_df, outliers_dir)
 
-    sessions = session_table(trials_df, digit_span_pass_fail)
-    participants = participant_table(sessions, has_digit_span=digit_span_pass_fail is not None)
+    ai_flags = _load_ai_flags(outliers_dir)
+
+    sessions = session_table(trials_df, digit_span_pass_fail, ai_flags)
+    participants = participant_table(
+        sessions,
+        has_digit_span=digit_span_pass_fail is not None,
+        has_ai=ai_flags is not None,
+    )
     trials_final = apply_exclusions(trials_df, sessions, participants)
 
     sessions.to_csv(outliers_dir / "exclusion_report_sessions.csv", index=False)
@@ -90,7 +112,8 @@ def _print_summary(
     print(f"[{condition}] sessions usable: {n_usable_sessions}/{n_sessions} "
           f"(full={int(sessions['is_full_session'].sum())}, "
           f"short_answer_dropped={int(sessions['is_short_session'].sum())}, "
-          f"digitspan_dropped={int(sessions['is_digitspan_failed'].sum())})")
+          f"digitspan_dropped={int(sessions['is_digitspan_failed'].sum())}, "
+          f"ai_dropped={int(sessions['is_ai_session'].sum())})")
 
 
 if __name__ == "__main__":

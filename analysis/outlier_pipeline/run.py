@@ -3,6 +3,11 @@
 Usage:
     python -m analysis.outlier_pipeline.run                  # all conditions
     python -m analysis.outlier_pipeline.run --condition aigen_perc
+
+The AI-usage suspicion gate is applied from a cached CSV, not scored here (it costs
+paid API calls). Generate it first with
+    python -m analysis.outlier_pipeline.ai_usage_suspicion.consensus --condition <slug>
+and build_trials_final will pick it up; if it is absent the AI gate is skipped with a warning.
 """
 import argparse
 import sys

@@ -1,0 +1,1898 @@
+{
+"gpt-5.4-mini|8f172e06|5fd593b4d38ed83d": {
+"score": 12,
+"explanation": "This reads like a plain participant description with simple everyday wording and no chatbot boilerplate, rendering jargon, or polished essay style."
+},
+"gpt-5.4-mini|8f172e06|480afc84659d423e": {
+"score": 18,
+"explanation": "The wording is plain, brief, and observational with casual layout notes like 'to the left' and 'in the middle-right,' and it lacks chatbot-style polish, boilerplate, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|1edaff39bd4ec561": {
+"score": 84,
+"explanation": "The text uses direct generator-style imperatives like \"Make it modern and colorful\" and a clean, concise scene specification rather than a participant\u2019s natural description of the picture."
+},
+"gpt-5.4-mini|8f172e06|8172aa6a3d873c36": {
+"score": 12,
+"explanation": "The text uses direct generator-style imperatives like \"Generate an image\" and plain layout instructions, which strongly fit a participant prompt rather than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|ab4b536c0e9a7c9d": {
+"score": 19,
+"explanation": "The text uses direct imperative instructions to an image generator (\u201cGenerate,\u201d \u201cDon\u2019t show\u201d) and plain layout details in a casual, participant-like style, with no chatbot boilerplate or polished AI essaying."
+},
+"gpt-5.4-mini|8f172e06|3b6177b493346888": {
+"score": 95,
+"explanation": "This reads like direct image-generator instructions with imperative phrasing and prompt-style constraints such as \"Don't show\" and \"No wall art,\" rather than a participant describing a seen picture."
+},
+"gpt-5.4-mini|8f172e06|857f7983327f4c9a": {
+"score": 93,
+"explanation": "It uses direct generator instructions like \"Generate an image\" and follows an AI-prompt style with concise object listing rather than a participant\u2019s natural description of the picture."
+},
+"gpt-5.4-mini|8f172e06|652e2b03250dd2d9": {
+"score": 94,
+"explanation": "It uses direct generator-style imperatives like \"Generate an image\" and image-composition wording about the focal point, which strongly reads as a prompt rather than a participant describing a seen picture."
+},
+"gpt-5.4-mini|8f172e06|8243b2bd72afd443": {
+"score": 96,
+"explanation": "The text is framed as a direct image-generation prompt with imperative wording like \"Generate an image\" and configuration-style scene directives, which strongly matches chatbot-style copied prompt text rather than a participant describing a picture."
+},
+"gpt-5.4-mini|8f172e06|e1a04caeac9a6123": {
+"score": 12,
+"explanation": "The text is plain, direct, and image-specific, with a rough typo-like wording such as \"hallow opening\" that makes it read more like a participant description than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|60e94f45ed0e7f3c": {
+"score": 22,
+"explanation": "The text is plain, direct, and image-centered, with a small typo and no chatbot framing, polished prose, or rendering jargon that would suggest copied AI output."
+},
+"gpt-5.4-mini|8f172e06|91aabf13eba9f305": {
+"score": 22,
+"explanation": "The text uses plain, matter-of-fact description with rough wording like \"hallow opening\" and no chatbot-style polish, headings, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|6a44090239f05c7f": {
+"score": 8,
+"explanation": "The text is plain, direct, and uses everyday image-viewing language like \"the person taking the picture\" with no chatbot-style framing or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|6f3fdb73e25a8c82": {
+"score": 18,
+"explanation": "The text uses direct imperatives aimed at composing the image (\u201cShow,\u201d \u201cThe lighthouse has,\u201d \u201cShow the lower base\u201d), which fits a participant giving instructions rather than pasted chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|a126f085300f2845": {
+"score": 18,
+"explanation": "The text uses plain, direct image-description language with a first-person reference to the viewer/taker of the picture and an imperative-style prompt, without chatbot boilerplate or polished AI-style wording."
+},
+"gpt-5.4-mini|8f172e06|c78650fdaf8d75dd": {
+"score": 12,
+"explanation": "The text is plain, straightforward, and includes a casual lowercase typo, with no chatbot framing or polished AI-style phrasing."
+},
+"gpt-5.4-mini|8f172e06|c82beff1969d563b": {
+"score": 29,
+"explanation": "The text is plain, descriptive, and includes casual wording and minor mechanical imperfections rather than chatbot-style boilerplate or polished image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|6071d7a5a813eb53": {
+"score": 12,
+"explanation": "The text includes direct editing commands to the generator (\u201cMake\u2026\u201d, \u201cHave\u2026\u201d) and a casual, slightly unpolished descriptive style, which strongly fits a genuine participant rather than pasted chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|47c6a6258fd9dc08": {
+"score": 18,
+"explanation": "The text is plain, direct, and somewhat rough with a few grammar issues and a participant-like description of objects and layout, with no chatbot framing or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|af71da59453a131d": {
+"score": 72,
+"explanation": "The text is written as direct instructions to edit the scene (\u201cKeep the plant\u2026 add a bulletin board\u201d), which strongly fits genuine participant/generator-directed language, but the overall polished, image-prompt style and clean composition cues still make it somewhat AI-like."
+},
+"gpt-5.4-mini|8f172e06|73502bd2d6cf662d": {
+"score": 14,
+"explanation": "The text reads like a participant\u2019s direct instructions to edit the image (\u201cKeep the plant,\u201d \u201chadd a bulletin board,\u201d \u201cMake the back left corner... open\u201d), with casual wording and a typo rather than polished chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|f164bdec310507cb": {
+"score": 14,
+"explanation": "The text uses direct imperative instructions to the generator (\u201cCreate a bedroom,\u201d \u201cyou see\u201d) and plain everyday wording, which looks more like a participant prompt than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|cff934253ab1d265": {
+"score": 22,
+"explanation": "The text uses plain, direct bedroom-description language with viewer-style phrasing like \"you see\" and no chatbot boilerplate, rendering jargon, or polished essayistic register."
+},
+"gpt-5.4-mini|8f172e06|4fd6bc05927340ff": {
+"score": 12,
+"explanation": "The text uses direct generator instructions like \"Create\" and \"The bed should be centered\" and plain viewer-style phrasing, which is typical of a participant rather than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|ea9ccb3954059282": {
+"score": 45,
+"explanation": "The text is mostly plain, participant-like scene description, but the opening imperative 'Create an outdoor scene' and a few cleaned-up, generator-style details make it somewhat AI-leaning."
+},
+"gpt-5.4-mini|8f172e06|61b3c46345316303": {
+"score": 18,
+"explanation": "This reads like a participant giving direct edit-style instructions to the generator (\u201cHave the rock area\u2026\u201d, \u201cHave the playground be\u2026\u201d), with casual phrasing and some spelling/grammar slips rather than polished chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|4715fbbed5b03d8f": {
+"score": 12,
+"explanation": "The text uses direct imperatives and edits aimed at the generator (\u201cCreate,\u201d \u201cHave the rock area...,\u201d \u201cHave the playground...\u201d), which strongly suggests a genuine participant rather than pasted chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|a181a87a97b592c6": {
+"score": 12,
+"explanation": "The text is short, plain, and descriptive with everyday wording and no chatbot-style framing, polished prose, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|222c4a242840c3dc": {
+"score": 92,
+"explanation": "The text uses direct generator instructions (\u201cMake the lighthouse be a little blurred\u201d) and a prompt-like, image-configuration style rather than a participant\u2019s natural description."
+},
+"gpt-5.4-mini|8f172e06|1c6d7629c71848bd": {
+"score": 8,
+"explanation": "The text uses direct imperatives to the image generator (\u201cMake\u2026\u201d, \u201cZoom in\u2026\u201d) and plain, casual wording, which strongly reads like a participant editing an image rather than pasted chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|c67bad01161c6a0e": {
+"score": 72,
+"explanation": "The description is clean and polished with highly specific, rendering-like spatial phrasing (\u201chigh aspect ratio image,\u201d \u201ccentered in the image\u201d), but it lacks any first-person, hedging, or rough participant-style wording."
+},
+"gpt-5.4-mini|8f172e06|fd745b50c28247c3": {
+"score": 27,
+"explanation": "The description is plain and direct, with a casual \u201con the ground there are\u201d style and no chatbot boilerplate, rendering jargon, or polished essay-like phrasing."
+},
+"gpt-5.4-mini|8f172e06|8e73be66460fb826": {
+"score": 18,
+"explanation": "The text reads like a plain participant description with simple object listing and a little awkward phrasing, and it lacks chatbot boilerplate, polished essay style, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|7000e15517d28766": {
+"score": 72,
+"explanation": "The description is clean, highly polished, and uses image-composition phrasing like \"center of the frame\" with a uniformly formal register, but it lacks the stronger chatbot markers such as headings or explicit render parameters."
+},
+"gpt-5.4-mini|8f172e06|f5418b3ca3b4ad96": {
+"score": 18,
+"explanation": "The passage is plain, factual, and image-focused with casual layout details and no chatbot boilerplate, polished phrasing, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|d43706ce4d934b1c": {
+"score": 14,
+"explanation": "The text reads like a plain participant description with simple vocabulary and no chatbot boilerplate, prompts, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|f2b679168d0f333e": {
+"score": 18,
+"explanation": "The description reads like a plain participant note with casual phrasing and direct scene observation, and it lacks chatbot-style boilerplate or rendering parameters."
+},
+"gpt-5.4-mini|8f172e06|a7086728a3e7c333": {
+"score": 18,
+"explanation": "The text reads like a plain participant description with straightforward everyday wording and some rough phrasing, without chatbot boilerplate, image-generation jargon, or polished essay-like style."
+},
+"gpt-5.4-mini|8f172e06|647cf9341522ca54": {
+"score": 22,
+"explanation": "The description uses plain, viewer-like language and even includes a few casual/imprecise phrases, with no chatbot-style opening, polished prose, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|a6127f5b9659fee5": {
+"score": 22,
+"explanation": "The passage reads like a straightforward participant description with plain object naming and some casual spatial framing, and it lacks chatbot boilerplate or rendering-style jargon."
+},
+"gpt-5.4-mini|8f172e06|633331d591f2566f": {
+"score": 14,
+"explanation": "The description reads like a plain participant account with everyday wording and a few rough grammar/spelling issues, and it lacks chatbot boilerplate or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|0a7986ed38b95f57": {
+"score": 42,
+"explanation": "The description is mostly plain and participant-like, but it is unusually polished and carefully structured with consistent grammar and spatial detailing, without any direct instruction or obvious chatbot boilerplate."
+},
+"gpt-5.4-mini|8f172e06|dcb64c95935b424d": {
+"score": 18,
+"explanation": "The passage reads like a plain participant description with simple everyday wording and no chatbot boilerplate, polished rhetoric, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|2100064c87c517a6": {
+"score": 14,
+"explanation": "The text is plain, direct, and descriptive with a few rough grammatical slips, and it lacks chatbot framing, polished essayistic wording, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|eabb71a47286d282": {
+"score": 12,
+"explanation": "The text reads like a direct participant description with plain wording, occasional rough phrasing, and first-person/meta references to what \u2018we can see,\u2019 rather than chatbot-style polish or boilerplate."
+},
+"gpt-5.4-mini|8f172e06|a67a5c2f7ab53e41": {
+"score": 22,
+"explanation": "The text is plain, simple image-description language with a few grammatical errors and no chatbot boilerplate or rendering jargon, which reads more like a participant than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|bb2e14a749a742fd": {
+"score": 22,
+"explanation": "The text is plain, direct, and viewer-like, with a few casual phrasing errors and no chatbot boilerplate, polished rendering jargon, or image-generator instructions."
+},
+"gpt-5.4-mini|8f172e06|2340eb19102585d3": {
+"score": 42,
+"explanation": "The text is mostly plain object listing with some minor grammar issues and a casual \u201cThe is a\u201d slip, but it lacks chatbot boilerplate while also not showing strong AI-style phrasing or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|b47879d5eaeae201": {
+"score": 12,
+"explanation": "The text is plain, brief, and observational with no chatbot-style boilerplate or image-generation jargon, and it reads like a simple participant description."
+},
+"gpt-5.4-mini|8f172e06|2d2421f9b16d07da": {
+"score": 82,
+"explanation": "The text is short, polished, and reads like a clean scene specification with generic, catalog-like phrasing and no first-person, hedging, or rough participant-style wording."
+},
+"gpt-5.4-mini|8f172e06|5d1649b393240d80": {
+"score": 12,
+"explanation": "The text is plain, direct, and spatially grounded with no chatbot boilerplate, polished flourishes, or image-generation jargon, which makes it read like a participant description."
+},
+"gpt-5.4-mini|8f172e06|004ff64b2130207b": {
+"score": 3,
+"explanation": "The text is extremely brief and plain, with no chatbot framing, polished prose, or image-generator jargon, which reads like a simple participant response."
+},
+"gpt-5.4-mini|8f172e06|9bdededce7b24de7": {
+"score": 18,
+"explanation": "This is a very short, plain description with no chatbot framing or polished phrasing, and it reads like a participant simply naming what is shown."
+},
+"gpt-5.4-mini|8f172e06|0d5c5ff6478d2d32": {
+"score": 25,
+"explanation": "The text is short, plain, and descriptive with everyday wording and no chatbot boilerplate, rendering jargon, or essay-like phrasing."
+},
+"gpt-5.4-mini|8f172e06|39eeca550be6558d": {
+"score": 18,
+"explanation": "The phrase is extremely brief and plain, with no chatbot-style framing, polished prose, or render parameters, so it reads more like a simple participant description than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|82e80ff2be8838ec": {
+"score": 11,
+"explanation": "The text is very brief and plain, with a simple viewer-style description of the picture and no chatbot framing, polished flourish, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|23ac8a9da5ac876c": {
+"score": 13,
+"explanation": "The text is very short and plain, with a simple descriptive style and no chatbot framing, polished essay-like language, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|c2fc2be0be1cabdc": {
+"score": 12,
+"explanation": "The text is plain, terse, and image-focused with no chatbot boilerplate or rendering jargon, so it reads more like a participant\u2019s simple description than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|aa6a1fae2523dca5": {
+"score": 18,
+"explanation": "The text is a plain, direct scene description with simple spatial notes and no chatbot-style framing, polished flourish, or image-parameter jargon."
+},
+"gpt-5.4-mini|8f172e06|0cf2fa5592c34d23": {
+"score": 18,
+"explanation": "The text is plain, direct, and image-focused with simple spatial wording and no chatbot boilerplate or rendering jargon, which reads more like a participant description than copied AI prose."
+},
+"gpt-5.4-mini|8f172e06|9ea8bf3f99680f29": {
+"score": 14,
+"explanation": "The text reads like a plain image description with everyday vocabulary and no chatbot framing, rendering jargon, or polished essay-like style."
+},
+"gpt-5.4-mini|8f172e06|256acab982e296e7": {
+"score": 28,
+"explanation": "The description is plain and matter-of-fact, with casual phrasing and no chatbot boilerplate or image-generation jargon, despite being fairly detailed."
+},
+"gpt-5.4-mini|8f172e06|1475c572382c7940": {
+"score": 22,
+"explanation": "The text is a plain, image-description style inventory with everyday wording and no chatbot boilerplate, polished essay voice, or rendering jargon, which makes it read more like a participant than copied AI."
+},
+"gpt-5.4-mini|8f172e06|c53076a580dbae8e": {
+"score": 18,
+"explanation": "The text uses plain, matter-of-fact participant-style description with casual phrasing like \"in the middle of it\" and no chatbot boilerplate, image-parameter jargon, or polished essayistic register."
+},
+"gpt-5.4-mini|8f172e06|561ed0305d05c5e1": {
+"score": 18,
+"explanation": "The description reads like a plain participant account with simple wording, a bit of hedging (\u201cvinyl or tiled\u201d), and no chatbot boilerplate or render-style parameters."
+},
+"gpt-5.4-mini|8f172e06|6c2b4e0c883844b7": {
+"score": 18,
+"explanation": "The text reads like a straightforward participant description with plain vocabulary, a casual first-person-less observation style, and a bit of hedging/correction ('was a bit darker than that'), with no chatbot boilerplate or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|ae0470091cd569e7": {
+"score": 28,
+"explanation": "The text is plain, detailed, and image-focused with casual spatial descriptions and rough measurements, and it lacks chatbot boilerplate or polished AI-style phrasing."
+},
+"gpt-5.4-mini|8f172e06|30c4caecc0b0eec7": {
+"score": 22,
+"explanation": "The description is plain, utilitarian, and image-viewer-like, with rough grammar and no chatbot boilerplate or polished AI-style phrasing."
+},
+"gpt-5.4-mini|8f172e06|f2b5f5727d3203c9": {
+"score": 22,
+"explanation": "The text reads like a participant\u2019s plain spatial description with rough grammar and no chatbot framing, boilerplate, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|b00161673270bd74": {
+"score": 28,
+"explanation": "The description is plain and image-focused, with casual lowercase phrasing and direct observation of objects and layout rather than chatbot-style polish or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|81a971f2e0a36dc9": {
+"score": 18,
+"explanation": "The text reads like a plain participant description with simple wording and direct factual observations, and it includes a small typo/odd phrasing rather than polished chatbot-style framing."
+},
+"gpt-5.4-mini|8f172e06|a457d4f2abfe19a6": {
+"score": 18,
+"explanation": "This reads like a participant\u2019s plain, descriptive account with casual phrasing, minor typos, and direct scene observations rather than chatbot-style polished or boilerplate language."
+},
+"gpt-5.4-mini|8f172e06|8a7a17777382fd5d": {
+"score": 17,
+"explanation": "The description is plain, informal, and observational, with hedging and rough measurements rather than chatbot-style polish, headings, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|eec8eb50dfbacae7": {
+"score": 18,
+"explanation": "The text is plain, repetitive, and image-focused with self-corrections and direct observational phrasing, with no chatbot boilerplate or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|74531e7104d9f64e": {
+"score": 17,
+"explanation": "The text reads like a participant\u2019s own detailed correction-heavy description, with plain wording, rough estimates, and direct self-edits rather than chatbot-style polish or boilerplate."
+},
+"gpt-5.4-mini|8f172e06|c75e3b86ece5b515": {
+"score": 12,
+"explanation": "The text is very short and plain, with simple everyday wording and no chatbot-style framing, polished phrasing, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|797a6d996fc131ff": {
+"score": 25,
+"explanation": "The text reads like a plain participant description with casual wording, a typo, and hedging, and it lacks chatbot-style boilerplate or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|4b2b0c3fbbd9a305": {
+"score": 18,
+"explanation": "The text reads like a participant\u2019s plain description with casual wording, hedging, and a typo/nonstandard phrasing, and it lacks chatbot boilerplate or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|51fc528d129db7a2": {
+"score": 12,
+"explanation": "The text is plain, simple, and image-focused with everyday wording and no chatbot-style framing, polished flourishes, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|eb285536fca3a248": {
+"score": 25,
+"explanation": "The text is plain, somewhat rough, and reads like a participant\u2019s direct description of the picture with simple object listing and spatial notes rather than chatbot-style polish or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|a545837d1c2ad22b": {
+"score": 12,
+"explanation": "The text reads like a plain participant description with simple everyday wording and some rough phrasing, without chatbot-style framing, polished essay voice, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|52eb5f2170def26d": {
+"score": 22,
+"explanation": "The description is plain and direct, with a small typo and ordinary spatial wording rather than chatbot-style polish, boilerplate, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|7b6d0b8fde46c2c6": {
+"score": 24,
+"explanation": "The text reads like a plain participant description with simple observational language and some rough phrasing, without chatbot-style polish, boilerplate, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|4da7598e21d5c7c0": {
+"score": 18,
+"explanation": "The passage uses plain, descriptive viewer language with some hedging and a few informal wording errors, and it lacks chatbot-style framing, polished essay tone, or image-generator jargon."
+},
+"gpt-5.4-mini|8f172e06|107ab552db889ed8": {
+"score": 18,
+"explanation": "This reads like a plain participant description with casual wording, rough phrasing, and no chatbot boilerplate or rendering jargon, so there is little stylistic sign of copied AI text."
+},
+"gpt-5.4-mini|8f172e06|59ff66429163a792": {
+"score": 14,
+"explanation": "The text reads like a participant\u2019s plain description with casual phrasing, a small self-correction ('dresser or wardrobe'), and a direct reference to the observer, with no chatbot boilerplate or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|3f4829da2f13ed3f": {
+"score": 22,
+"explanation": "The text is a plain, somewhat unpolished participant-style description with casual spatial references and no chatbot boilerplate, polished essay tone, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|5e68cb34dc07eccf": {
+"score": 22,
+"explanation": "The text is plain descriptive prose with a minor typo and everyday spatial wording, and it lacks chatbot boilerplate or image-generation jargon that would suggest copied AI output."
+},
+"gpt-5.4-mini|8f172e06|66b8e4dae91efbe0": {
+"score": 54,
+"explanation": "The text is a long, plain scene description with some roughness and typo-like wording, but it lacks chatbot boilerplate or image-generation jargon and reads mostly like a participant\u2019s own account."
+},
+"gpt-5.4-mini|8f172e06|44dbe7ab9758c391": {
+"score": 14,
+"explanation": "The text reads like a direct participant description with plain everyday wording and specific spatial observations, with no chatbot framing, polished essay style, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|81013ddb2fbd36de": {
+"score": 12,
+"explanation": "The text is very plain and participant-like, using simple object listing with no chatbot framing, polished phrasing, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|23a27b5e06af00dd": {
+"score": 72,
+"explanation": "The description is neatly polished and reads like a prompt with exclusionary boilerplate (\u201cThere is no bookcase and no plants\u201d) rather than a spontaneous participant account, with no hedging, self-correction, or casual viewing language."
+},
+"gpt-5.4-mini|8f172e06|2b8fbaf6874e7d10": {
+"score": 85,
+"explanation": "The text uses direct generator instructions and camera-style phrasing like \"The image should be from a slightly side view perspective,\" along with polished, chatbot-like cataloguing and a declarative \"There is no...\" exclusion, which strongly suggests copied AI-style prompting rather than a participant description."
+},
+"gpt-5.4-mini|8f172e06|a1e458f19f5442cc": {
+"score": 18,
+"explanation": "The text is a plain, concise scene description with everyday wording and no chatbot boilerplate, rendering jargon, or polished essay-like phrasing."
+},
+"gpt-5.4-mini|8f172e06|67d63b67819953f5": {
+"score": 12,
+"explanation": "The text reads like a plain participant description with everyday wording and direct layout observations, with no chatbot framing or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|14a782457076ed5f": {
+"score": 18,
+"explanation": "The description reads like a plain participant-style room listing with everyday wording and a small incomplete phrase, and it lacks chatbot framing, polished prose, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|b9fef283bde504a9": {
+"score": 18,
+"explanation": "The text is very short and plain, with casual image-description wording like \"takes up most of the frame\" and no chatbot-style framing, polished prose, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|de9e60b6b066cda0": {
+"score": 72,
+"explanation": "The description is concise but polished and image-generation-like, with a centered scene summary and rendering-style phrasing such as color/background framing, while lacking any first-person, hedging, or informal viewing language."
+},
+"gpt-5.4-mini|8f172e06|11103447b9985ce8": {
+"score": 18,
+"explanation": "The description is plain, brief, and direct, with no chatbot boilerplate or render-style jargon, and it reads more like a participant\u2019s simple observation than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|d71808dabd2a5b95": {
+"score": 22,
+"explanation": "This reads like a plain participant description with simple everyday wording and no chatbot boilerplate, polished essay style, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|efe2997c43df2713": {
+"score": 22,
+"explanation": "The description is plain, direct, and viewer-based with casual spatial references like \"you cannot see the sky\" and \"you can sight in the center,\" without chatbot boilerplate or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|7933535d3585f618": {
+"score": 18,
+"explanation": "The text is plain, descriptive, and includes a casual framing like \"you cannot see\" and \"you can sight,\" with no chatbot-style intro, polished rendering jargon, or other AI-boilerplate cues."
+},
+"gpt-5.4-mini|8f172e06|f5061e75d8fc5437": {
+"score": 78,
+"explanation": "The text is cleanly phrased and reads like a generic image-description prompt with polished spatial wording, but it still includes some simple viewer-style phrasing and lacks strong chatbot boilerplate or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|e6099daf537555a2": {
+"score": 74,
+"explanation": "The description is polished and image-prompt-like, with phrases such as \"cozy vibes\" and \"framing of the picture\" plus a render/composition style view, but it still lacks obvious chatbot boilerplate or explicit generator instructions."
+},
+"gpt-5.4-mini|8f172e06|b7c28adce3b88d43": {
+"score": 72,
+"explanation": "The passage is cleanly written in a polished, descriptive register and includes composition-style phrasing like \"framing of the picture\" and \"left side view,\" which makes it feel somewhat AI-generated despite no explicit chatbot boilerplate."
+},
+"gpt-5.4-mini|8f172e06|d4cdc82c76e0d591": {
+"score": 22,
+"explanation": "This is a very short, plain description with simple everyday wording and a slight roughness of a participant-style prompt, with no chatbot framing or polished AI-style phrasing."
+},
+"gpt-5.4-mini|8f172e06|8f6f8f0d3b6ce85d": {
+"score": 12,
+"explanation": "The text is short, plain, and image-like with simple everyday wording and no chatbot boilerplate, rendering jargon, or polished essay style."
+},
+"gpt-5.4-mini|8f172e06|c836c6a198d01da1": {
+"score": 22,
+"explanation": "The text is plain, direct, and image-description-like, with casual wording and no chatbot framing, polished flourish, or rendering jargon that would strongly suggest copied AI output."
+},
+"gpt-5.4-mini|8f172e06|2b19502fcc20db4a": {
+"score": 72,
+"explanation": "The response is short but uses a clean, polished, catalog-like style with neat scene description and no first-person, hedging, or casual participant cues, which makes it read somewhat like AI-generated text."
+},
+"gpt-5.4-mini|8f172e06|ccec23135395ad06": {
+"score": 22,
+"explanation": "The text is plain, factual, and unpolished, with simple spatial description and no chatbot-style framing, rendering jargon, or polished essayistic language."
+},
+"gpt-5.4-mini|8f172e06|5ae706bc891a27f6": {
+"score": 18,
+"explanation": "The text is plain, utilitarian scene description with everyday vocabulary and no chatbot boilerplate, image-parameter jargon, or polished essayistic phrasing."
+},
+"gpt-5.4-mini|8f172e06|770751ff3e7432a6": {
+"score": 12,
+"explanation": "The text is plain, utilitarian image description with simple object listing and no chatbot framing, polished phrasing, or rendering-style jargon."
+},
+"gpt-5.4-mini|8f172e06|1672b6923eda792a": {
+"score": 28,
+"explanation": "The description is plain and participant-like, with simple spatial wording and a small grammar slip (\u201cThere is two\u201d), and it lacks chatbot framing or render-style jargon."
+},
+"gpt-5.4-mini|8f172e06|f10e86ec09a8e784": {
+"score": 74,
+"explanation": "The text is cleanly written and image-like, with polished spatial phrasing such as \"close diagonal angle\" and catalogued composition details, but it also lacks any first-person, hedging, or instruction-to-generator cues that would strongly ground it as a participant response."
+},
+"gpt-5.4-mini|8f172e06|64e6fa95a0527450": {
+"score": 18,
+"explanation": "The text reads like a plain participant description with simple spatial phrasing and a few rough errors ('classround', awkward grammar), and it lacks chatbot boilerplate, polished style, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|b489fa3488916683": {
+"score": 18,
+"explanation": "The text reads like a plain participant-style layout description with simple wording and a direct observational opener, and it lacks chatbot boilerplate or AI-rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|d9dff741ef5265eb": {
+"score": 28,
+"explanation": "The text reads like a plain participant description with simple everyday wording and no chatbot boilerplate, prompts, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|f892efe34223104d": {
+"score": 12,
+"explanation": "The text is plain, simple participant-style description with casual wording and a small typo, and it lacks chatbot boilerplate, rendering jargon, or polished AI-like phrasing."
+},
+"gpt-5.4-mini|8f172e06|f96573e45cf3671d": {
+"score": 78,
+"explanation": "The passage is clean, polished, and image-specification-like, but it also lacks chatbot boilerplate or explicit rendering jargon and reads more like a concise scene description than a pasted AI response."
+},
+"gpt-5.4-mini|8f172e06|3cc9dfb5e3b68e57": {
+"score": 12,
+"explanation": "The text reads like a plain participant description with simple everyday phrasing and a few approximate spatial estimates, and it lacks chatbot-style boilerplate or polished AI-register wording."
+},
+"gpt-5.4-mini|8f172e06|3c79c6a7434cf2f0": {
+"score": 88,
+"explanation": "The text reads like an instruction prompt to a generator, with repeated imperatives (\u201cCreate,\u201d \u201cshould be,\u201d \u201cmake sure\u201d) and curated design-language details rather than a participant describing a seen image."
+},
+"gpt-5.4-mini|8f172e06|65ed8a1507d8566c": {
+"score": 83,
+"explanation": "The text uses direct imperative instructions to the generator (\u201cCreate,\u201d \u201cshould be,\u201d \u201cmake sure\u201d), with a polished, prompt-like style and no natural viewing language or hedging."
+},
+"gpt-5.4-mini|8f172e06|e5fc60c88c032892": {
+"score": 87,
+"explanation": "The passage uses direct generator-style imperatives ('Create', 'should be', 'make sure') and image-specifying phrasing about composition and materials, which reads much more like a copied prompt than a participant\u2019s plain description."
+},
+"gpt-5.4-mini|8f172e06|036e393c6f9cc0cf": {
+"score": 95,
+"explanation": "The text is written as direct image-generation instructions with chatbot-like phrasing and parameterized composition notes, not as a viewer\u2019s description of an image."
+},
+"gpt-5.4-mini|8f172e06|f56729bcfc0f2278": {
+"score": 88,
+"explanation": "The text reads like AI-prompt writing because it uses direct generator instructions (\u201cCreate,\u201d \u201cPlace,\u201d \u201cThe bed should be\u201d), includes rendering/camera language (\u201ccamera should pan diagonally\u201d), and is polished and structured rather than a participant\u2019s natural image description."
+},
+"gpt-5.4-mini|8f172e06|6b6e58f1d78afc58": {
+"score": 87,
+"explanation": "The text is written as direct generation instructions with repeated imperatives like \"Create\" and \"Place,\" plus camera/framing language such as \"pan diagonally\" and design specs that read like an image prompt rather than a participant\u2019s description."
+},
+"gpt-5.4-mini|8f172e06|b781d9e2f1d6fbc3": {
+"score": 16,
+"explanation": "The text is written as direct instructions to the image generator with casual, plain wording and minor typos, which strongly suggests a genuine participant rather than pasted chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|b0205de787179839": {
+"score": 87,
+"explanation": "It strongly reads like direct instructions to an image generator ('Create,' 'be creative,' 'place,' 'make') with generic composition language and no natural participant-style viewing or hedging."
+},
+"gpt-5.4-mini|8f172e06|deb9a9ed2c99d75e": {
+"score": 15,
+"explanation": "The text sounds like direct instructions to an image generator (\u201cCreate,\u201d \u201cbe creative,\u201d \u201cplace,\u201d \u201cmake\u201d) with casual, plain wording rather than a polished chatbot description."
+},
+"gpt-5.4-mini|8f172e06|a967a291dc1d3cab": {
+"score": 12,
+"explanation": "The text uses direct generator instructions like \"Create\" and \"you will create,\" which strongly suggests a participant giving edits rather than copied chatbot prose, despite the very short, plain description."
+},
+"gpt-5.4-mini|8f172e06|3e5ad53432db95de": {
+"score": 72,
+"explanation": "The text uses direct generator-style instructions like \"Create\" and \"you will create\" with a polished, prompt-like list of attributes, which makes it read more like copied AI prompt writing than a participant\u2019s casual description."
+},
+"gpt-5.4-mini|8f172e06|2c580739e5628c7d": {
+"score": 45,
+"explanation": "The text has a direct, imperative style aimed at image creation, but it is also rough and unpolished with awkward phrasing rather than the polished chatbot register that would strongly signal copied AI text."
+},
+"gpt-5.4-mini|8f172e06|a381645e827a89c1": {
+"score": 18,
+"explanation": "It uses direct instruction language aimed at creating the scene (\u201cCreate,\u201d \u201cshould be\u201d) and plain image-specifying phrasing, but it is short, slightly unpolished, and lacks the polished chatbot boilerplate or rendering jargon typical of copied AI text."
+},
+"gpt-5.4-mini|8f172e06|a6fa7149f2611be7": {
+"score": 14,
+"explanation": "The text contains direct generator-style instructions (\u201cCreate...\u201d, \u201cthere should be...\u201d) and plain layout details, but it is informal and unpolished rather than polished chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|7481ae41940bfb31": {
+"score": 22,
+"explanation": "It reads like a participant directly instructing image generation with plain everyday wording and some uncertainty, and although it is cleanly written, it lacks chatbot-style boilerplate or polished essayistic phrasing."
+},
+"gpt-5.4-mini|8f172e06|ca60c96be06b51da": {
+"score": 18,
+"explanation": "The text is very plain and direct, with everyday spatial description and no chatbot-style framing, polished wording, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|c93f04adfebce9ea": {
+"score": 18,
+"explanation": "The text is plain, matter-of-fact scene description with casual spatial phrasing and no chatbot-style boilerplate, polished rendering terms, or other strong AI-copy cues."
+},
+"gpt-5.4-mini|8f172e06|48b2108ea8b3a0c7": {
+"score": 22,
+"explanation": "The response is plain, simple, and descriptive with everyday wording and no chatbot framing or image-generation jargon, which reads more like a participant than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|6844996ab9031d81": {
+"score": 12,
+"explanation": "The text is plain, simple, and task-focused with no chatbot boilerplate, polished essay style, or image-generation jargon, which makes it read like a participant\u2019s description rather than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|fa3f707f1c26ae95": {
+"score": 12,
+"explanation": "The text reads like a plain participant description with direct observational wording and a casual correction about the posts, with no chatbot-style phrasing, rendering jargon, or polished essay register."
+},
+"gpt-5.4-mini|8f172e06|23d2126d4332f961": {
+"score": 58,
+"explanation": "The description is plain and participant-like, but it has unusually polished phrasing and a few image-specifying details (e.g. precise post shape/height and wall-picture placement) that make it somewhat more chatbot-like than typical casual recall."
+},
+"gpt-5.4-mini|8f172e06|0686c0857a790f04": {
+"score": 15,
+"explanation": "The text is short, plain, and reads like a simple participant description with casual counting and no chatbot framing, polished rendering jargon, or essay-like phrasing."
+},
+"gpt-5.4-mini|8f172e06|eb4efc275bd2d30e": {
+"score": 12,
+"explanation": "The text is plain, concise, and reads like a participant\u2019s direct description of the picture, with simple everyday wording and no chatbot boilerplate or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|480f23b5edf3cb4b": {
+"score": 18,
+"explanation": "The text is plain, direct, and observation-like with casual counting and no chatbot boilerplate or image-parameter jargon, so it reads more like a participant description than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|eef59df9d2eda8fa": {
+"score": 18,
+"explanation": "The text is short, plain, and descriptive with everyday wording and no chatbot framing, rendering jargon, or polished essay-like style."
+},
+"gpt-5.4-mini|8f172e06|b54580f850f95d95": {
+"score": 12,
+"explanation": "The text uses plain, direct observational wording with a first-person-style framing of the view (\u201cThe picture is looking at the couch from an angle\u201d) and no chatbot boilerplate or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|90c4bf883725e74e": {
+"score": 62,
+"explanation": "The text is fairly clean and polished, and it uses image-composition language like \u201clooking at the couch from an angle\u201d with a curated descriptive style, but it still reads like a straightforward scene description rather than explicit chatbot boilerplate."
+},
+"gpt-5.4-mini|8f172e06|dea471a09855f2c5": {
+"score": 24,
+"explanation": "The text is short, plain, and conversationally describes what is visible with simple wording, without chatbot boilerplate or image-parameter jargon."
+},
+"gpt-5.4-mini|8f172e06|7998d9e999e1cb0d": {
+"score": 42,
+"explanation": "The text is plain and descriptive with no chatbot boilerplate, but the polished, repetitive phrasing and clean image-like composition language make it somewhat more AI-like than a typical participant response."
+},
+"gpt-5.4-mini|8f172e06|aac5e250da5b4cf1": {
+"score": 18,
+"explanation": "The text is plain, repetitive, and observational with simple framing details, but it lacks chatbot-style polish, rendering jargon, or any overt AI boilerplate."
+},
+"gpt-5.4-mini|8f172e06|accf1f70285fb1f8": {
+"score": 14,
+"explanation": "The text uses direct instructions to the image generator (\u201cI want,\u201d \u201cthere should be,\u201d \u201cthe camera view should be\u201d), plus some casual self-edited phrasing, which feels more like a participant than pasted chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|bab3fd62ee3797e6": {
+"score": 22,
+"explanation": "The text uses direct image-generation instructions ('I want', 'the camera view should be', 'there should be') and casual estimation, which strongly suggests a participant describing/editing the scene rather than a polished chatbot output."
+},
+"gpt-5.4-mini|8f172e06|7282f0f42e2f288a": {
+"score": 16,
+"explanation": "The text is plain, messy, and participant-like, with direct generator instructions such as \"there should be\" and \"the camera view should be looking,\" which strongly lower suspicion despite the detailed layout."
+},
+"gpt-5.4-mini|8f172e06|bf626dd43ac70d5d": {
+"score": 12,
+"explanation": "The text uses direct, casual imperatives aimed at generating the scene (\u201cI need,\u201d \u201cit should be,\u201d \u201cthe bed should be\u201d) and a plain viewing description, which looks like a participant\u2019s own prompt rather than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|f736c9a93c1c5c2b": {
+"score": 18,
+"explanation": "The text uses direct image-edit instructions like \"I need,\" \"it should be,\" and \"Make the bed poles more square,\" plus casual first-person framing, which strongly suggests a genuine participant rather than pasted chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|fae439d2be9df6fb": {
+"score": 18,
+"explanation": "The text reads like a participant directly instructing edits to the scene and using plain, informal wording with self-corrections, which strongly suggests human composition rather than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|26ebd2d9302567a8": {
+"score": 12,
+"explanation": "This reads like a direct image-editing instruction in plain first-person language with specific requested changes, not like polished chatbot prose or a pasted AI description."
+},
+"gpt-5.4-mini|8f172e06|2b1b4226c3c64d1a": {
+"score": 12,
+"explanation": "The text reads like direct instructions to an image generator (\u201cI want\u2026 make the sky kinda green\u201d) with casual, human wording and no chatbot-style polish or boilerplate."
+},
+"gpt-5.4-mini|8f172e06|0d40c2450f8ad4c2": {
+"score": 12,
+"explanation": "The text reads like a direct instruction to the image generator in plain, informal language with hedging like \"kinda\" and no chatbot-style polish or boilerplate."
+},
+"gpt-5.4-mini|8f172e06|bed78952b4293783": {
+"score": 18,
+"explanation": "The text reads like a direct instruction to an image generator in casual, unpolished language (\u201cI want\u2026\u201d, \u201ccamera angel\u201d), which is more characteristic of a participant than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|7756b829b49bbb1f": {
+"score": 7,
+"explanation": "It reads like a participant directly instructing the generator with plain, informal phrasing, hedging, and a typo (\u201ccamera angel\u201d), which are strong signs against copied chatbot text."
+},
+"gpt-5.4-mini|8f172e06|b8b52a0d9ad922c5": {
+"score": 7,
+"explanation": "The text uses direct imperative edits to the image generator (\u201cI want,\u201d \u201cMake it more,\u201d \u201cget rid of\u201d) and casual self-corrections, which strongly fit a genuine participant rather than pasted chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|d8295cd6d0fab1fd": {
+"score": 8,
+"explanation": "The text reads like a participant directly instructing an image generator (\u201cI need,\u201d \u201cit should be,\u201d \u201cthe angel of the camera should be\u201d), with plain everyday wording and rough errors rather than chatbot-style polish."
+},
+"gpt-5.4-mini|8f172e06|bca208cb9383cd46": {
+"score": 12,
+"explanation": "It reads like a participant\u2019s direct instructions to edit the image (\u201cmake the basketball hoop face the slide,\u201d \u201cmake the slide 5 times as big,\u201d \u201calso put...\u201d), with plain, informal wording and a couple of rough errors rather than chatbot-style polished prose."
+},
+"gpt-5.4-mini|8f172e06|349f1720dfc35891": {
+"score": 5,
+"explanation": "It uses direct imperative edits to the scene (\u201cPut\u2026\u201d, \u201cbring\u2026\u201d) in plain participant-style wording, which strongly points to a genuine instruction rather than copied chatbot text."
+},
+"gpt-5.4-mini|8f172e06|355a32eac725fa3d": {
+"score": 8,
+"explanation": "The phrase is very short, plain, and unpolished, with simple everyday wording and no chatbot-style framing, polished prose, or image-parameter jargon."
+},
+"gpt-5.4-mini|8f172e06|6d036e92fd05facf": {
+"score": 18,
+"explanation": "The phrase is very short, plain, and looks like a simple participant-style caption with no chatbot framing, polished prose, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|a237e7f8fa0ca55d": {
+"score": 14,
+"explanation": "This is a very short, plain description with no chatbot boilerplate, rendering jargon, or polished AI-style phrasing; it just names the scene in everyday words."
+},
+"gpt-5.4-mini|8f172e06|281daebe907eba53": {
+"score": 12,
+"explanation": "This is extremely brief and plain, with no chatbot framing, polished phrasing, or image-generation jargon, so it reads more like a simple participant prompt than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|b5b93393c168d94d": {
+"score": 7,
+"explanation": "This is just a minimal plain phrase with no chatbot framing, polished prose, or image-generator jargon, so it looks much more like a participant\u2019s terse description than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|c5aed40c04886d56": {
+"score": 8,
+"explanation": "This is just a very short noun phrase with no chatbot framing, polished prose, image-parameter jargon, or other AI-like stylistic cues."
+},
+"gpt-5.4-mini|8f172e06|5f739c409f69bf52": {
+"score": 12,
+"explanation": "The phrase is extremely short, plain, and looks like a simple participant description of the image rather than polished chatbot-style prose or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|315f3fcaf41b4275": {
+"score": 12,
+"explanation": "This is a very short, plain description with everyday wording and no chatbot boilerplate, polished phrasing, or image-parameter jargon."
+},
+"gpt-5.4-mini|8f172e06|07508428264d65ed": {
+"score": 12,
+"explanation": "This is a very short, plain description with everyday words and no chatbot framing, polished prose, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|cd932caa50c50e89": {
+"score": 14,
+"explanation": "This is just a very short, plain scene label with no chatbot framing, polished prose, or image-generation jargon, so it reads like a human prompt rather than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|0dab88582737c36f": {
+"score": 12,
+"explanation": "The text is very short, plain, and reads like a participant\u2019s simple description of what is in the picture, with no chatbot framing, polished prose, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|433ad45e2b6df134": {
+"score": 12,
+"explanation": "The text is a short, plain, casual description with everyday wording and no chatbot framing, polished prose, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|48b6bf61aae2bfb8": {
+"score": 7,
+"explanation": "The text is just a minimal plain noun phrase with no chatbot framing, polished wording, or image-generator jargon, which fits a genuine short participant response."
+},
+"gpt-5.4-mini|8f172e06|bcd135d827c7f156": {
+"score": 18,
+"explanation": "This is just a bare two-word scene label with no chatbot framing, polished prose, or rendering jargon, so it looks more like a participant\u2019s terse description than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|e82763795dbc382b": {
+"score": 12,
+"explanation": "The text is extremely short and plain, with no chatbot boilerplate, polished phrasing, or image-generation jargon, which makes it look more like a participant note than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|e4fff6e14f4a759d": {
+"score": 18,
+"explanation": "This is a short, plain participant-like description with everyday wording and no chatbot framing or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|3c29d57c423799a8": {
+"score": 23,
+"explanation": "The text is plain, somewhat unpolished participant-style description with everyday wording and no chatbot framing, polished essay tone, or image-generator jargon."
+},
+"gpt-5.4-mini|8f172e06|112daa7ded0aabc0": {
+"score": 18,
+"explanation": "The description is plain and somewhat unpolished, with casual wording and direct scene listing rather than chatbot-style polish, formatting, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|4a1f09b5c9891530": {
+"score": 12,
+"explanation": "The text is short, plain, and somewhat unpolished with a typo/grammar slip (\u201chas are\u201d), and it lacks chatbot-style polish, formatting, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|1d2eddfad862d01e": {
+"score": 17,
+"explanation": "The text is short, plain, and somewhat unpolished, with everyday wording and no chatbot-style framing, rendering jargon, or essay-like polish that would strongly suggest copied AI output."
+},
+"gpt-5.4-mini|8f172e06|821a55489559ca26": {
+"score": 23,
+"explanation": "The text is plain, brief, and informal, with a simple descriptive tone and no chatbot-style framing, polished vocabulary, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|1d8bb8edfb9e3833": {
+"score": 14,
+"explanation": "The text is short, plain, and reads like a participant\u2019s simple description of the scene, with no chatbot-style framing or polished AI-like phrasing."
+},
+"gpt-5.4-mini|8f172e06|45f34fd5bef0d677": {
+"score": 8,
+"explanation": "The text is short, plain, and unpolished with simple layout-style wording and no chatbot boilerplate, polished phrasing, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|6a9bdcfa57e21a69": {
+"score": 19,
+"explanation": "The text is short, plain, and looks like a direct participant description with simple everyday wording and no chatbot-style framing or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|54aff8c41bb2eff5": {
+"score": 18,
+"explanation": "The text is short, plain, and image-focused with everyday wording and no chatbot-style framing, polished essay voice, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|cbb22a7539a35ffb": {
+"score": 18,
+"explanation": "The text is short, plain, and casual, with simple everyday wording and no chatbot-style framing, polished phrasing, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|76df0265224c6776": {
+"score": 18,
+"explanation": "The text is short, plain, and looks like a participant\u2019s rough description with no chatbot framing or image-generation jargon, though the phrasing is somewhat unpolished and fragmentary."
+},
+"gpt-5.4-mini|8f172e06|1b70b35ebc9903e9": {
+"score": 22,
+"explanation": "The text is plain, short, and slightly unpolished, with everyday object naming and no chatbot framing, polished prose, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|19ebcfc94b741a6d": {
+"score": 34,
+"explanation": "The description is plain and brief with everyday vocabulary and no chatbot boilerplate, though the phrasing is fairly clean and generic and lacks strong human cues like hedging or direct instruction."
+},
+"gpt-5.4-mini|8f172e06|f91c983b96414633": {
+"score": 17,
+"explanation": "The description is plain and somewhat unpolished, with an odd grammatical phrasing that feels like a participant\u2019s direct observation rather than polished chatbot boilerplate."
+},
+"gpt-5.4-mini|8f172e06|0ac8bb57af48632b": {
+"score": 12,
+"explanation": "The text is short, plain, and somewhat unpolished with simple nouns and awkward grammar, which reads more like a participant\u2019s description than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|0177601d6d7c4e60": {
+"score": 12,
+"explanation": "The text is plain, informal, and slightly unpolished, with everyday wording and no chatbot-style framing, polished phrasing, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|e61eede96eb4acba": {
+"score": 18,
+"explanation": "The text reads like a plain participant description with casual wording, rough grammar, and a self-correcting layout of the scene, with no chatbot framing or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|aec4b980e7a97eba": {
+"score": 12,
+"explanation": "The text uses plain, casual, slightly unpolished participant-style wording with a typo and direct observational phrasing, and it lacks chatbot boilerplate or AI rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|21476d58eb492b93": {
+"score": 8,
+"explanation": "The text reads like a casual participant description with plain vocabulary, a typo, and a direct observational style, without chatbot boilerplate or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|1e88aa1d6238e3ff": {
+"score": 23,
+"explanation": "The text sounds like a participant\u2019s plain, casual description with a direct instruction to modify the prior image and some hedging/typos, rather than polished chatbot-style prose."
+},
+"gpt-5.4-mini|8f172e06|709b63afa3bde383": {
+"score": 15,
+"explanation": "The text is a short, plain list of visible items with casual phrasing and no chatbot-style boilerplate, polished wording, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|6c74ab3822adca44": {
+"score": 24,
+"explanation": "The text reads like a plain participant description with casual hedging (\u201cI guess,\u201d \u201cmore rustic\u201d) and simple everyday wording rather than polished chatbot-style phrasing or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|c1387a7e2f0f4529": {
+"score": 18,
+"explanation": "The text has casual first-person corrections and direct generator-style edits like \"should be\" and \"need to be,\" which are strong signs of a real participant rather than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|9cbfb3133d2ba2a1": {
+"score": 95,
+"explanation": "The text is extremely short, polished, and reads like a clean image-generation prompt with no participant-like hedging, personal reference, or rough observational language."
+},
+"gpt-5.4-mini|8f172e06|289019d0af65ce3e": {
+"score": 18,
+"explanation": "The text is plain, casual, and image-focused, with no chatbot framing or polished essay style, and it even uses rough, participant-like wording such as 'more rusted than anything else' and 'isn't on'."
+},
+"gpt-5.4-mini|8f172e06|3189cae26b977c99": {
+"score": 12,
+"explanation": "The text uses direct generator-style instructions like \"keep the water darker but lighten the background\" and plain casual description, which reads more like a participant editing the image than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|8a78ddabfe0f2c61": {
+"score": 18,
+"explanation": "The text is brief, plain, and somewhat unpolished with a typo and an observational tone ('looks like'), which fits a genuine participant more than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|030be437e3747964": {
+"score": 14,
+"explanation": "The text uses plain, improvised participant-style wording with direct edits like \"should be\" and \"to be honest,\" plus a small typo, rather than polished chatbot-like phrasing or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|80884068d9ab310b": {
+"score": 18,
+"explanation": "The text reads like a participant\u2019s own rough edits to the image setup, with direct instructions such as \"table should be at an angle\" and casual hedging, plus a typo and uneven grammar that are unlike pasted chatbot boilerplate."
+},
+"gpt-5.4-mini|8f172e06|2a37728d11132ea0": {
+"score": 12,
+"explanation": "The text is short, plain, and informal with a small typo and casual description, which fits a genuine participant more than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|b1125dddcd340ae1": {
+"score": 18,
+"explanation": "The response is plain, casual, and unpolished, with a first-person-free viewer-style description and a typo, but no chatbot framing, polished prose, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|7180e441b5991612": {
+"score": 18,
+"explanation": "The text reads like a direct, casual participant description with plain wording, rough grammar, and no chatbot-style framing or render/camera jargon."
+},
+"gpt-5.4-mini|8f172e06|752ef3e16c0f70f5": {
+"score": 18,
+"explanation": "The text is plain, unpolished, and reads like a simple participant description with everyday wording and no chatbot framing, polished phrasing, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|a402cddeffda9997": {
+"score": 18,
+"explanation": "The text reads like a plain participant description with casual wording and a rough, run-on style, plus a direct framing note about the photo being shown at an angle rather than chatbot-style polished prose."
+},
+"gpt-5.4-mini|8f172e06|f11ff9f362cb7095": {
+"score": 18,
+"explanation": "The text is plain, unpolished, and uses casual observational wording with no chatbot framing, polished prose, or image-generation jargon beyond a simple angle mention."
+},
+"gpt-5.4-mini|8f172e06|3347ccf314093b32": {
+"score": 22,
+"explanation": "The text is plain, unpolished, and reads like a participant\u2019s direct description with simple spatial details rather than chatbot-style phrasing or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|6c3dc88bba024697": {
+"score": 22,
+"explanation": "The text is plain, run-on, and repetitive with casual spatial description and no chatbot boilerplate or polished AI-style phrasing, which fits a participant more than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|e084ef7d2654c725": {
+"score": 18,
+"explanation": "The description is plain, unpolished, and reads like a participant narrating what they see, with casual wording and no chatbot boilerplate or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|0432cf7301cd0170": {
+"score": 18,
+"explanation": "The text is plain, uneven, and descriptive in a participant-like way, with casual phrasing and no chatbot boilerplate, polished rendering language, or image-generation parameters."
+},
+"gpt-5.4-mini|8f172e06|3dd005ba6dd6183b": {
+"score": 12,
+"explanation": "The description uses plain, everyday wording with a casual, in-the-moment style and no chatbot boilerplate or rendering jargon, which makes it read like a genuine participant response."
+},
+"gpt-5.4-mini|8f172e06|94d9e24b984f55ab": {
+"score": 18,
+"explanation": "The text reads like plain participant description with casual phrasing and no chatbot boilerplate, polished rendering jargon, or image-generation parameters."
+},
+"gpt-5.4-mini|8f172e06|01036aa292dd5242": {
+"score": 18,
+"explanation": "The description reads like a plain participant account with casual wording, repetition, and run-on phrasing, and it lacks chatbot-style framing or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|81d6115ad3bf5317": {
+"score": 18,
+"explanation": "The text reads like a plain participant description with casual wording, rough grammar, and no chatbot-style framing or polished rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|d84891216a0266ec": {
+"score": 22,
+"explanation": "The description is plain, informal, and includes direct observational phrasing like \"there was\" and rough wording/repetition, with no chatbot boilerplate or render-style jargon."
+},
+"gpt-5.4-mini|8f172e06|71ce41b2d33c8f53": {
+"score": 18,
+"explanation": "The description is plain, direct, and image-focused with no chatbot framing, polished boilerplate, or rendering jargon, which reads more like a participant's own wording than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|27d9cf3988394fcf": {
+"score": 22,
+"explanation": "The text is short, plain, and image-viewer-like, with no chatbot boilerplate or rendering jargon, though it is cleanly phrased and somewhat polished."
+},
+"gpt-5.4-mini|8f172e06|6ea1a03f7c83c37a": {
+"score": 12,
+"explanation": "The text reads like a plain participant description with casual phrasing and rough wording, and it lacks chatbot-style framing, polished prose, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|0a62fc5909cac56b": {
+"score": 18,
+"explanation": "The text is extremely short, plain, and casual with no chatbot boilerplate or polished image-generation jargon, which makes it look more like a participant\u2019s brief description than copied AI output."
+},
+"gpt-5.4-mini|8f172e06|41af0a8a988b8071": {
+"score": 7,
+"explanation": "This reads like a direct instruction to edit the image generator in plain words (\u201cMake the car\u2026\u201d, \u201cmake it more foresty\u201d) rather than a pasted chatbot-style description."
+},
+"gpt-5.4-mini|8f172e06|8b75a94f83a3f4b2": {
+"score": 4,
+"explanation": "It uses direct imperative instructions to the image generator (\u201cMake the car...\u201d), which strongly signals a genuine participant rather than copied chatbot text."
+},
+"gpt-5.4-mini|8f172e06|397bc6cb33fa6bc3": {
+"score": 18,
+"explanation": "The text reads like a plain participant description with casual wording and a typo, and it lacks chatbot markers, polished prose, or rendering-style jargon."
+},
+"gpt-5.4-mini|8f172e06|4d54315f28267f86": {
+"score": 12,
+"explanation": "The description is plain, direct, and imperfect with typos and a casual viewpoint note, which reads more like a participant than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|dcb8132e02764c97": {
+"score": 17,
+"explanation": "The text reads like a participant\u2019s plain, direct description with casual wording, a first-person-style viewer reference (\u201cYou can only see\u201d), and even a typo, rather than polished chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|9c4c933087393a01": {
+"score": 23,
+"explanation": "The text reads like a participant\u2019s plain visual description with casual phrasing and a few typos/self-corrections, and it lacks chatbot-style boilerplate or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|eb8d363560895eed": {
+"score": 19,
+"explanation": "The text has ordinary participant-like wording with direct viewing language and some typos/rough grammar, and it lacks chatbot-style polish, parameters, or list formatting."
+},
+"gpt-5.4-mini|8f172e06|1d0f398f14ae61b7": {
+"score": 11,
+"explanation": "The text looks like a rough participant description with plain wording, typos, and informal spatial references rather than polished chatbot-style prose or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|cc27609bf45776f6": {
+"score": 23,
+"explanation": "The text reads like a plain participant description with casual wording and a typo ('circlue'), and it lacks chatbot boilerplate or image-generator jargon."
+},
+"gpt-5.4-mini|8f172e06|cdb7691ae68be20a": {
+"score": 28,
+"explanation": "The text is plain and image-like, with a casual direct address to the viewer and rough wording/typos, and it lacks chatbot boilerplate or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|5848e94fde3f1b0e": {
+"score": 18,
+"explanation": "The text sounds like a plain participant description with direct viewing language, casual wording, and a rough typo or two, rather than a polished chatbot-style response."
+},
+"gpt-5.4-mini|8f172e06|f60f61067652d41c": {
+"score": 18,
+"explanation": "The text uses direct generator-style imperatives like \"Make\" and plain layout instructions, which fit a participant giving image-editing directions more than pasted chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|6825d6db11fd13cf": {
+"score": 93,
+"explanation": "The text uses direct imperative image-building commands and rendering-style phrasing like \"make,\" \"angle of the room is at 180 degrees,\" and highly structured layout instructions, which strongly resemble a copied AI prompt rather than a participant description."
+},
+"gpt-5.4-mini|8f172e06|d1fe443e7b514d83": {
+"score": 18,
+"explanation": "This reads like a direct instruction to an image generator with imperatives such as \"Make\" and \"seen at an angle,\" plus plain spatial planning rather than polished chatbot-style prose."
+},
+"gpt-5.4-mini|8f172e06|a578e24306319a17": {
+"score": 18,
+"explanation": "This is a direct imperative aimed at an image generator in plain, simple language, which strongly suggests a genuine participant rather than copied chatbot text."
+},
+"gpt-5.4-mini|8f172e06|7b59a3583cb3013e": {
+"score": 4,
+"explanation": "The text uses direct generator instructions and casual edits like \"Make it\" and \"I want,\" which strongly fit a genuine participant rather than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|e8cb10285668552c": {
+"score": 7,
+"explanation": "The text is clearly direct instructions to an image generator with first-person edits like \"Make\" and \"I want,\" plus plain adjustment language rather than chatbot-style prose."
+},
+"gpt-5.4-mini|8f172e06|5c26185d32918e8c": {
+"score": 12,
+"explanation": "The text reads like direct instructions to an image generator (\u201cPlease make,\u201d \u201cI want you to make,\u201d \u201cAdd,\u201d \u201cMake\u201d) with plain, everyday wording, which is strong evidence of a genuine participant rather than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|a2de02f5bc4b7067": {
+"score": 24,
+"explanation": "The text uses direct imperatives to edit the scene (\u201cPlease make,\u201d \u201cI want you to make,\u201d \u201cAdd\u201d), which strongly suggests a participant instructing an image generator rather than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|3f20b8db28113c01": {
+"score": 8,
+"explanation": "The text uses direct imperative edits to the image generator throughout (\u201cPlease make,\u201d \u201cI want you to,\u201d \u201cAdd,\u201d \u201cMake it,\u201d \u201cflip\u201d), which strongly signals a genuine participant rather than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|dcafa690c8ec94f9": {
+"score": 22,
+"explanation": "The text reads like a participant\u2019s direct instructions to an image generator (\u201cI want...\u201d), with plain everyday wording and no chatbot boilerplate or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|4d4bc10eb15af9fa": {
+"score": 18,
+"explanation": "The text uses direct imperative instructions to the generator (\u201cI want you to make,\u201d \u201cAdd...\u201d), which strongly signals a genuine task prompt rather than copied chatbot description, despite being cleanly written."
+},
+"gpt-5.4-mini|8f172e06|8ea7dd9c288d7553": {
+"score": 18,
+"explanation": "The text reads like direct instructions to an image generator with imperatives such as \"Add\" and \"Make,\" but it otherwise uses plain everyday wording rather than chatbot-style polished prose."
+},
+"gpt-5.4-mini|8f172e06|2c39bf924fbae71d": {
+"score": 95,
+"explanation": "The text is written as direct instructions to create a scene (\u201cMake a villa-style bedroom...\u201d), which strongly matches prompt-generation language rather than a participant describing an observed image."
+},
+"gpt-5.4-mini|8f172e06|2d95f5cdf77dd80d": {
+"score": 8,
+"explanation": "The text uses direct imperative instructions to a generator (\u201cMake a villa-style bedroom,\u201d \u201cpaint the walls,\u201d \u201cMake it so that...\u201d), which strongly matches genuine participant edits rather than copied chatbot description."
+},
+"gpt-5.4-mini|8f172e06|f2e42399e8496256": {
+"score": 7,
+"explanation": "The text uses direct imperative instructions to modify the scene (\u201cMake\u2026\u201d, \u201cAdd\u2026\u201d, \u201cpaint\u2026\u201d), which strongly matches a human telling an image generator what to do rather than pasted chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|335b098f7cb279ea": {
+"score": 88,
+"explanation": "The text is a polished, generic scene description with rendering-style phrasing like \"soft neutral lighting\" and no first-person, hedging, or generator-directed wording, which makes it read like copied chatbot output."
+},
+"gpt-5.4-mini|8f172e06|75afe7dd86ac8396": {
+"score": 88,
+"explanation": "The wording is polished and generator-like, using image-parameter style phrasing such as \"angled, bird's eye\" and \"soft cool lighting\" with no first-person, hedging, or casual observational language."
+},
+"gpt-5.4-mini|8f172e06|818197ed39321fad": {
+"score": 73,
+"explanation": "The text uses polished, image-generation-style phrasing such as \"angled, bird's eye,\" \"soft cool lighting,\" and \"scanner-esque painting,\" with a curated descriptive register and no first-person, hedging, or generator-directed language."
+},
+"gpt-5.4-mini|8f172e06|68260ff17b40b55a": {
+"score": 16,
+"explanation": "The text is a short, plain image description with everyday wording and no chatbot framing, polished phrasing, or rendering-style jargon, which makes it look more like a participant note than copied AI output."
+},
+"gpt-5.4-mini|8f172e06|f6f88a19e73f49b3": {
+"score": 86,
+"explanation": "The text is a short, polished scene description with a generic \u201can amateur photograph of\u201d opener and no first-person, hedging, or casual viewing language, which makes it read more like copied AI-style prompt text than a participant\u2019s own description."
+},
+"gpt-5.4-mini|8f172e06|a8fd617bc9ecdf2a": {
+"score": 12,
+"explanation": "The text is a plain, direct image description with casual wording and no chatbot boilerplate, polished essay style, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|e8d1e643d535bdfe": {
+"score": 72,
+"explanation": "The description is concise but uses clean, polished phrasing with image-composition style wording like \"on a white office floor in low lighting\" and lacks any first-person, hedging, or casual participant-style commentary."
+},
+"gpt-5.4-mini|8f172e06|02851414a15b1258": {
+"score": 18,
+"explanation": "The description is plain and viewer-like, with no chatbot framing or rendering jargon, and it uses simple everyday wording rather than polished AI-style prose."
+},
+"gpt-5.4-mini|8f172e06|f5a432873f3e605c": {
+"score": 18,
+"explanation": "The text is a plain, direct image description with everyday wording and no chatbot framing, polished rendering jargon, or instructional language aimed at a generator."
+},
+"gpt-5.4-mini|8f172e06|fab471985610b61c": {
+"score": 85,
+"explanation": "The text is very short but uses polished, image-configuring phrasing like \"saturated\" and \"low-angle photograph,\" which reads more like a generated prompt than a participant\u2019s plain description."
+},
+"gpt-5.4-mini|8f172e06|4b3fbcb5907e33ff": {
+"score": 89,
+"explanation": "The text is a polished, camera-style prompt with rendering cues like \"saturated,\" \"low-angle,\" and \"unfocused photograph,\" which reads much more like AI-generated image instructions than a participant\u2019s plain description."
+},
+"gpt-5.4-mini|8f172e06|12a3e9dc3c6d63b2": {
+"score": 72,
+"explanation": "The text is a short, polished prompt using image-generation style cues like \"saturated,\" \"low-angle,\" and \"amateur photograph,\" which makes it read more like AI-style phrasing than a participant\u2019s natural description."
+},
+"gpt-5.4-mini|8f172e06|7a75e0306503a3e8": {
+"score": 72,
+"explanation": "The passage uses a polished, image-generation style with photographic framing language like \"diagonal angle\" and \"skylight above the bed lights the room,\" and it lacks any first-person, hedging, or casual viewing language."
+},
+"gpt-5.4-mini|8f172e06|ad0815926dca5383": {
+"score": 72,
+"explanation": "The description is polished and image-configuring in tone, with phrases like \"from a diagonal angle\" and \"lights the room dimly\" that read more like a generated prompt than a participant\u2019s casual description, though it lacks obvious boilerplate."
+},
+"gpt-5.4-mini|8f172e06|bdced7fea9a29bec": {
+"score": 83,
+"explanation": "The text is polished and descriptive but reads like a generated scene prompt, with rendering-style phrasing such as \"diagonal angle\" and \"skylight above the bed lights the room dimly,\" and it lacks any first-person, hedging, or casual participant-style language."
+},
+"gpt-5.4-mini|8f172e06|fc371ab02334269a": {
+"score": 12,
+"explanation": "The response is extremely short and plain, with no chatbot-style phrasing, polished register, or rendering jargon, which looks more like a participant\u2019s terse description than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|2df2ce015856bb11": {
+"score": 12,
+"explanation": "This is a short, plain participant-style description with simple everyday wording and no chatbot framing, polished prose, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|e3157fce81dbf17e": {
+"score": 12,
+"explanation": "The text is a very plain, minimal participant-style description with casual counting and no chatbot framing, polished wording, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|ed0125af63b969f5": {
+"score": 18,
+"explanation": "The text is short, plain, and reads like a participant\u2019s simple object listing with casual wording and no chatbot framing, polished prose, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|f93ea59017062711": {
+"score": 18,
+"explanation": "This is very plain, fragmentary object listing with casual wording and no chatbot boilerplate, rendering jargon, or polished essay-like style."
+},
+"gpt-5.4-mini|8f172e06|fefb004f8175ba78": {
+"score": 18,
+"explanation": "The text is short, plain, and reads like a direct participant-style inventory with simple counting and no chatbot framing, polished prose, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|ba33d0e0c1714412": {
+"score": 8,
+"explanation": "This is a very short, plain, everyday description with no chatbot framing, polished prose, or rendering jargon, so it reads like a participant\u2019s own wording."
+},
+"gpt-5.4-mini|8f172e06|767fc051a023d071": {
+"score": 18,
+"explanation": "The text is a short, plain directive with no chatbot boilerplate or polished AI-style prose, and it uses direct instruction language aimed at the generator rather than a pasted description."
+},
+"gpt-5.4-mini|8f172e06|b344d63869ce85e0": {
+"score": 32,
+"explanation": "The response is very short and uses a directive, prompt-like phrasing (\u201cShould only have\u201d), which feels somewhat AI-like, but it also reads as a plain participant edit rather than polished chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|7ca32dae39ade545": {
+"score": 12,
+"explanation": "The text is extremely brief, plain, and everyday, with no chatbot-style framing, polished prose, or rendering jargon\u2014just a simple participant-like description."
+},
+"gpt-5.4-mini|8f172e06|60c471ed7da8da03": {
+"score": 22,
+"explanation": "The phrase is very short, plain, and reads like a simple participant-style description of the picture, with no chatbot framing, polished prose, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|c2430c49b4c69d60": {
+"score": 12,
+"explanation": "The text is very short and plain, using simple everyday wording to name the object and color with no chatbot framing, polished prose, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|cca5d04b39cfe6d8": {
+"score": 12,
+"explanation": "This is just a very short, plain noun phrase with no chatbot framing, polished prose, or image-generator jargon, which looks more like a participant\u2019s brief description than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|6e8e0388ea753696": {
+"score": 12,
+"explanation": "The text is very short, plain, and looks like a simple participant description with casual counting rather than polished chatbot-style prose or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|c0a6f609269b54ac": {
+"score": 93,
+"explanation": "The text uses direct generator-style imperatives (\u201cIt should have,\u201d \u201cAdd anti-wrap guards\u201d) and concise product-spec wording, which strongly resembles an AI prompt rather than a participant\u2019s image description."
+},
+"gpt-5.4-mini|8f172e06|d4dee0de271b1005": {
+"score": 14,
+"explanation": "The text is plain, direct, and observational, with no chatbot-style framing or polished rendering jargon, which makes it look more like a participant description than copied AI output."
+},
+"gpt-5.4-mini|8f172e06|cc647fffa0104f0a": {
+"score": 18,
+"explanation": "The description is plain and observational, with simple layout details and no chatbot-style phrasing, rendering jargon, or polished essay-like wording."
+},
+"gpt-5.4-mini|8f172e06|2359bebd32372aed": {
+"score": 18,
+"explanation": "The text reads like a straightforward participant description using plain, everyday spatial language and counts, with no chatbot framing, polished essay style, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|453d076f8947818b": {
+"score": 92,
+"explanation": "The text uses polished, image-generation style framing with centered composition, camera-like layout language, and clean descriptive phrasing without any hedging, self-correction, or participant-like meta references."
+},
+"gpt-5.4-mini|8f172e06|ad5eb0c0b13c9556": {
+"score": 86,
+"explanation": "The text reads like a clean image-generation prompt with centered composition, layout terms, and polished descriptive phrasing, and it lacks any first-person, hedging, or participant-style reasoning."
+},
+"gpt-5.4-mini|8f172e06|2c24a3769822d898": {
+"score": 72,
+"explanation": "The passage uses polished, generator-style composition language like \"centered in the middle of the frame\" and a precise \"45 degree angle,\" with no casual or viewer-based wording that would strongly suggest a participant."
+},
+"gpt-5.4-mini|8f172e06|03cc2f37172eb436": {
+"score": 18,
+"explanation": "The text is short, plain, and descriptive with no chatbot boilerplate or rendering jargon, and it reads like a participant naming what is in the picture."
+},
+"gpt-5.4-mini|8f172e06|997842b3c5210ccb": {
+"score": 14,
+"explanation": "The text is short, plain, and image-like, using simple object listing and spatial placement with no chatbot boilerplate, polished prose, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|67799aa7928c21de": {
+"score": 18,
+"explanation": "The text is plain, direct, and viewpoint-based with simple object listing and no chatbot-style phrasing, rendering jargon, or polished essay register."
+},
+"gpt-5.4-mini|8f172e06|7a205918f8d24fdf": {
+"score": 12,
+"explanation": "The text is plain, list-like, and includes casual object/color placement rather than chatbot boilerplate, polished prose, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|8c02cf00a8d3e95b": {
+"score": 18,
+"explanation": "The text is plain, clipped, and list-like with simple object naming and no chatbot boilerplate, polished prose, or rendering jargon, which fits a participant-style description more than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|6ac5dd49b334d353": {
+"score": 14,
+"explanation": "The text is plain, direct object listing with a few generator-style negations, but it lacks chatbot boilerplate, polished phrasing, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|31f34b1ca63a140d": {
+"score": 22,
+"explanation": "The text is a plain, direct room description with simple counting and spatial references, and it lacks chatbot boilerplate, rendering jargon, or overly polished phrasing."
+},
+"gpt-5.4-mini|8f172e06|f548b16739425e95": {
+"score": 19,
+"explanation": "The text reads like a straightforward participant description with plain object naming and spatial notes, plus a direct descriptive layout, and it lacks chatbot boilerplate or polished image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|b2c9144ae96ece7f": {
+"score": 27,
+"explanation": "The text reads like a plain participant description with simple object listing and one bit of rough spatial wording, and it lacks chatbot boilerplate, polished phrasing, or rendering-style parameters."
+},
+"gpt-5.4-mini|8f172e06|28de3f4ded09c0ba": {
+"score": 18,
+"explanation": "The text reads like a participant\u2019s plain description with awkward phrasing, hedging, and no chatbot boilerplate or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|dda68bf74f72e96e": {
+"score": 24,
+"explanation": "The passage reads like a participant\u2019s own description with plain wording, hedging, and casual observations about the room, and it lacks chatbot boilerplate or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|ff1431c9678c8b39": {
+"score": 71,
+"explanation": "The passage has a polished, essayistic tone with curating phrases like \"work of art,\" \"ambient looks,\" and \"combination of different aspects of human life,\" while lacking the direct viewer-style or rough, in-the-moment wording typical of a participant."
+},
+"gpt-5.4-mini|8f172e06|26761d9d7742c343": {
+"score": 84,
+"explanation": "The text has a polished, generic AI-like register with curated phrasing such as \"well laid bed,\" \"well organized furniture,\" and \"quiet complimentary,\" and it lacks any first-person, hedging, or viewer-style language."
+},
+"gpt-5.4-mini|8f172e06|278a9107dc592be3": {
+"score": 88,
+"explanation": "The passage uses polished, generic AI-like prose with repeated formulaic phrasing ('well placed,' 'sense of calmness and peace,' 'light and ambience') and lacks any first-person, hedging, or generator-directed language."
+},
+"gpt-5.4-mini|8f172e06|65aba0f0f5798f45": {
+"score": 78,
+"explanation": "The passage has a polished, generic chatbot-like tone with repeated evaluative phrasing such as \"well placed,\" \"compliments,\" and \"sense of calmness and peace,\" while lacking any first-person, hedging, or rough observational language."
+},
+"gpt-5.4-mini|8f172e06|37aa0fb6f874585f": {
+"score": 78,
+"explanation": "The passage has a polished, essay-like tone with abstract phrasing like \"proof of the beauty of art and style\" and no clear first-person, hedging, or rough participant-style wording."
+},
+"gpt-5.4-mini|8f172e06|d6c4e9029bffd15f": {
+"score": 78,
+"explanation": "The passage has a polished, essay-like tone with curated evaluative phrasing such as \"proof of the beauty of art and style\" and lacks the casual, observational phrasing or uncertainty typical of a participant."
+},
+"gpt-5.4-mini|8f172e06|6887d407d4f06292": {
+"score": 84,
+"explanation": "The passage uses a polished, essay-like register with generalized aesthetic commentary (\u201cproof of the beauty of art and style,\u201d \u201clovely and peaceful\u201d) and lacks the casual, image-specific, generator-addressing cues typical of a participant."
+},
+"gpt-5.4-mini|8f172e06|c600a85a94b8bedc": {
+"score": 18,
+"explanation": "The response is short, plain, and informal with a hedged, everyday observation style (\u201cquiet green but not that green,\u201d \u201cfading in colour\u201d), which reads more like a participant than copied chatbot text."
+},
+"gpt-5.4-mini|8f172e06|f31932738f495493": {
+"score": 72,
+"explanation": "The description has a polished, essay-like tone with evocative phrasing about family time, private moments, and nature/freshness, while lacking direct viewing language, hedging, or rough participant-style self-correction."
+},
+"gpt-5.4-mini|8f172e06|9ad4d22ca2615e72": {
+"score": 42,
+"explanation": "The text has some human-like roughness and odd phrasing, but it also uses polished, evaluative wording about mood and nature that feels somewhat AI-generated rather than a plain viewer description."
+},
+"gpt-5.4-mini|8f172e06|afab09b9887a75ca": {
+"score": 14,
+"explanation": "The text is short, plain, and includes a casual first-person-style opinion/typo-like phrasing rather than the polished, chatbot-like register that would strongly suggest copied AI output."
+},
+"gpt-5.4-mini|8f172e06|a0c744b8e07214de": {
+"score": 18,
+"explanation": "The text is short, plain, and looks like a direct participant observation with informal wording and a minor grammar slip, with no chatbot-style framing or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|1e8192e135f1009e": {
+"score": 74,
+"explanation": "The text has a polished, reflective AI-like tone with generic phrasing and no rough participant cues, though it does include some plain observation of the scene."
+},
+"gpt-5.4-mini|8f172e06|43c55d0f9f7dbd8d": {
+"score": 78,
+"explanation": "The text is very short and cleanly phrased, with a concise, generic prompt-like style that feels more like copied image-generation wording than a participant\u2019s natural, in-the-moment description, though it lacks stronger chatbot markers."
+},
+"gpt-5.4-mini|8f172e06|131bf99f2b03d267": {
+"score": 22,
+"explanation": "The text is very plain and fragmentary, with everyday wording and no chatbot boilerplate, image-parameter jargon, or polished essay style."
+},
+"gpt-5.4-mini|8f172e06|aaa4a9bfd1ab8b41": {
+"score": 18,
+"explanation": "The text is short, plain, and informal, with simple everyday wording and no chatbot-style framing, polished prose, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|435711f102ab345f": {
+"score": 22,
+"explanation": "This reads like a plain participant description with rough wording and counting, and it lacks chatbot-style framing, polished phrasing, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|58c488c1b440fbd6": {
+"score": 18,
+"explanation": "The text is short, plain, and list-like with casual wording and no chatbot framing, polished prose, or rendering parameters, which makes it read more like a participant note than copied AI output."
+},
+"gpt-5.4-mini|8f172e06|4fd78884f362c181": {
+"score": 22,
+"explanation": "The text is short, plain, and image-like, with casual wording and no chatbot boilerplate, polished prose, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|000f9451b5e22784": {
+"score": 23,
+"explanation": "The description is plain, casual, and image-focused with rough listing and no chatbot framing, polished phrasing, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|3fd6da581600ca88": {
+"score": 18,
+"explanation": "The text is short, plain, and casual, with rough wording and no chatbot-style framing, polished prose, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|07cbd3dd65e6f41d": {
+"score": 19,
+"explanation": "The text is a plain, rough participant-style description with casual listing and no chatbot framing, polished prose, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|ac2d1783630d0f19": {
+"score": 87,
+"explanation": "The text is a compact, highly polished prompt with rendering-style descriptors like \"realistic\" and image-composition wording, and it lacks the casual, observational phrasing, hedging, or self-reference typical of a participant."
+},
+"gpt-5.4-mini|8f172e06|b77f3bb3d5350db3": {
+"score": 68,
+"explanation": "The text is concise but uses image-generation style descriptors like \"realistic\" and a polished, parameter-like list of visual attributes, with no first-person, hedging, or generator-directed phrasing."
+},
+"gpt-5.4-mini|8f172e06|1cba0d3287d38310": {
+"score": 85,
+"explanation": "The text is a polished, prompt-like description with rendering-style terms such as \"realistic\" and \"moody,\" and it lacks any first-person, hedging, or casual participant-style phrasing."
+},
+"gpt-5.4-mini|8f172e06|44eaae095e834f48": {
+"score": 12,
+"explanation": "The text is just a short, plain list of visible room contents with no chatbot boilerplate, polished phrasing, or image-parameter jargon, which reads like a participant description."
+},
+"gpt-5.4-mini|8f172e06|c7960071e05637df": {
+"score": 18,
+"explanation": "The text is a plain, concise scene description with a small self-correction about the table connection, and it lacks chatbot boilerplate, rendering jargon, or polished AI-style phrasing."
+},
+"gpt-5.4-mini|8f172e06|8847ccbbcf94848e": {
+"score": 12,
+"explanation": "The text is short and plain, with a direct correction-style note (\u201ctable not connected at back corner\u201d) that sounds like a participant\u2019s own description rather than a polished chatbot response."
+},
+"gpt-5.4-mini|8f172e06|a6908264f9ea384c": {
+"score": 12,
+"explanation": "The text is short, plain, and unpolished with simple noun phrases and no chatbot-style framing, polished wording, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|56a27ef7118054cc": {
+"score": 18,
+"explanation": "The text is very short, plain, and unpolished, with a simple participant-like description of a room and chair rather than chatbot-style phrasing or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|14c9e4be3cc669c6": {
+"score": 18,
+"explanation": "The text looks like a rough participant description with direct imperative wording like \"put floer by the side\" and simple, unpolished phrasing rather than polished chatbot-style prose."
+},
+"gpt-5.4-mini|8f172e06|3fcf7c4518b31dff": {
+"score": 18,
+"explanation": "The text is short, plain, and contains a couple of spelling/grammar errors with simple everyday wording, which reads more like a participant note than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|4da7515a03f01eb5": {
+"score": 22,
+"explanation": "The text is short, plain, and somewhat unpolished with casual wording and no chatbot boilerplate or rendering jargon, which fits a genuine participant more than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|5d013c3a7f32fa7f": {
+"score": 18,
+"explanation": "The text is short, plain, and includes direct generator-like instruction (\u201cmake the table big\u201d) plus casual wording and minor grammatical roughness, which makes it read more like a participant prompt than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|7d6eb215502dece6": {
+"score": 18,
+"explanation": "The text is short, plain, and unpolished with typos and rough wording, which looks like a participant\u2019s own description rather than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|94e8fe95724cf0aa": {
+"score": 18,
+"explanation": "The text is short, plain, and includes direct generator-style instructions like \"let the view be from the front not up view,\" which strongly suggests a real participant rather than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|c1389f6af8177d0c": {
+"score": 12,
+"explanation": "The text is short, casual, and contains direct generator-style instructions like \"let the view be from the front not up view,\" along with misspellings and rough wording that look more like a participant\u2019s note than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|d1bd90fffb854773": {
+"score": 17,
+"explanation": "The text is short, rough, and typo-filled with plain descriptive wording about a tower, windows, door, steps, and water, which reads more like a participant than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|86f3b1e00f369e35": {
+"score": 12,
+"explanation": "The text is short, informal, and includes plain, imperfect wording plus direct instruction language like \"let the towel be ontop of the water,\" which fits a genuine participant more than copied chatbot text."
+},
+"gpt-5.4-mini|8f172e06|c803025c324fa0e6": {
+"score": 8,
+"explanation": "The text is short, informal, and error-filled with direct instruction to the generator (\u201clet the towel be ontop of the water\u201d), which is strong evidence of a genuine participant rather than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|eecf180208b12688": {
+"score": 18,
+"explanation": "The prompt is very short, plain, and unpolished with simple everyday wording and no chatbot framing, technical rendering terms, or essay-like polish."
+},
+"gpt-5.4-mini|8f172e06|ddc2c2e125c8c10d": {
+"score": 18,
+"explanation": "The text is short, plain, and somewhat unpolished with everyday wording and no chatbot boilerplate or image-generation jargon, which makes it read more like a participant\u2019s own description than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|153695975d14cd5b": {
+"score": 18,
+"explanation": "The text looks mostly like a participant\u2019s plain description and even includes a direct instruction to the generator (\u201cput more game\u201d), with casual wording and imperfect grammar rather than chatbot-style polish."
+},
+"gpt-5.4-mini|8f172e06|a8a979f0f2a0cbaf": {
+"score": 8,
+"explanation": "The text uses direct generator instructions like \"generate\" and \"for kids to climb on and slide down,\" which strongly signal a participant prompt rather than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|186407dcb0320048": {
+"score": 12,
+"explanation": "The text uses direct instruction to the generator (\u201cgenerate,\u201d \u201cshould be\u201d) and simple everyday wording with no chatbot boilerplate or polished AI-style phrasing."
+},
+"gpt-5.4-mini|8f172e06|e4be1661e3739477": {
+"score": 17,
+"explanation": "This reads like a plain participant instruction with direct imperatives to the generator (\u201cgenerate,\u201d \u201cwith the top built like a hut, painted in red and green\u201d) and no chatbot-style polish or boilerplate."
+},
+"gpt-5.4-mini|8f172e06|2ca761074fce344c": {
+"score": 94,
+"explanation": "It reads like an instruction to an image generator rather than a participant description, with imperative phrasing (\u201cGenerate a sitting room\u201d) and clean, chatbot-like wording throughout."
+},
+"gpt-5.4-mini|8f172e06|a891e9dfa1ac8f64": {
+"score": 12,
+"explanation": "The text is short, plain, and looks like a simple participant description with casual wording rather than polished chatbot-style phrasing or image-generation boilerplate."
+},
+"gpt-5.4-mini|8f172e06|a723a5ff87209004": {
+"score": 18,
+"explanation": "The text is short and plainly descriptive, with casual phrasing and minor grammatical awkwardness rather than the polished, chatbot-like register or image-generation jargon that would raise suspicion."
+},
+"gpt-5.4-mini|8f172e06|7c27962a404d9b90": {
+"score": 18,
+"explanation": "The text is very short, plain, and directly names visible objects with simple wording, with no chatbot-style framing or polished AI-like phrasing."
+},
+"gpt-5.4-mini|8f172e06|383218253ec227ab": {
+"score": 22,
+"explanation": "The text is short, plain, and fragmentary with everyday wording and no chatbot-style polish or rendering jargon, which reads more like a participant note than copied AI output."
+},
+"gpt-5.4-mini|8f172e06|d5b5a827659bf732": {
+"score": 22,
+"explanation": "The text is short, plain, and somewhat unpolished with casual wording and rough grammar, and it lacks chatbot boilerplate, polished jargon, or image-generator parameter language."
+},
+"gpt-5.4-mini|8f172e06|491569582a704946": {
+"score": 8,
+"explanation": "The text is very short, plain, and casual, with a rough spatial description and no chatbot-style phrasing, rendering jargon, or polished AI-like register."
+},
+"gpt-5.4-mini|8f172e06|955f8adc6385ec03": {
+"score": 18,
+"explanation": "The text is short, plain, and somewhat unpolished with a typo (\u201cable\u201d) and casual layout description, with no chatbot-style phrasing or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|275d89fd6b2e89c2": {
+"score": 18,
+"explanation": "The text is short, plain, and casual with rough grammar and simple object naming, with no chatbot-style framing or polished essayistic wording."
+},
+"gpt-5.4-mini|8f172e06|8ac3fdec4f401c0b": {
+"score": 14,
+"explanation": "The phrase is extremely brief and plain, with no chatbot framing, polished prose, or rendering jargon, which makes it look like a simple participant description rather than copied AI text."
+},
+"gpt-5.4-mini|8f172e06|bb7dedfb32dddca0": {
+"score": 85,
+"explanation": "The phrase is extremely short, polished, and generic, with no first-person, hedging, or casual viewing language, which makes it read more like a chatbot-style summary than a participant\u2019s own description."
+},
+"gpt-5.4-mini|8f172e06|ff56cd0ddfec9ede": {
+"score": 18,
+"explanation": "The text is very short, plain, and informal, with a vague viewer-style description rather than polished chatbot phrasing, and it lacks AI-boilerplate, rendering jargon, or structured formatting."
+},
+"gpt-5.4-mini|8f172e06|43e1b742a407a024": {
+"score": 88,
+"explanation": "The text is a polished, concise scene description with clean composition-style phrasing and no first-person, hedging, or casual viewing language, which makes it read more like AI-generated prompt copy than a participant\u2019s own description."
+},
+"gpt-5.4-mini|8f172e06|6336d41007f59a5d": {
+"score": 73,
+"explanation": "The text is very clean and polished, with image-configuration style phrasing like exact percentage framing and compositional description, but it also includes plain viewer language and rough estimation that keep it from reading as fully chatbot-copied."
+},
+"gpt-5.4-mini|8f172e06|aad267dbfd62f48c": {
+"score": 18,
+"explanation": "The text is plain, direct, and includes rough lay estimates like \"about two thirds\" and \"about 90 percent,\" with no chatbot framing, polished boilerplate, or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|327ae6410890deed": {
+"score": 92,
+"explanation": "The text is a clean, polished list of room features in a generic descriptive register, with no first-person phrasing, hedging, or rough participant-style language, which makes it read like copied chatbot output."
+},
+"gpt-5.4-mini|8f172e06|7960a44835b45475": {
+"score": 12,
+"explanation": "The text reads like plain participant-style description with simple everyday wording and no chatbot boilerplate, rendering jargon, or overly polished phrasing."
+},
+"gpt-5.4-mini|8f172e06|1786e08e2a85ee3a": {
+"score": 88,
+"explanation": "The text reads like an image-generation prompt with direct instructions ('make sure the bed is centered'), polished scene-setting, and no participant-style hedging or casual viewing language."
+},
+"gpt-5.4-mini|8f172e06|19312611d94bdf34": {
+"score": 27,
+"explanation": "The text uses plain, direct observational language with a small typo and no chatbot framing, polished essay style, or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|20ce5ca8310dfad7": {
+"score": 19,
+"explanation": "The text includes direct generator-style instruction like \"Make sure the table is the focus of the picture\" and plain participant-like wording about what is in the room, which makes it read mostly human rather than copied chatbot prose."
+},
+"gpt-5.4-mini|8f172e06|9497c06fa6e356bb": {
+"score": 28,
+"explanation": "The text reads like a direct participant instruction with plain wording and an explicit imperative (\u201cMake sure the table is the focus\u201d), which strongly lowers suspicion despite the clean overall description."
+},
+"gpt-5.4-mini|8f172e06|4cb9c3ddf9cd4c8e": {
+"score": 18,
+"explanation": "The text is plain, somewhat unpolished, and uses simple participant-like spatial description with a typo, with no chatbot framing or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|1ee2fa952335625d": {
+"score": 18,
+"explanation": "The text is plain, repetitive, and includes a minor typo plus a casual layout description, with no chatbot framing or image-generation jargon."
+},
+"gpt-5.4-mini|8f172e06|dffe275a97d89ae0": {
+"score": 18,
+"explanation": "The text is plain, repetitive, and includes a typo plus informal spatial phrasing, with no chatbot boilerplate or rendering jargon."
+},
+"gpt-5.4-mini|8f172e06|bcff6dc810cf6438": {
+"score": 12,
+"explanation": "This is a very short, plain description with everyday vocabulary and no chatbot framing, rendering jargon, or polished AI-style phrasing."
+},
+"gpt-5.4-mini|8f172e06|bb91df5f26169ea4": {
+"score": 18,
+"explanation": "The text is plain, direct, and observational, with a casual framing of the scene and no chatbot boilerplate or rendering-style jargon."
+},
+"gpt-5.4-mini|8f172e06|baaae1db2da5166a": {
+"score": 18,
+"explanation": "The text reads like a plain participant description with simple spatial wording and no chatbot-style framing, polished phrasing, or rendering jargon."
+},
+"gemini-2.5-flash|8f172e06|5fd593b4d38ed83d": {
+"score": 10,
+"explanation": "The text uses plain, everyday vocabulary and simple sentence structures to directly describe objects and their positions, with no signs of AI-specific jargon or polished phrasing."
+},
+"gemini-2.5-flash|8f172e06|480afc84659d423e": {
+"score": 25,
+"explanation": "The text uses plain, everyday vocabulary and includes a negative constraint (\"but there's not a court\") which is characteristic of a human instructing an image generator, with no AI-specific jargon or polished phrasing."
+},
+"gemini-2.5-flash|8f172e06|1edaff39bd4ec561": {
+"score": 5,
+"explanation": "The prompt uses direct instructions like \"Make it modern and colorful\" and plain, everyday language to describe the scene, strongly indicating a genuine participant."
+},
+"gemini-2.5-flash|8f172e06|8172aa6a3d873c36": {
+"score": 25,
+"explanation": "The text uses plain, direct instructions and everyday vocabulary to address the image generator, which are strong indicators of a human participant, despite its flawless grammar and the initial 'Generate an image of...' phrasing."
+},
+"gemini-2.5-flash|8f172e06|ab4b536c0e9a7c9d": {
+"score": 10,
+"explanation": "The text consists of direct instructions to an image generator, including an explicit command to \"Generate an image of\" and a negative constraint \"Don't show doctor's counter\", which are strong indicators of a human participant."
+},
+"gemini-2.5-flash|8f172e06|3b6177b493346888": {
+"score": 5,
+"explanation": "The text consists entirely of direct instructions and negative constraints aimed at an image generator, using plain, everyday language without any AI-specific jargon or polished phrasing."
+},
+"gemini-2.5-flash|8f172e06|857f7983327f4c9a": {
+"score": 10,
+"explanation": "The text uses direct instructions for the image generator, plain everyday vocabulary, and contains a clear typo and inconsistent capitalization, all pointing to a human participant."
+},
+"gemini-2.5-flash|8f172e06|652e2b03250dd2d9": {
+"score": 10,
+"explanation": "The text is a direct instruction to an image generator, uses plain language, and contains a clear typo (\"think comforter\"), all of which strongly indicate a human participant."
+},
+"gemini-2.5-flash|8f172e06|8243b2bd72afd443": {
+"score": 5,
+"explanation": "The text is a direct set of instructions to an image generator, uses plain language, and contains a clear typo (\"think comforter\" instead of \"thick comforter\"), all of which strongly indicate a genuine participant."
+},
+"gemini-2.5-flash|8f172e06|e1a04caeac9a6123": {
+"score": 15,
+"explanation": "The text uses direct instructions, a lay estimate (\"about 15 chairs\"), plain vocabulary, and contains a minor spelling error and slightly awkward phrasing, all indicative of a human participant."
+},
+"gemini-2.5-flash|8f172e06|60e94f45ed0e7f3c": {
+"score": 10,
+"explanation": "The text uses direct imperatives to instruct an image generator and includes a lay estimate, strongly indicating a genuine participant rather than copied AI text."
+},
+"gemini-2.5-flash|8f172e06|91aabf13eba9f305": {
+"score": 15,
+"explanation": "The text uses direct instructions, a lay estimate, and plain vocabulary, with a possible typo, all indicating a human participant."
+},
+"gemini-2.5-flash|8f172e06|6a44090239f05c7f": {
+"score": 10,
+"explanation": "The text uses direct instructions and plain, everyday language, including a casual meta-reference to \"the person taking the picture,\" which strongly indicates a genuine participant."
+},
+"gemini-2.5-flash|8f172e06|6f3fdb73e25a8c82": {
+"score": 10,
+"explanation": "The text uses direct imperatives like 'Show' and a casual meta-reference to 'the person taking the picture', which are strong indicators of a genuine participant providing instructions to an image generator."
+},
+"gemini-2.5-flash|8f172e06|a126f085300f2845": {
+"score": 10,
+"explanation": "The text uses direct instructions like \"Show the tip\" and \"Show the lower base,\" and includes a casual meta-reference to \"the person taking the picture,\" strongly indicating a human participant."
+},
+"gemini-2.5-flash|8f172e06|c78650fdaf8d75dd": {
+"score": 15,
+"explanation": "The text uses plain, everyday vocabulary and contains a run-on sentence, indicating a human participant rather than copied AI text."
+},
+"gemini-2.5-flash|8f172e06|c82beff1969d563b": {
+"score": 15,
+"explanation": "The text contains a clear typo ('rectangler'), a second-person reference ('You see'), and plain, unpolished language, all of which strongly suggest a human participant."
+},
+"gemini-2.5-flash|8f172e06|6071d7a5a813eb53": {
+"score": 15,
+"explanation": "The text includes direct instructions to the image generator, a typo ('rectangler'), and a grammatical slip, all of which strongly suggest a human participant."
+},
+"gemini-2.5-flash|8f172e06|47c6a6258fd9dc08": {
+"score": 15,
+"explanation": "The text uses plain, everyday vocabulary and exhibits minor grammatical awkwardness and a missing period, which are strong indicators of a human participant."
+},
+"gemini-2.5-flash|8f172e06|af71da59453a131d": {
+"score": 10,
+"explanation": "The text includes direct instructions to the image generator, a typo, and a capitalization error, all pointing strongly to a human participant."
+},
+"gemini-2.5-flash|8f172e06|73502bd2d6cf662d": {
+"score": 5,
+"explanation": "The text includes direct instructions to the image generator, a clear typo, and plain, unpolished phrasing, all indicating a genuine participant."
+},
+"gemini-2.5-flash|8f172e06|f164bdec310507cb": {
+"score": 10,
+"explanation": "The text uses direct instructions and second-person address aimed at the image generator, along with plain language and a minor grammatical imperfection, indicating a genuine participant."
+},
+"gemini-2.5-flash|8f172e06|cff934253ab1d265": {
+"score": 5,
+"explanation": "The text uses direct instructions to the image generator, plain everyday vocabulary, and exhibits minor mechanical imperfections like inconsistent capitalization, strongly indicating a human participant."
+},
+"gemini-2.5-flash|8f172e06|4fd6bc05927340ff": {
+"score": 5,
+"explanation": "The text uses direct instructions and second-person address to the image generator, along with some minor mechanical imperfections, strongly indicating a genuine participant."
+},
+"gemini-2.5-flash|8f172e06|ea9ccb3954059282": {
+"score": 10,
+"explanation": "The text uses direct instructions and plain, everyday language with minor mechanical imperfections, strongly indicating a human participant rather than copied AI text."
+},
+"gemini-2.5-flash|8f172e06|61b3c46345316303": {
+"score": 10,
+"explanation": "The text contains direct instructions to the image generator and a grammatical error, strongly indicating a human participant rather than copied AI text."
+},
+"gemini-2.5-flash|8f172e06|4715fbbed5b03d8f": {
+"score": 10,
+"explanation": "The text contains numerous direct instructions and iterative refinements aimed at an image generator, along with plain language and minor mechanical imperfections, strongly indicating a human participant."
+},
+"gemini-2.5-flash|8f172e06|a181a87a97b592c6": {
+"score": 30,
+"explanation": "The text is very short and uses plain, everyday vocabulary without any AI-specific jargon or polished phrasing, though it also lacks typical human imperfections or meta-commentary."
+},
+"gemini-2.5-flash|8f172e06|222c4a242840c3dc": {
+"score": 10,
+"explanation": "The text includes a direct instruction to the image generator, 'Make the lighthouse be a little blurred,' which strongly indicates a human participant rather than copied AI text."
+},
+"gemini-2.5-flash|8f172e06|1c6d7629c71848bd": {
+"score": 10,
+"explanation": "The text includes direct instructions to the image generator like \"Make the lighthouse be a little blurred\" and \"Zoom in a little closer,\" which strongly indicates a genuine participant."
+},
+"gemini-2.5-flash|8f172e06|c67bad01161c6a0e": {
+"score": 20,
+"explanation": "The text uses plain descriptive language and includes a lay comparative estimate (\"roughly one meter wide\"), which strongly suggests a human participant despite the use of a slightly technical term like \"high aspect ratio\"."
+},
+"gemini-2.5-flash|8f172e06|fd745b50c28247c3": {
+"score": 20,
+"explanation": "The description uses plain, everyday language and includes a lay comparative estimate (\"roughly half meter wide\") and a lay framing description (\"just at the edge of the frame\"), which are strong indicators of a human participant."
+},
+"gemini-2.5-flash|8f172e06|8e73be66460fb826": {
+"score": 20,
+"explanation": "The text uses plain, descriptive language, includes a lay estimate (\"roughly half meter wide\"), and a casual meta-reference to the frame (\"just at the edge of the frame\"), indicating human authorship."
+},
+"gemini-2.5-flash|8f172e06|7000e15517d28766": {
+"score": 45,
+"explanation": "The text is clean and descriptive, without strong AI-specific jargon or overly polished language, but also lacks typical human-like hedging, first-person references, or direct instructions to the generator."
+},
+"gemini-2.5-flash|8f172e06|f5418b3ca3b4ad96": {
+"score": 40,
+"explanation": "The text includes a photographic parameter like \"center of the frame\" but also a strong human-like lay comparative estimate (\"roughly two thirds of the image width\"), balancing the overall impression."
+},
+"gemini-2.5-flash|8f172e06|d43706ce4d934b1c": {
+"score": 70,
+"explanation": "The text is uniformly polished and uses a framing term ('center of the frame'), but also includes a lay estimate ('roughly two thirds of the image width') which is a human-like cue."
+},
+"gemini-2.5-flash|8f172e06|f2b679168d0f333e": {
+"score": 15,
+"explanation": "The text uses plain, everyday language, includes a first-person plural reference (\"We see\"), provides lay estimates (\"6-7 year olds\"), and contains minor mechanical imperfections like a typo (\"course mulch\") and awkward phrasing (\"basketball hoop kids facing\")."
+},
+"gemini-2.5-flash|8f172e06|a7086728a3e7c333": {
+"score": 20,
+"explanation": "The description uses plain, everyday language and includes lay estimates about the age appropriateness of the playground and sandbox, which are strong indicators of a human participant."
+},
+"gemini-2.5-flash|8f172e06|647cf9341522ca54": {
+"score": 85,
+"explanation": "The text exhibits a uniformly flawless, objective, and precise descriptive register without any first-person references, hedging, instructions to the generator, or mechanical imperfections."
+},
+"gemini-2.5-flash|8f172e06|a6127f5b9659fee5": {
+"score": 15,
+"explanation": "The description uses plain, observational language, includes human-like observations like \"a little blurry\" and \"mostly closed,\" and refers to \"the photo,\" all of which suggest a genuine participant."
+},
+"gemini-2.5-flash|8f172e06|633331d591f2566f": {
+"score": 10,
+"explanation": "The text contains a grammatical error, a functional explanation of a design feature, and observations about image clarity, all of which point strongly to a human participant."
+},
+"gemini-2.5-flash|8f172e06|0a7986ed38b95f57": {
+"score": 15,
+"explanation": "The text contains a clear grammatical error and uses plain, descriptive language with meta-references to the 'photo' and 'image', strongly indicating human authorship."
+},
+"gemini-2.5-flash|8f172e06|dcb64c95935b424d": {
+"score": 15,
+"explanation": "The text uses plain, descriptive language and includes several lay comparative estimates and nuanced observations, such as 'very small compared to the large bed' and 'not exactly the same, but very similar', which are strong indicators of a human participant."
+},
+"gemini-2.5-flash|8f172e06|2100064c87c517a6": {
+"score": 15,
+"explanation": "The text includes several strong human-leaning cues such as lay comparative estimates (\"very small compared to the large bed\", \"taller than a person\"), a slight hedging/clarification (\"not exactly the same, but very similar\"), and a clear mechanical imperfection (\"tall with.\")."
+},
+"gemini-2.5-flash|8f172e06|eabb71a47286d282": {
+"score": 15,
+"explanation": "The text contains a clear mechanical imperfection (\"tall with.\"), several lay comparative estimates (\"very small compared to the large bed\", \"taller than a person\"), and casual meta references (\"we can see\", \"we can only see the top of\"), all of which strongly indicate a genuine participant."
+},
+"gemini-2.5-flash|8f172e06|a67a5c2f7ab53e41": {
+"score": 10,
+"explanation": "The text contains a clear typo (\"The is a\") and inconsistent capitalization, along with plain, everyday vocabulary, strongly indicating a human participant."
+},
+"gemini-2.5-flash|8f172e06|bb2e14a749a742fd": {
+"score": 15,
+"explanation": "The text uses plain, everyday vocabulary and contains a clear mechanical imperfection ('The is a long blue sofa'), indicating human authorship rather than copied AI text."
+},
+"gemini-2.5-flash|8f172e06|2340eb19102585d3": {
+"score": 15,
+"explanation": "The text contains a clear typo (\"The is\") and uses plain, slightly repetitive language, lacking any polished, essayistic register or AI-specific jargon."
+},
+"gemini-2.5-flash|8f172e06|b47879d5eaeae201": {
+"score": 20,
+"explanation": "The text uses plain, everyday language with no AI-specific jargon or polished phrasing, and includes a minor capitalization imperfection, suggesting a human participant."
+},
+"gemini-2.5-flash|8f172e06|2d2421f9b16d07da": {
+"score": 35,
+"explanation": "The text uses plain, everyday vocabulary and is perfectly structured, lacking any human-like imperfections or meta-commentary, which makes it clean and generic."
+},
+"gemini-2.5-flash|8f172e06|5d1649b393240d80": {
+"score": 15,
+"explanation": "The text uses plain, everyday language and includes direct instructions and refinements for the image generator, such as re-specifying object positions and relative sizes, which are strong indicators of a human participant."
+},
+"gemini-2.5-flash|8f172e06|004ff64b2130207b": {
+"score": 10,
+"explanation": "The prompt is extremely brief and uses plain, everyday vocabulary, with no stylistic cues or jargon typically associated with AI-generated text."
+},
+"gemini-2.5-flash|8f172e06|9bdededce7b24de7": {
+"score": 15,
+"explanation": "The prompt is very short and uses plain, everyday vocabulary, with no stylistic cues pointing to AI generation."
+},
+"gemini-2.5-flash|8f172e06|0d5c5ff6478d2d32": {
+"score": 15,
+"explanation": "The prompt uses plain, everyday vocabulary and is very direct, lacking any polished, essayistic register, photographic jargon, or chatbot boilerplate that would suggest AI generation."
+},
+"gemini-2.5-flash|8f172e06|39eeca550be6558d": {
+"score": 15,
+"explanation": "The description is extremely brief and uses only plain, everyday vocabulary without any AI-specific jargon, polished phrasing, or chatbot boilerplate."
+},
+"gemini-2.5-flash|8f172e06|82e80ff2be8838ec": {
+"score": 40,
+"explanation": "The text is very concise and uses plain language, but it includes a mild photographic term (\"Closeup\") and lacks any humanizing elements like hedging, first-person references, or mechanical imperfections."
+},
+"gemini-2.5-flash|8f172e06|23ac8a9da5ac876c": {
+"score": 15,
+"explanation": "The text uses plain, everyday vocabulary and a direct descriptive style without any AI-specific jargon, essayistic phrasing, or chatbot boilerplate."
+},
+"gemini-2.5-flash|8f172e06|c2fc2be0be1cabdc": {
+"score": 75,
+"explanation": "The text is perfectly structured and grammatically flawless, and completely lacks any human-specific cues such as first-person references, hedging, instructions to the generator, or mechanical imperfections."
+},
+"gemini-2.5-flash|8f172e06|aa6a1fae2523dca5": {
+"score": 85,
+"explanation": "The text is perfectly clean, objective, and lacks any conversational or imperfect human-like cues such as first-person references, hedging, instructions to the generator, or mechanical slips, making it read like a generated description despite the absence of overt AI jargon."
+},
+"gemini-2.5-flash|8f172e06|0cf2fa5592c34d23": {
+"score": 30,
+"explanation": "The text uses plain, functional language to describe the scene without any AI-specific jargon, chatbot framing, or overly polished vocabulary, though it also lacks explicit human-like hedging or self-correction."
+},
+"gemini-2.5-flash|8f172e06|9ea8bf3f99680f29": {
+"score": 72,
+"explanation": "The text exhibits a sustained polished, flawless register with perfect grammar and no human-like imperfections, hedging, or direct instructions to the generator, which raises suspicion despite the absence of AI-specific jargon."
+},
+"gemini-2.5-flash|8f172e06|256acab982e296e7": {
+"score": 85,
+"explanation": "The text exhibits a consistently polished, essayistic register with uniformly flawless grammar and spelling, and completely lacks any human-like cues such as hedging, self-correction, or direct instructions to an image generator."
+},
+"gemini-2.5-flash|8f172e06|1475c572382c7940": {
+"score": 85,
+"explanation": "The text exhibits a uniformly flawless, polished, and descriptive register with curated vocabulary, and completely lacks any human-like cues such as hedging, self-correction, first-person references, or direct instructions to the image generator."
+},
+"gemini-2.5-flash|8f172e06|c53076a580dbae8e": {
+"score": 20,
+"explanation": "The text uses plain, everyday vocabulary and a direct descriptive style, with no photographic jargon, polished essayistic register, or chatbot framing, suggesting a human participant."
+},
+"gemini-2.5-flash|8f172e06|561ed0305d05c5e1": {
+"score": 15,
+"explanation": "The text uses plain, everyday vocabulary and includes a minor grammatical error, with no signs of AI-specific jargon or polished, essayistic phrasing."
+},
+"gemini-2.5-flash|8f172e06|6c2b4e0c883844b7": {
+"score": 15,
+"explanation": "The description uses plain, direct language, includes a lay estimate (\"a bit darker\"), and has minor mechanical imperfections like inconsistent capitalization, all pointing to a genuine participant."
+},
+"gemini-2.5-flash|8f172e06|ae0470091cd569e7": {
+"score": 10,
+"explanation": "The text uses plain, descriptive language, includes several lay estimates of size and distance, and employs hedging phrases like \"looks like\" and \"appears to be\"."
+},
+"gemini-2.5-flash|8f172e06|30c4caecc0b0eec7": {
+"score": 15,
+"explanation": "The text uses plain, descriptive language with minor grammatical imperfections and includes human-like observations such as \"what looks like\" and \"it appears to be\"."
+},
+"gemini-2.5-flash|8f172e06|f2b5f5727d3203c9": {
+"score": 15,
+"explanation": "The text uses plain, everyday language, includes lay comparative estimates like \"one foot high by eight foot hexagonal\" and \"40'x40'\", and features human-like hedging such as \"what looks like\" and \"it appears to be\"."
+},
+"gemini-2.5-flash|8f172e06|b00161673270bd74": {
+"score": 15,
+"explanation": "The text uses plain, direct language with simple sentence structures and a minor capitalization error, lacking any polished prose, technical jargon, or chatbot framing."
+},
+"gemini-2.5-flash|8f172e06|81a971f2e0a36dc9": {
+"score": 20,
+"explanation": "The text uses plain, descriptive language and casual counting without any AI-specific jargon, polished prose, or chatbot framing, suggesting a genuine participant."
+},
+"gemini-2.5-flash|8f172e06|a457d4f2abfe19a6": {
+"score": 15,
+"explanation": "The text uses plain, direct language with simple sentence structures, includes a minor typo (\"boarder\" instead of \"border\"), and lacks any polished phrasing or technical jargon associated with AI-generated text."
+},
+"gemini-2.5-flash|8f172e06|8a7a17777382fd5d": {
+"score": 10,
+"explanation": "The text exhibits several typos, lay estimates, and casual counting, which strongly indicate a human participant rather than copied AI text."
+},
+"gemini-2.5-flash|8f172e06|eec8eb50dfbacae7": {
+"score": 10,
+"explanation": "The text contains numerous typos, grammatical errors, lay estimates, and direct clarifications/corrections, all of which are strong indicators of human authorship."
+},
+"gemini-2.5-flash|8f172e06|74531e7104d9f64e": {
+"score": 10,
+"explanation": "The text contains several typos, inconsistent capitalization, lay estimates, and a distinct second paragraph with direct instructions and corrections aimed at the image generator, all strongly indicating a human participant."
+},
+"gemini-2.5-flash|8f172e06|c75e3b86ece5b515": {
+"score": 10,
+"explanation": "The description uses plain, everyday vocabulary and lacks any polished phrasing, technical jargon, or chatbot-like framing that would suggest AI generation."
+},
+"gemini-2.5-flash|8f172e06|797a6d996fc131ff": {
+"score": 10,
+"explanation": "The text includes a casual observation about image quality, reasoning aloud about a missing table, and a minor grammatical slip, all pointing to a human participant."
+},
+"gemini-2.5-flash|8f172e06|4b2b0c3fbbd9a305": {
+"score": 10,
+"explanation": "The text includes casual meta-commentary about image quality and reasoning aloud about the table arrangement, strongly indicating a human participant."
+},
+"gemini-2.5-flash|8f172e06|51fc528d129db7a2": {
+"score": 15,
+"explanation": "The text uses plain, everyday language to describe objects and their positions, with no signs of AI-specific jargon, polished prose, or chatbot framing."
+},
+"gemini-2.5-flash|8f172e06|eb285536fca3a248": {
+"score": 65,
+"explanation": "The text exhibits sustained grammatical perfection and a complex, precise description of the carpet pattern, with only one minor instance of hedging and no other typical humanizing cues or imperfections."
+},
+"gemini-2.5-flash|8f172e06|a545837d1c2ad22b": {
+"score": 25,
+"explanation": "The text uses plain, everyday vocabulary with some hedging and lay estimates, and lacks any AI-specific jargon or polished, essayistic register."
+},
+"gemini-2.5-flash|8f172e06|52eb5f2170def26d": {
+"score": 15,
+"explanation": "The text uses plain, everyday vocabulary and direct descriptive phrasing without any AI-specific jargon, chatbot boilerplate, or overly polished language, strongly suggesting a human participant."
+},
+"gemini-2.5-flash|8f172e06|7b6d0b8fde46c2c6": {
+"score": 10,
+"explanation": "The text contains a clear grammatical error, a likely typo, and uses second-person phrasing and lay estimates, all pointing strongly to a human participant."
+},
+"gemini-2.5-flash|8f172e06|4da7598e21d5c7c0": {
+"score": 15,
+"explanation": "The text contains a clear grammatical error (\"quite and thicker\"), uses second-person phrasing (\"you'd expect\"), and includes lay estimates (\"halfway down\"), all indicating a human participant."
+},
+"gemini-2.5-flash|8f172e06|107ab552db889ed8": {
+"score": 15,
+"explanation": "The text uses plain, everyday vocabulary and direct descriptive phrasing like \"one of those frames that extends in a cube shape around it,\" with no AI-specific jargon or polished, essayistic register."
+},
+"gemini-2.5-flash|8f172e06|59ff66429163a792": {
+"score": 30,
+"explanation": "The text uses plain, descriptive language with some casual phrasing like \"one of those frames\" and a slight uncertainty (\"dresser or wardrobe\"), lacking any AI-specific jargon or overly polished register."
+},
+"gemini-2.5-flash|8f172e06|3f4829da2f13ed3f": {
+"score": 15,
+"explanation": "The text contains a typo (\"onles\"), some grammatical awkwardness, and a slight hesitation (\"dresser or wardrobe\"), all of which point to a human participant rather than copied AI text."
+},
+"gemini-2.5-flash|8f172e06|5e68cb34dc07eccf": {
+"score": 40,
+"explanation": "The text uses plain, descriptive language and contains a clear mechanical imperfection (\"betweeen\"), which strongly suggests human authorship, despite the absence of first-person references or hedging."
+},
+"gemini-2.5-flash|8f172e06|66b8e4dae91efbe0": {
+"score": 15,
+"explanation": "The presence of a typo (\"betweeen\") and a lay estimate (\"a few yards long\") strongly suggests human authorship, despite the detailed and well-structured description."
+},
+"gemini-2.5-flash|8f172e06|44dbe7ab9758c391": {
+"score": 20,
+"explanation": "The text contains a clear typo (\"betweeen\") and a lay estimate (\"a few yards long\"), which strongly suggest human authorship despite the detailed description."
+},
+"gemini-2.5-flash|8f172e06|81013ddb2fbd36de": {
+"score": 10,
+"explanation": "The text uses plain, everyday vocabulary to directly list desired elements for the image, without any AI-specific jargon, polished prose, or chatbot framing."
+},
+"gemini-2.5-flash|8f172e06|23a27b5e06af00dd": {
+"score": 20,
+"explanation": "The prompt uses plain, everyday vocabulary and direct descriptive language without any AI-specific jargon, polished prose, or chatbot framing, suggesting a human participant providing instructions."
+},
+"gemini-2.5-flash|8f172e06|2b8fbaf6874e7d10": {
+"score": 15,
+"explanation": "The prompt uses plain, everyday language, includes lay estimates like 'large family' and 'medium sized', and directly instructs the image generator with phrases like 'There is no...' and 'The image should be...'."
+},
+"gemini-2.5-flash|8f172e06|a1e458f19f5442cc": {
+"score": 20,
+"explanation": "The text uses plain, everyday vocabulary and includes a lay comparative estimate (\"almost the entire room\") and casual counting (\"Three large information displays\"), which are strong indicators of a genuine participant."
+},
+"gemini-2.5-flash|8f172e06|67d63b67819953f5": {
+"score": 20,
+"explanation": "The text uses plain, descriptive language, includes a lay estimate (\"almost the entire room\"), and directly addresses the viewer's potential interaction with the scene (\"You are able to walk into this square hole\"), all of which point to a genuine participant."
+},
+"gemini-2.5-flash|8f172e06|14a782457076ed5f": {
+"score": 20,
+"explanation": "The text contains an incomplete sentence and a grammatical error, along with lay estimates, which strongly suggest human authorship rather than copied AI text."
+},
+"gemini-2.5-flash|8f172e06|b9fef283bde504a9": {
+"score": 25,
+"explanation": "The text uses plain, direct language with no AI-specific jargon, polished phrasing, or chatbot boilerplate, despite its brevity and clean presentation."
+},
+"gemini-2.5-flash|8f172e06|de9e60b6b066cda0": {
+"score": 15,
+"explanation": "The description uses plain, everyday language and simple framing instructions without any technical jargon, polished phrasing, or chatbot boilerplate."
+},
+"gemini-2.5-flash|8f172e06|11103447b9985ce8": {
+"score": 15,
+"explanation": "The prompt uses plain, everyday language and simple descriptive phrases like \"it takes up most of the frame\" without any technical jargon, polished register, or chatbot boilerplate."
+}
+}
