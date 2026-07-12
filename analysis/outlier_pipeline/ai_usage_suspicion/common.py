@@ -24,9 +24,13 @@ MIN_AGREEMENT = 2       # exclude a prompt when at least this many of 3 judges f
 # appear once you fill in a verified rate for that provider.
 PRICES: dict[str, tuple[float | None, float | None]] = {
     "claude-haiku-4-5": (1.00, 5.00),
+    "claude-sonnet-5": (3.00, 15.00),   # TODO: verify current Anthropic pricing
     "gpt-5.4-mini": (0.75, 4.50),       # current OpenAI pricing
+    "gpt-5.5": (None, None),             # TODO: set from current OpenAI pricing
     "gpt-5.4-nano": (0.20, 1.25),       # TODO: set from current OpenAI pricing
     "gemini-2.5-flash": (0.30, 2.50),   # TODO: set from current Gemini pricing
+    "gemini-3.1-pro": (None, None),     # TODO: set from current Gemini pricing
+    "gemini-3.5-flash": (None, None),   # TODO: set from current Gemini pricing (current judge model)
 }
 
 

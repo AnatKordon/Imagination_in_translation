@@ -10,7 +10,7 @@ try:
 except ImportError:  # running as a plain script from inside this folder
     import common
 
-DEFAULT_MODEL = "claude-haiku-4-5"
+DEFAULT_MODEL = "claude-sonnet-5" # instead of claude-haiku-4.5
 
 
 def score_prompt(
@@ -21,7 +21,7 @@ def score_prompt(
 ) -> common.PromptSuspicionResult:
     response = client.messages.parse(
         model=model,
-        max_tokens=256,
+        max_tokens=1024,  # 256 truncated sonnet-5's JSON mid-string -> parse failures
         system=common.SYSTEM_PROMPT,
         messages=[{"role": "user", "content": common.USER_TEMPLATE.format(prompt=prompt)}],
         output_format=common.PromptSuspicionResult,

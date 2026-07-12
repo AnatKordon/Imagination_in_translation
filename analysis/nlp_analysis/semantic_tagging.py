@@ -36,7 +36,7 @@ OUT_PATH = PROCESSED_DIR / "nlp_analysis" / "trials_final_semantic_tags.csv"
 OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 # ── Default model for the full run ────────────────────────────────────────────
-DEFAULT_MODEL = "gpt-5.5" # valid: gpt-5.4-mini (fast/cheap) or gpt-5.5 (best) - after experimenting with 3 models.
+DEFAULT_MODEL = "gpt-5.4-mini" # note: I will use gpt-5.5 for final run. valid: gpt-5.4-mini (fast/cheap) or gpt-5.5 (best) - after experimenting with 3 models.
 
 # ── Resumable full run ────────────────────────────────────────────────────────
 # The full run (RUN_EXPERIMENT = False) is resumable: rows already present in
