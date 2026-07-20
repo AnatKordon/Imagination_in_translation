@@ -10,7 +10,7 @@ try:
 except ImportError:  # running as a plain script from inside this folder
     import common
 
-DEFAULT_MODEL = "claude-sonnet-5" # instead of claude-haiku-4.5
+DEFAULT_MODEL = "claude-haiku-4-5" # claude-haiku-4-5, or better claude-sonnet-5
 
 
 def score_prompt(

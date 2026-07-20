@@ -32,21 +32,35 @@ FILENAMES:
   summary_by_uid: summary_by_uid.csv
   trials_final: trials_final.csv          # analysis df, no visual similarity
   trials_final_sim: trials_final_sim.csv  # analysis df + visual similarity
+  # Offline-gen conditions (nogen, plain) only: post-exclusion rows whose `gen`
+  # column is still the placeholder. It is the hand-off between the outlier
+  # pipeline and generate_images_by_prompt.py, which turns it into trials_final.
+  # Never analysed directly — notebooks always read trials_final.
+  trials_final_pregen: trials_final_pregen.csv
 
 # 3 generation types x 3 memory tasks = 9 conditions.
 #   generation: aigen (AI image gen) | nogen (no AI, text feedback) | plain (baseline, single attempt)
 #   task:       perception | immediate | delay
 #   feedback:   image | text | none
+#   attempts:   descriptions per session the design asks for. aigen/nogen iterate
+#               3 times on feedback; plain has no feedback loop, so 1 is complete.
+#   images:     whether a complete participant folder must contain saved images
+#               at outlier-processing time. Only aigen saves them during the
+#               session. plain shows no generated image at all; nogen's images
+#               are generated post-hoc, AFTER the outlier pipeline runs, so a
+#               freshly collected nogen folder legitimately has none yet.
+# The outlier pipeline reads `attempts` and `images` (via config.spec_for) instead
+# of assuming the aigen layout — see outlier_pipeline/README.md.
 CONDITIONS:
-  aigen_perc: {generation: aigen, task: perception, feedback: image}
-  aigen_imm:  {generation: aigen, task: immediate,  feedback: image}
-  aigen_del:  {generation: aigen, task: delay,      feedback: image}
-  nogen_perc: {generation: nogen, task: perception, feedback: text}
-  nogen_imm:  {generation: nogen, task: immediate,  feedback: text}
-  nogen_del:  {generation: nogen, task: delay,      feedback: text}
-  plain_perc: {generation: plain, task: perception, feedback: none}
-  plain_imm:  {generation: plain, task: immediate,  feedback: none}
-  plain_del:  {generation: plain, task: delay,      feedback: none}
+  aigen_perc: {generation: aigen, task: perception, feedback: image, attempts: 3, images: true}
+  aigen_imm:  {generation: aigen, task: immediate,  feedback: image, attempts: 3, images: true}
+  aigen_del:  {generation: aigen, task: delay,      feedback: image, attempts: 3, images: true}
+  nogen_perc: {generation: nogen, task: perception, feedback: text,  attempts: 3, images: false}
+  nogen_imm:  {generation: nogen, task: immediate,  feedback: text,  attempts: 3, images: false}
+  nogen_del:  {generation: nogen, task: delay,      feedback: text,  attempts: 3, images: false}
+  plain_perc: {generation: plain, task: perception, feedback: none,  attempts: 1, images: false}
+  plain_imm:  {generation: plain, task: immediate,  feedback: none,  attempts: 1, images: false}
+  plain_del:  {generation: plain, task: delay,      feedback: none,  attempts: 1, images: false}
 
 # =====================================================================
 # Frozen pilots. Names are messy and inconsistent on purpose (left as-is).

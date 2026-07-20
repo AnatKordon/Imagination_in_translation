@@ -10,7 +10,7 @@ try:
 except ImportError:  # running as a plain script from inside this folder
     import common
 
-DEFAULT_MODEL = "gpt-5.5" # instead of gpt-5.4
+DEFAULT_MODEL = "gpt-5.4-mini" # instead of gpt-5.4-mini or gpt-5.5
 
 
 def score_prompt(

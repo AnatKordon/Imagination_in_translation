@@ -56,7 +56,7 @@ def run_condition(condition: str) -> pd.DataFrame:
     Returns the filtered trials_final DataFrame.
     """
     paths = config.paths_for(condition)
-    is_del = config.mapping_data["CONDITIONS"][condition]["task"] == "delay"
+    spec = config.spec_for(condition)
 
     trials_path = paths.processed_dir / "all_trials.csv"
     if not trials_path.exists():
@@ -68,7 +68,7 @@ def run_condition(condition: str) -> pd.DataFrame:
     outliers_dir.mkdir(parents=True, exist_ok=True)
 
     digit_span_pass_fail = None
-    if is_del:
+    if spec.is_del:
         digit_span_path = paths.processed_dir / "all_digit_span.csv"
         if digit_span_path.exists():
             digit_span_df = pd.read_csv(digit_span_path)
@@ -76,7 +76,9 @@ def run_condition(condition: str) -> pd.DataFrame:
 
     ai_flags = _load_ai_flags(outliers_dir)
 
-    sessions = session_table(trials_df, digit_span_pass_fail, ai_flags)
+    sessions = session_table(
+        trials_df, digit_span_pass_fail, ai_flags, required_attempts=spec.attempts
+    )
     participants = participant_table(
         sessions,
         has_digit_span=digit_span_pass_fail is not None,
@@ -86,7 +88,16 @@ def run_condition(condition: str) -> pd.DataFrame:
 
     sessions.to_csv(outliers_dir / "exclusion_report_sessions.csv", index=False)
     participants.to_csv(outliers_dir / "exclusion_report_participants.csv", index=False)
-    trials_final.to_csv(paths.csv("trials_final"), index=False)
+
+    # aigen already carries real image filenames, so this IS the analysis table.
+    # For offline-gen conditions the gen column is still a placeholder here: write
+    # the pregen hand-off instead and let generate_images_by_prompt.py produce
+    # trials_final once the PNGs exist.
+    out_key = "trials_final_pregen" if spec.offline_gen else "trials_final"
+    trials_final.to_csv(paths.csv(out_key), index=False)
+    if spec.offline_gen:
+        print(f"[{condition}] wrote {paths.csv(out_key).name} — run "
+              f"analysis/generate_images_by_prompt.py {condition} to build trials_final.csv")
 
     _print_summary(condition, trials_df, trials_final, sessions, participants)
 

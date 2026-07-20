@@ -34,19 +34,19 @@ def run_condition(condition: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     analysis_dir as outlier_report_summary.csv / outlier_report_participants.csv.
     """
     paths = config.paths_for(condition)
-    is_del = config.mapping_data["CONDITIONS"][condition]["task"] == "delay"
+    spec = config.spec_for(condition)
 
     pdir = paths.participants_dir
     rows = []
     if pdir is not None and pdir.exists():
         for comp_result_dir in sorted(pdir.glob("study_result_*/comp-result_*")):
-            result = classify_participant(comp_result_dir, is_del)
+            result = classify_participant(comp_result_dir, spec.is_del, expect_images=spec.images)
             session_info = {"full_sessions": 0, "total_rows": 0, "max_session": 0}
             uid = None
             trials_csv = result["files_dir"] / "trials.csv"
             if trials_csv.exists():
                 uid = _read_uid(result["files_dir"])
-                per_uid = full_sessions_for(trials_csv)
+                per_uid = full_sessions_for(trials_csv, required_attempts=spec.attempts)
                 if uid in per_uid:
                     session_info = per_uid[uid]
                 elif per_uid:

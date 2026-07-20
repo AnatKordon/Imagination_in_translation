@@ -1,5 +1,6 @@
 """Session- and participant-level usability, combining structural completeness
-(3 attempts per session) with quality gates (short answers, digit-span performance).
+(the condition's expected attempts per session) with quality gates (short answers,
+digit-span performance).
 """
 import pandas as pd
 
@@ -13,9 +14,13 @@ def session_table(
     trials_df: pd.DataFrame,
     digit_span_pass_fail: pd.DataFrame | None = None,
     ai_flags: pd.DataFrame | None = None,
+    required_attempts: int = REQUIRED_ATTEMPTS,
 ) -> pd.DataFrame:
     """One row per (uid, session): attempts_present, is_full_session, is_short_session,
     is_digitspan_failed, is_ai_session, usable.
+
+    required_attempts: attempts a session needs to be structurally complete, from the
+    condition's `attempts` in condition_maps.yaml (3 for aigen/nogen, 1 for plain).
 
     ai_flags: optional per-trial frame with [uid, session, attempt, ai_suspected]
     (from ai_usage_suspicion consensus). A session is AI-suspected when ANY of its
@@ -33,7 +38,7 @@ def session_table(
         )
         .reset_index()
     )
-    sessions["is_full_session"] = sessions["attempts_present"] == REQUIRED_ATTEMPTS
+    sessions["is_full_session"] = sessions["attempts_present"] == required_attempts
 
     if digit_span_pass_fail is not None:
         merged = sessions.merge(

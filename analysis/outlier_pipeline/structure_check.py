@@ -15,14 +15,21 @@ def _has_images(files_dir: Path) -> bool:
     return files_dir.exists() and any(p.suffix.lower() in IMAGE_SUFFIXES for p in files_dir.iterdir())
 
 
-def classify_participant(comp_result_dir: Path, is_del: bool) -> dict:
-    """Classify one comp-result folder, reconstructing CSVs from data.txt if needed."""
+def classify_participant(comp_result_dir: Path, is_del: bool, expect_images: bool = True) -> dict:
+    """Classify one comp-result folder, reconstructing CSVs from data.txt if needed.
+
+    expect_images=False for conditions that save no images (plain, which shows no
+    generated feedback): completeness is then decided by the required CSVs alone.
+    """
     required = _required_files(is_del)
     files_dir = comp_result_dir / "files"
     missing = [f for f in required if not (files_dir / f).exists()]
     reconstructed: set[str] = set()
 
-    if not missing and _has_images(files_dir):
+    def _complete() -> bool:
+        return not missing and (not expect_images or _has_images(files_dir))
+
+    if _complete():
         status = "full"
     else:
         data_txt = comp_result_dir / "data.txt"
@@ -36,7 +43,7 @@ def classify_participant(comp_result_dir: Path, is_del: bool) -> dict:
                 if TYPE_TO_CSV.get(t) and (files_dir / TYPE_TO_CSV[t]).exists()
             }
             missing = [f for f in required if not (files_dir / f).exists()]
-            if not missing and _has_images(files_dir):
+            if _complete():
                 status = "full"
             elif (files_dir / "trials.csv").exists():
                 status = "partial"

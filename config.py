@@ -50,6 +50,48 @@ class Paths:
         return self.processed_dir / FILES[key]
 
 
+@dataclass
+class Spec:
+    """What one condition's data is expected to look like, from condition_maps.yaml.
+
+    The outlier pipeline branches on these instead of assuming the aigen layout:
+    plain has no feedback loop (1 attempt per session) and saves no images.
+    """
+    condition: str
+    generation: str
+    task: str
+    feedback: str
+    attempts: int      # attempts per session for the session to count as complete
+    images: bool       # whether a complete participant folder must contain images
+
+    @property
+    def is_del(self) -> bool:
+        return self.task == "delay"
+
+    @property
+    def offline_gen(self) -> bool:
+        """True when the images are generated post-hoc by generate_images_by_prompt.py
+        (nogen, plain) rather than online during the session (aigen). For these the
+        outlier pipeline stops at trials_final_pregen and the gen step writes
+        trials_final."""
+        return self.generation != "aigen"
+
+
+def spec_for(condition: str) -> Spec:
+    """Expectations for a Full_experiment condition slug. Defaults (3 attempts,
+    images required) match the aigen/nogen designs, so a condition that predates
+    these keys behaves exactly as before."""
+    cm = mapping_data["CONDITIONS"][condition]
+    return Spec(
+        condition=condition,
+        generation=cm["generation"],
+        task=cm["task"],
+        feedback=cm["feedback"],
+        attempts=int(cm.get("attempts", 3)),
+        images=bool(cm.get("images", True)),
+    )
+
+
 def paths_for(condition: str) -> Paths:
     """Build all paths for any Full_experiment condition slug ('<gen>_<task>')."""
     gen, task = condition.split("_")          # "aigen_perc" -> "aigen", "perc"

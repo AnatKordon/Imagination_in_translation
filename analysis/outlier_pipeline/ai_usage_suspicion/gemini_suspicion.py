@@ -11,7 +11,7 @@ try:
 except ImportError:  # running as a plain script from inside this folder
     import common
 
-DEFAULT_MODEL = "gemini-3.5-flash" # instead of gemini-2.5-flash
+DEFAULT_MODEL = "gemini-2.5-flash" # instead of gemini-2.5-flash or gemini-3.5-flash
 SEED = 42
 
 

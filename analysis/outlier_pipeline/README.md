@@ -23,7 +23,10 @@ suspicion). Everything is keyed by a condition slug (e.g. `aigen_perc`,
 Walks every `study_result_*/comp-result_*` folder and classifies it
 **full / partial / unusable** based on required files (`participants.csv`,
 `trials.csv`, plus `digit_span.csv` for delay conditions) and the presence of
-images. Reconstruction from `data.txt` is a **fallback only**: it is attempted
+images. The image requirement applies only to conditions declared `images: true`
+(aigen only — plain saves no images and nogen's are generated post-hoc; see
+*Per-condition expectations* below).
+Reconstruction from `data.txt` is a **fallback only**: it is attempted
 only when required CSVs are missing AND a `data.txt` exists in that folder
 (it is a raw concatenation of JSON objects — no separators — parsed with
 `json.JSONDecoder.raw_decode` in a loop). Folders whose CSVs are present are
@@ -74,7 +77,7 @@ Builds a per-session gate table and keeps only clean data. A session is
 
 | gate | source | rule |
 |---|---|---|
-| `is_full_session` | `session_summary.py` | has all `REQUIRED_ATTEMPTS = 3` attempts |
+| `is_full_session` | `session_summary.py` | has all of the condition's expected attempts (`attempts` in `condition_maps.yaml`: 3 for aigen/nogen, 1 for plain) |
 | `is_short_session` | `prompt_quality.py` | no attempt under `MIN_WORDS = 8` words |
 | `is_digitspan_failed` | `digit_span_metrics.py` (delay conditions only) | session recall `exact_match_mean >= 0.15` over `>= 15` tries; missing record = failed |
 | `is_ai_session` | `outliers/ai_usage/ai_suspicion_scores.csv` | no attempt with `ai_suspected` — **one flagged attempt drops the whole session (all 3 attempts)** |
@@ -113,7 +116,15 @@ The AI gate is **optional-input**: if `ai_suspicion_scores.csv` doesn't exist,
 (same pattern as digit-span for non-delay conditions). Free and idempotent —
 rerun any time.
 
-Writes: `trials_final.csv` (processed_data),
+**Where the kept rows land depends on the condition.** aigen already has real
+image filenames in `gen`, so this step writes `trials_final.csv` directly. For
+the offline-gen conditions (nogen, plain) `gen` is still a placeholder here, so
+the step writes **`trials_final_pregen.csv`** instead; running
+`analysis/generate_images_by_prompt.py <condition>` then generates a PNG per kept
+row and writes `trials_final.csv` = pregen + real filenames. Analysis code always
+reads `trials_final.csv`, so it never sees a placeholder `gen`.
+
+Writes: `trials_final.csv` (or `trials_final_pregen.csv`, above; processed_data),
 `outliers/exclusion_report_sessions.csv` (every session, every gate column,
 `usable`), `outliers/exclusion_report_participants.csv` (per uid: sessions
 passing each gate — `full_sessions_structural`, `good_wordcount_sessions`,
@@ -141,11 +152,34 @@ Typical order for a new/updated condition:
 build shows the impact per gate:
 `sessions usable: N/M (full=..., short_answer_dropped=..., digitspan_dropped=..., ai_dropped=...)`.
 
+## Per-condition expectations (`condition_maps.yaml` -> `config.spec_for`)
+
+Not every condition has the aigen shape. Two fields per condition drive the
+pipeline, so nothing hardcodes a generation name:
+
+| field | aigen | nogen | plain | what it changes |
+|---|---|---|---|---|
+| `attempts` | 3 | 3 | **1** | attempts a session needs to be `is_full_session` (stage 1 + stage 4). Plain has no feedback loop, so one description *is* a complete session. |
+| `images` | true | **false** | **false** | whether `structure_check` requires images for `full` status. |
+
+Only **aigen** saves images during the session, so only aigen can require them.
+**plain** shows no generated image at all. **nogen**'s images are generated
+*post-hoc, after* the outlier pipeline runs, so newly collected nogen folders
+legitimately arrive with none — requiring them would mark every new participant
+unusable. Existing nogen folders that already have images are unaffected:
+`images: false` drops the requirement, it does not reject images that are there.
+
+`config.spec_for(slug)` returns these (plus `generation`/`task`/`feedback` and
+`is_del`); `report.py` and `build_trials_final.py` thread them into
+`classify_participant(expect_images=...)` and
+`session_table(required_attempts=...)`. Both default to the aigen values (3,
+images required), so a condition that omits the keys behaves as before.
+
 ## Constants worth knowing
 
 | constant | value | where |
 |---|---|---|
-| `REQUIRED_ATTEMPTS` | 3 | `session_summary.py` |
+| `REQUIRED_ATTEMPTS` | 3 (default; overridden per condition by `attempts`) | `session_summary.py` |
 | `MIN_WORDS` | 8 | `prompt_quality.py` |
 | `MIN_ACCURACY`, `MIN_TRIALS` | 0.15, 15 | `digit_span_metrics.py` |
 | `THRESHOLD`, `MIN_AGREEMENT` | 80, 2-of-3 | `ai_usage_suspicion/common.py` |

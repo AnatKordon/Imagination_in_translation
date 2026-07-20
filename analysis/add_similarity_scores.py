@@ -65,14 +65,21 @@ if __name__ == "__main__":
     vgg_fc7_scaled_similarities = []
 
     token_nums = []
+    # gen CLIP embedding per row (aligned to df.index) so we can compute
+    # consecutive-attempt self-similarity after the loop, even when GT is missing.
+    gen_clip_embeds = {}
     for idx, row in df.iterrows():
         # path for gt and gen per row
         gt_name = pick_gt_name(row)
-        
+
         gen_path = path_from_row_jatos(row, paths.participants_dir) # in the function it knows to use the 'gen' row and turn it into a full path (Previously I used function: path_from_row that worked but failed for shuffled data as it can't be reconstructed)
         #extract prompt earlier
         prompt_clip_embed, token_num = get_clip_text_embedding(row['prompt']) # Note that for prompts longer than 77 words it is truncated
         token_nums.append(token_num)
+
+        # gen visual embedding computed for every row (needed for self-similarity below)
+        gen__clip_embed = get_clip_visual_embedding(gen_path)
+        gen_clip_embeds[idx] = gen__clip_embed
 
         #handle missing GT case: if no GT, we can't compute similarity, so we can either skip or assign a default value (e.g., NaN)
         if gt_name is None:
@@ -86,9 +93,8 @@ if __name__ == "__main__":
 
 
         gt__clip_embed = get_clip_visual_embedding(gt_path)
-        gen__clip_embed = get_clip_visual_embedding(gen_path)
-        
-        
+
+
         # Compute cosine similarity for images
         _, _, clip_cosine_distance = compute_similarity_score(gt__clip_embed, gen__clip_embed)
         clip_distances.append(clip_cosine_distance)
@@ -115,7 +121,23 @@ if __name__ == "__main__":
         # add logging for distance score (not the simialrity we show the user - UserID, SessionID, Iteration, cosine_distance)
         vgg_fc7_distances.append(vgg_fc7_distance)
 
+    # Consecutive-attempt self-similarity: CLIP cosine similarity between a
+    # participant's gen image at attempt n-1 and attempt n, within the same
+    # (uid, gt) target. Stored on the *later* attempt; the first attempt of each
+    # target has no predecessor and stays NaN. Measures refinement/convergence
+    # across attempts (a similarity, already in [-1, 1] like clip_vis_text_similarity).
+    self_prev_sims = pd.Series(pd.NA, index=df.index, dtype="object")
+    for _, sub in df.groupby(["uid", "gt"], sort=False):
+        prev_idx = None
+        for idx in sub.sort_values("attempt").index:
+            cur = gen_clip_embeds.get(idx)
+            prev = gen_clip_embeds.get(prev_idx) if prev_idx is not None else None
+            if cur is not None and prev is not None:
+                self_prev_sims[idx] = cosine_similarity(prev, cur)
+            prev_idx = idx
+
     #append to csv
+    df["clip_self_prev_similarity"] = self_prev_sims
     df["clip_cosine_distance"] = clip_distances
     # df["clip_scaled_similarity"] = clip_scaled_similarities
 
