@@ -128,6 +128,23 @@ def run_consensus(condition: str, limit: int | None = None) -> pd.DataFrame:
         scored = _score_unique(unique, prefix, module, make_client(), limit, acc, cache, out_dir)
         print(f"[{condition}] judge {i}/{len(JUDGES)}: {prefix} done "
               f"({acc.calls} API calls, {len(unique) - acc.calls} from cache)", flush=True)
+
+        # score_dataframe swallows per-row exceptions as pd.NA, so a judge that fails on
+        # EVERY prompt still produces a clean-looking run — that silently turned the
+        # 2-of-3 vote into 2-of-2 for the whole nogen group once. Never again.
+        n_scored = int(scored[f"{prefix}_score"].notna().sum())
+        expected = len(unique) if limit is None else min(limit, len(unique))
+        if n_scored == 0:
+            raise RuntimeError(
+                f"[{condition}] judge '{prefix}' ({module.DEFAULT_MODEL}) scored 0/{expected} "
+                f"prompts — every call failed (bad model id, missing API key, no credit?). "
+                f"Refusing to write a {len(JUDGES) - 1}-judge consensus."
+            )
+        if n_scored < expected:
+            print(f"⚠️  [{condition}] judge '{prefix}' ({module.DEFAULT_MODEL}) scored only "
+                  f"{n_scored}/{expected} prompts — the rest count as un-flagged, weakening "
+                  f"the {common.MIN_AGREEMENT}-of-{len(JUDGES)} vote on those rows.", flush=True)
+
         merged = merged.merge(scored, on="prompt", how="left")
 
     common.print_usage_report(usage_by_model)

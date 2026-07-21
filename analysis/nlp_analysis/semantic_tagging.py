@@ -52,7 +52,7 @@ DEFAULT_MODEL = "gpt-5.5" # note: I am using gpt-5.5 for final run after many ex
 # later); leave None to tag all remaining rows.
 KEY_COLS = ["uid", "session", "attempt"]
 CHECKPOINT_EVERY = 25
-MAX_NEW_ROWS = 5 # limit new rows for testing
+MAX_NEW_ROWS = None # limit new rows for testing
 
 # ── Model experiment: try several models on the SAME small random sample ──────
 # When RUN_EXPERIMENT is True the full output above is NOT written. Instead we
