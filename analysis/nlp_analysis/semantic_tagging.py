@@ -29,15 +29,19 @@ anthropic_client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 from config import PROCESSED_DIR
 
-df = pd.read_csv(PROCESSED_DIR / config.FILES["trials_final"]).copy()
-# df = pd.read_csv("/mnt/hdd/anatkorol/Imagination_in_translation/Data/processed_data/wilmas_drawings_2019/delayed_memory_drawing_descriptions.csv").copy()
-# df = df[df['gt_corrected'].notna()]
-print(f"Number of rows to process: {len(df)}")
-#change the "description column to "prompt" for consistency with the function
-# df.rename(columns={"description": "prompt"}, inplace=True)
-# save new df:
+# Only used by RUN_EXPERIMENT (the model-comparison sample). Loaded lazily so that
+# importing this module (e.g. from gpt_image_desc_api.py, to reuse extract_semantics)
+# never reads a CSV or spends tokens.
+def load_default_df() -> pd.DataFrame:
+    df = pd.read_csv(PROCESSED_DIR / config.FILES["trials_final"]).copy()
+    # df = pd.read_csv("/mnt/hdd/.../delayed_memory_drawing_descriptions.csv").copy()
+    # df = df[df['gt_corrected'].notna()]
+    print(f"Number of rows to process: {len(df)}")
+    #change the "description column to "prompt" for consistency with the function
+    # df.rename(columns={"description": "prompt"}, inplace=True)
+    return df
+
 OUT_PATH = PROCESSED_DIR / "nlp_analysis" / "trials_final_semantic_tags.csv"
-OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 # ── Default model for the full run ────────────────────────────────────────────
 DEFAULT_MODEL = "gpt-5.5" # note: I am using gpt-5.5 for final run after many experimentations as it adheres better. valid: gpt-5.4-mini (fast/cheap) or gpt-5.5 (best) - after experimenting with 3 models.
@@ -610,23 +614,29 @@ def run_full_for_condition(condition: str, model: str = DEFAULT_MODEL) -> None:
     print(f"Saved tagged data to {out_path}")
 
 
-if RUN_EXPERIMENT:
-    EXPERIMENT_DIR.mkdir(parents=True, exist_ok=True)
-    sample = df.sample(n=min(EXPERIMENT_N, len(df)), random_state=EXPERIMENT_SEED)
-    print(f"Experiment: tagging {len(sample)} shared rows with {len(EXPERIMENT_MODELS)} model(s)")
+def main() -> None:
+    if RUN_EXPERIMENT:
+        EXPERIMENT_DIR.mkdir(parents=True, exist_ok=True)
+        df = load_default_df()
+        sample = df.sample(n=min(EXPERIMENT_N, len(df)), random_state=EXPERIMENT_SEED)
+        print(f"Experiment: tagging {len(sample)} shared rows with {len(EXPERIMENT_MODELS)} model(s)")
 
-    # Tag each model in memory; we only persist the by-field comparison, not per-model CSVs.
-    frames = {model: tag_dataframe(sample, model) for model in EXPERIMENT_MODELS}
-    print_usage_costs()
+        # Tag each model in memory; we only persist the by-field comparison, not per-model CSVs.
+        frames = {model: tag_dataframe(sample, model) for model in EXPERIMENT_MODELS}
+        print_usage_costs()
 
-    sys.path.append(str(Path(__file__).resolve().parent))
-    from compare_model_experiments import build_comparison_df, OUT_PATH as COMPARISON_PATH
-    comparison = build_comparison_df(frames)
-    comparison.to_csv(COMPARISON_PATH, index=False)
-    print(f"Saved {len(comparison)} rows x {comparison.shape[1]} cols to {COMPARISON_PATH}")
-else:
-    conditions = _resolve_conditions(_parse_args().condition)
-    print(f"Full run over {len(conditions)} condition(s): {conditions}")
-    for cond in conditions:
-        run_full_for_condition(cond, DEFAULT_MODEL)
-    print_usage_costs()
+        sys.path.append(str(Path(__file__).resolve().parent))
+        from compare_model_experiments import build_comparison_df, OUT_PATH as COMPARISON_PATH
+        comparison = build_comparison_df(frames)
+        comparison.to_csv(COMPARISON_PATH, index=False)
+        print(f"Saved {len(comparison)} rows x {comparison.shape[1]} cols to {COMPARISON_PATH}")
+    else:
+        conditions = _resolve_conditions(_parse_args().condition)
+        print(f"Full run over {len(conditions)} condition(s): {conditions}")
+        for cond in conditions:
+            run_full_for_condition(cond, DEFAULT_MODEL)
+        print_usage_costs()
+
+
+if __name__ == "__main__":
+    main()
