@@ -26,13 +26,11 @@
 #      OR STATES IT, and never otherwise. What stays banned is the vision model's habit of
 #      editorializing ("a serene, peaceful scene") over any sketch, and any remark about
 #      the drawing as a drawing (skill, medium, strokes, paper).
-#   3. No target leakage, in EITHER direction. The filename encodes the target scene
-#      (e.g. high_lighthouse) and is NEVER shown to the describer, which sees pixels only.
-#      Just as important, the INSTRUCTIONS below must never name a target scene or its
-#      furniture: an example like "if it shows a lighthouse, say a lighthouse" would prime
-#      the describer toward the very scenes we score against. Every example in the prompt
-#      is therefore drawn from outside the 30 SUN categories in this dataset (bicycle,
-#      teapot, ladder). Keep it that way when editing the prompt.
+#   3. The describer sees pixels, plus the scene name when --scene-hint is on (default;
+#      see SCENE HINT below). Nothing else about the target reaches it. The INSTRUCTIONS
+#      must still never name a scene or its furniture — that would prime EVERY drawing,
+#      not just the one whose target it is — so every example in the prompt comes from
+#      outside the 30 SUN categories here (bicycle, teapot, ladder). Keep it that way.
 #   4. Writing on the page ADDS to the drawing. Per the paper's Methods, participants
 #      "were provided a black ballpoint pen and colored pencils and were instructed to
 #      optionally color or label aspects of the image" — labelling and colouring were
@@ -51,7 +49,22 @@
 #      Writing the model cannot confidently read is dropped rather than guessed, because a
 #      misread label becomes an object that was never in the scene (see the OCR note in
 #      transcribe_drawing).
-#   5. Blank / illegible sheets are flagged (`is_blank`), not hallucinated into content.
+#   5. A blank / illegible sheet comes back as an empty `prompt`, not hallucinated into
+#      content, and the tagger scores it as an honest zero.
+#
+# SCENE HINT (--scene-hint, on by default)
+# The describer is told which of our five scenes the participant was drawing ("the
+# participant was asked to draw a living room"). Our verbal participants knew what they
+# were describing; a describer working blind does not, and would systematically lose
+# scene_category and under-read sketchy shapes it cannot place. The hint removes that
+# handicap rather than adding an advantage — it is bounded in the prompt to settling
+# marks that are already there and explicitly barred from adding anything.
+# THE RISK IS REAL AND ONE-DIRECTIONAL: knowing "lighthouse" can only push readings
+# toward objects the GT contains, so it inflates hits and never misses. It cannot be
+# argued away, only measured. `scene_hint_given` records what each row was told, and
+# --no-scene-hint reruns the same drawings blind into a separate CSV, so the hint's
+# effect on object counts is itself an observable quantity. Measure it on a subset
+# before trusting hinted counts in a headline comparison.
 #
 # DATA CAVEAT — the perception folder is contaminated UPSTREAM, not locally
 # perception_drawings/ holds 1051 files: 444 with the `c` prefix and 607 with the `w`
@@ -112,6 +125,7 @@
 #   python analysis/nlp_analysis/drawings_descriptions.py -c draw_perc --all-scenes
 #   python analysis/nlp_analysis/drawings_descriptions.py -c draw_del --reasoning-effort low
 #   python analysis/nlp_analysis/drawings_descriptions.py -c draw_del --limit 5   # smoke test
+#   python analysis/nlp_analysis/drawings_descriptions.py -c draw_del --no-scene-hint
 
 import sys
 from pathlib import Path
@@ -161,6 +175,20 @@ SCENE_MAP = {
     ("lighthouse",     "high"): "lighthouse_h.jpg",
     ("livingroom",     "high"): "living_room_h.jpg",
     ("playground",     "high"): "playground_h.jpg",
+}
+
+# Human-readable form of the filename's scene token, for the scene hint (see SCENE HINT
+# above). Only our five GT scenes are spelled out: the hint exists to match what the
+# verbal participants knew about THESE images, and it is only in these five that a
+# description is ever scored against a GT. A token that is missing here (i.e. any other
+# category, reachable only via --all-scenes) yields no hint, and that drawing is
+# described blind exactly as before.
+SCENE_LABELS = {
+    "bedroom":        "bedroom",
+    "conferenceroom": "conference room",
+    "lighthouse":     "lighthouse",
+    "livingroom":     "living room",
+    "playground":     "playground",
 }
 
 # c14_10_low_street.jpg / w10_11_high_amusementpark.jpg / 10_16_xxxx.jpg
@@ -293,8 +321,27 @@ INSTRUCTIONS = (
     "sparse page gets a short text and a crowded one a longer text.\n\n"
 
     "If the page is blank, or holds nothing beyond stray marks with no identifiable "
-    "content and no legible writing, set is_blank to true and leave the description "
-    "empty.\n\n"
+    "content and no legible writing, leave the description empty. Do not write that the "
+    "page is empty; return an empty string and nothing else.\n\n"
+
+    "HOW SURE ARE YOU\n"
+    "After writing the description, judge how well you were able to read the page, and "
+    "put it in certainty. Use high when you could identify essentially everything and "
+    "nothing was in real doubt; medium when the main content was clear but one or more "
+    "things were a judgement call; low when much of the page defeated you, or a careful "
+    "reader could come away with a substantially different description. Judge only how "
+    "readable the page was. This is never a verdict on the participant, their skill or "
+    "their memory, and a sparse page that is perfectly legible is high.\n\n"
+
+    "In certainty_note, say in a few words what was uncertain, naming the thing and the "
+    "readings you were choosing between, for instance shape at lower right could be a bag "
+    "or a rock. Write nothing else there, and leave it empty when certainty is high and "
+    "nothing was in doubt.\n\n"
+
+    "Your certainty must not change the description. Do not hedge, soften, shorten or pad "
+    "what you write because you are unsure, and never put words like maybe, possibly, "
+    "appears to be or unclear into the description. Settle on your best reading, write it "
+    "plainly, and record the doubt in certainty_note where it belongs.\n\n"
 
     "English only. Output must contain only ASCII letters, digits, spaces, and these "
     "punctuation marks: . , ! ? : ; ' \" - ( ). Do not use any other characters (no "
@@ -302,8 +349,63 @@ INSTRUCTIONS = (
     "bullets). Do not add newlines."
 )
 
-USER_TEXT = "Transcribe this drawing."
+# Inserted immediately before DO NOT INVENT (which is what bounds it) when --scene-hint is
+# on. The hint itself travels per drawing in the user message, not here; this block is only
+# the policy for using it. See SCENE HINT in the header for why it exists and what it risks.
+SCENE_HINT_BLOCK = (
+    "WHAT THE PARTICIPANT WAS ASKED TO DRAW\n"
+    "You are told the kind of scene this participant was drawing. The people whose typed "
+    "descriptions these are compared against knew which scene they were describing, so "
+    "you are told it too.\n\n"
 
+    "It is only a tie-breaker, and it applies to nothing else. Ask first what you would "
+    "call a thing if you had never been told the scene. If you can name it, that name "
+    "stands and the hint changes nothing: do not upgrade it, and never rename a thing "
+    "into something the named scene would contain. Only where you genuinely cannot "
+    "settle between two readings may you let the hint pick the one that belongs to that "
+    "scene. Where the page as a whole plainly shows that kind of place, you may call it "
+    "by that name.\n\n"
+
+    "Writing on the page always outranks the hint. If the participant labelled a thing, "
+    "that is what the thing is, even when the named scene would suggest otherwise, and "
+    "even when they drew or remembered something other than what they were asked for. "
+    "Never move a label onto a different mark to make room for the named scene.\n\n"
+
+    "It licenses nothing by itself. It is not a list of what is on the page, and it is "
+    "never a reason to add anything: do not name a thing because that kind of scene "
+    "usually contains it, and do not report the scene as such unless the marks support "
+    "it. These were drawn from memory, so a page may hold very little, or something quite "
+    "different from what was asked for. When the page does not support the named scene, "
+    "describe what is actually on it and say nothing about the rest. A hint that goes "
+    "unused is a correct outcome, not a failure.\n\n"
+)
+
+
+def build_instructions(scene_hint: bool) -> str:
+    """The describer's instructions, with the scene-hint policy in or out."""
+    if not scene_hint:
+        return INSTRUCTIONS
+    anchor = "DO NOT INVENT\n"
+    assert anchor in INSTRUCTIONS, "DO NOT INVENT section missing; scene-hint anchor is stale"
+    return INSTRUCTIONS.replace(anchor, SCENE_HINT_BLOCK + anchor, 1)
+
+
+def build_user_text(scene_label) -> str:
+    """The per-drawing user message. The scene label is the only thing that varies.
+
+    A drawing whose scene has no label (any category outside our five, i.e. --all-scenes)
+    is described blind, so nothing is ever appended for it.
+    """
+    if not isinstance(scene_label, str) or not scene_label.strip():
+        return "Transcribe this drawing."
+    return f"Transcribe this drawing. The participant was asked to draw a {scene_label}."
+
+# Field ORDER is load-bearing: structured output is generated top to bottom, so each field
+# is written in the context of the ones above it. written_text comes first because the
+# description is supposed to fold legible labels in, and certainty last because it is a
+# judgement ON a finished description — asking for it first would let a low reading talk
+# the describer into a hedged or thinner text, which is exactly the tag loss we cannot
+# afford.
 DRAWING_SCHEMA = {
     "type": "json_schema",
     "name": "drawing_transcription",
@@ -312,11 +414,12 @@ DRAWING_SCHEMA = {
         "type": "object",
         "additionalProperties": False,
         "properties": {
-            "is_blank": {"type": "boolean"},
             "written_text": {"type": "array", "items": {"type": "string"}},
             "description": {"type": "string"},
+            "certainty": {"type": "string", "enum": ["high", "medium", "low"]},
+            "certainty_note": {"type": "string"},
         },
-        "required": ["is_blank", "written_text", "description"],
+        "required": ["written_text", "description", "certainty", "certainty_note"],
     },
 }
 
@@ -373,6 +476,7 @@ def collect_drawings(condition: str, all_scenes: bool = False) -> list[dict]:
             "condition": condition,
             "task": spec["task"],
             "scene": parsed["scene"],
+            "scene_label": SCENE_LABELS.get(parsed["scene"], pd.NA),
             "sun_half": parsed["sun"],
             "trial_index": int(parsed["trial"]),
             "original_name": path.name,
@@ -403,19 +507,21 @@ def encode_image_to_base64(image_path: Path) -> str:
 
 
 def transcribe_drawing(image_path: Path, verbosity: str = DEFAULT_VERBOSITY,
-                       model: str = DESC_MODEL, effort: str = REASONING_EFFORT):
+                       model: str = DESC_MODEL, effort: str = REASONING_EFFORT,
+                       scene_label=None):
     """One transcription of one drawing. Returns (response, parsed dict).
 
-    The filename is deliberately not part of the request: the model sees pixels only,
-    so it cannot be steered by the target scene name.
+    The filename is never part of the request. `scene_label` (e.g. "living room") is the
+    ONLY thing about the target that reaches the model, and only when the caller passes
+    it: the memorability half, the subject id and the GT filename stay out.
     """
     response = client.responses.create(
         model=model,
-        instructions=INSTRUCTIONS,
+        instructions=build_instructions(scene_hint=bool(scene_label)),
         input=[{
             "role": "user",
             "content": [
-                {"type": "input_text", "text": USER_TEXT},
+                {"type": "input_text", "text": build_user_text(scene_label)},
                 {"type": "input_image", "image_url": encode_image_to_base64(image_path)},
             ],
         }],
@@ -432,7 +538,8 @@ def transcribe_drawing(image_path: Path, verbosity: str = DEFAULT_VERBOSITY,
 
 
 def describe_condition(condition: str, out_path: Path, *, verbosity: str, model: str,
-                       effort: str, all_scenes: bool, limit: int | None) -> pd.DataFrame:
+                       effort: str, all_scenes: bool, limit: int | None,
+                       scene_hint: bool) -> pd.DataFrame:
     """Transcribe one condition's drawings, resuming from whatever out_path holds."""
     records = collect_drawings(condition, all_scenes=all_scenes)
 
@@ -458,8 +565,10 @@ def describe_condition(condition: str, out_path: Path, *, verbosity: str, model:
     new_rows, since_ckpt, failed = [], 0, []
     for r in tqdm(todo, desc=f"{condition} ({model})"):
         try:
-            response, parsed = transcribe_drawing(Path(r["path"]), verbosity=verbosity,
-                                                  model=model, effort=effort)
+            response, parsed = transcribe_drawing(
+                Path(r["path"]), verbosity=verbosity, model=model, effort=effort,
+                scene_label=r["scene_label"] if scene_hint else None,
+            )
         except Exception as e:
             # A failure drops an observation, so never let it pass silently. The row stays
             # out of the CSV, which means the next run retries it (see the resume logic).
@@ -476,7 +585,12 @@ def describe_condition(condition: str, out_path: Path, *, verbosity: str, model:
             "prompt": parsed["description"].strip(),
             "written_text": json.dumps(parsed["written_text"], ensure_ascii=False),
             "has_written_text": bool(parsed["written_text"]),
-            "is_blank": parsed["is_blank"],
+            # Triage columns: sort by certainty to find the drawings worth opening by hand.
+            "certainty": parsed["certainty"],
+            "certainty_note": parsed["certainty_note"].strip(),
+            # What the describer was actually told, so a hinted row is never mistaken for a
+            # blind one after the fact.
+            "scene_hint_given": r["scene_label"] if scene_hint and isinstance(r["scene_label"], str) else pd.NA,
             "gen": pd.NA,               # no image is generated from these
             "subjective_score": pd.NA,  # Wilma's task had no similarity rating
             "verbosity": verbosity,
@@ -550,6 +664,10 @@ def _parse_args():
                          "Appears in the output filename, so efforts never mix in one CSV.")
     ap.add_argument("--all-scenes", action="store_true",
                     help="Transcribe every scene, not just the five we have a GT for.")
+    ap.add_argument("--no-scene-hint", dest="scene_hint", action="store_false",
+                    help="Describe every drawing blind, with no scene name (the pre-hint "
+                         "behaviour). Appears in the output filename, so hinted and blind "
+                         "runs never mix in one CSV.")
     ap.add_argument("--limit", type=int, default=None,
                     help="Transcribe at most N new drawings per condition (smoke test).")
     ap.add_argument("--skip-tagging", action="store_true",
@@ -569,16 +687,20 @@ def _resolve_conditions(arg) -> list[str]:
 def main() -> None:
     args = _parse_args()
     scope = "all_scenes" if args.all_scenes else "gt_scenes"
+    # Blind runs keep the original filenames, so CSVs written before the hint existed stay
+    # valid (and resumable) as the no-hint arm of the comparison.
+    stamp = f"{scope}_{args.reasoning_effort}" + ("_hint" if args.scene_hint else "")
 
     for condition in _resolve_conditions(args.condition):
-        desc_path = OUT_ROOT / condition / f"drawing_descriptions_{scope}_{args.reasoning_effort}.csv"
+        desc_path = OUT_ROOT / condition / f"drawing_descriptions_{stamp}.csv"
         tags_path = (OUT_ROOT / condition / "nlp_analysis" /
-                     f"drawing_semantic_tags_{scope}_{args.reasoning_effort}.csv")
+                     f"drawing_semantic_tags_{stamp}.csv")
 
         print(f"\n=== {condition} ===")
         desc_df = describe_condition(
             condition, desc_path, verbosity=args.verbosity, model=args.model,
             effort=args.reasoning_effort, all_scenes=args.all_scenes, limit=args.limit,
+            scene_hint=args.scene_hint,
         )
         if desc_df.empty:
             print("No transcriptions produced — nothing written.")
