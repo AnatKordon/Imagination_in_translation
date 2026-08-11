@@ -772,6 +772,22 @@ def _resolve_io(condition: str) -> tuple[Path, Path] | None:
     return (in_path, nlp_dir / OUT_FILENAME) if in_path.exists() else None
 
 
+def _resolve_io_from_csv(tags_csv: Path) -> tuple[Path, Path] | None:
+    """Same (tags csv, validation csv) pair for a tag table given by explicit path.
+
+    The output name is derived the way OUT_FILENAME derives from TAGS_FILENAME, so a
+    stamped input (drawing_semantic_tags_gt_scenes_high.csv) keeps its stamp on the
+    output and runs at different settings never merge into one file.
+    """
+    tags_csv = Path(tags_csv)
+    if not tags_csv.exists():
+        return None
+    if "semantic_tags" not in tags_csv.stem:
+        raise SystemExit(f"Not a semantic-tags csv: {tags_csv}")
+    out_name = tags_csv.stem.replace("semantic_tags", "semantic_tag_image_validation")
+    return tags_csv, tags_csv.with_name(out_name + ".csv")
+
+
 def _pct(numerator, denominator):
     return (100 * numerator / denominator) if denominator and denominator > 0 else 0.0
 
@@ -905,6 +921,17 @@ def _parse_args():
         default=MAX_NEW_ROWS,
         help="Validate at most this many new rows per condition for testing.",
     )
+    parser.add_argument(
+        "--tags-csv",
+        nargs="+",
+        default=None,
+        metavar="PATH",
+        help=(
+            "Judge these semantic-tag csv(s) instead of resolving a condition through "
+            "config. For tag tables outside the config layout - the 2019 drawings. "
+            "Everything about the judging is unchanged; only the input path differs."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -931,15 +958,23 @@ def run_full_for_condition(
     model: str = DEFAULT_MODEL,
     image_detail: str = IMAGE_DETAIL,
     max_new_rows: int | None = MAX_NEW_ROWS,
+    tags_csv: Path | None = None,
 ) -> dict | None:
-    """Resumably validate one condition's semantic tags against its images."""
-    io_paths = _resolve_io(condition)
+    """Resumably validate one condition's semantic tags against its images.
+
+    `tags_csv` judges a tag table that does not live in the config layout (the 2019
+    drawings, which have their own tree and filenames). Only the input path changes:
+    the judge, its prompt, the judged categories and the counting are the same, which
+    is what keeps drawn and verbal counts on one scale.
+    """
+    io_paths = _resolve_io_from_csv(tags_csv) if tags_csv is not None else _resolve_io(condition)
     if io_paths is None:
-        source = (
-            "analysis/gpt_image_desc_api.py"
-            if condition == BASELINE_SLUG
-            else "semantic_tagging.py"
-        )
+        if tags_csv is not None:
+            source = "drawings_descriptions.py"
+        elif condition == BASELINE_SLUG:
+            source = "analysis/gpt_image_desc_api.py"
+        else:
+            source = "semantic_tagging.py"
         print(f"skip {condition}: semantic-tag csv not found - run {source} first")
         return None
 
@@ -988,8 +1023,15 @@ def run_full_for_condition(
 
 if __name__ == "__main__":
     args = _parse_args()
-    conditions = _resolve_conditions(args.condition)
-    print(f"Full run over {len(conditions)} condition(s): {conditions}")
+    if args.tags_csv:
+        # Explicit tag tables (the 2019 drawings). The label is the two folders above
+        # nlp_analysis, e.g. no_hint/draw_del, so each arm reads distinctly in the log.
+        jobs = [(str(Path(p).resolve().parents[1].parent.name) + "/"
+                 + str(Path(p).resolve().parents[1].name), Path(p))
+                for p in args.tags_csv]
+    else:
+        jobs = [(condition, None) for condition in _resolve_conditions(args.condition)]
+    print(f"Full run over {len(jobs)} condition(s): {[label for label, _ in jobs]}")
 
     summaries = [
         summary
@@ -999,8 +1041,9 @@ if __name__ == "__main__":
                 model=args.model,
                 image_detail=args.image_detail,
                 max_new_rows=args.max_new_rows,
+                tags_csv=tags_csv,
             )
-            for condition in conditions
+            for condition, tags_csv in jobs
         )
         if summary is not None
     ]

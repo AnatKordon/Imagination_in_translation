@@ -56,9 +56,14 @@
 # The describer is told which of our five scenes the participant was drawing ("the
 # participant was asked to draw a living room"). Our verbal participants knew what they
 # were describing; a describer working blind does not, and would systematically lose
-# scene_category and under-read sketchy shapes it cannot place. The hint removes that
-# handicap rather than adding an advantage — it is bounded in the prompt to settling
-# marks that are already there and explicitly barred from adding anything.
+# scene_category and under-read shapes it cannot place. The hint is an aid to NAMING what
+# was drawn, never a claim about what is there: not everyone draws well, and the point is
+# that poor drawing skill should not cost a participant the whole object. The marks are
+# the truth and always win — a hint the page cannot bear is simply wrong for that page —
+# and the prompt bars the hint from adding any object, part, colour or surrounding.
+# Written labels are the same kind of aid and rank the same way: they help place a rough
+# shape, the drawing decides what a thing IS, and the participant's word survives in
+# written_text regardless.
 # THE RISK IS REAL AND ONE-DIRECTIONAL: knowing "lighthouse" can only push readings
 # toward objects the GT contains, so it inflates hits and never misses. It cannot be
 # argued away, only measured. `scene_hint_given` records what each row was told, and
@@ -152,6 +157,8 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 DRAWINGS_ROOT = PROJECT_ROOT / "Data" / "other_datasets" / "wilmas_drawings_2019"
+# Output tree:  <OUT_ROOT>/{with_hint,no_hint}/<condition>/drawing_descriptions_*.csv
+#                                             /<condition>/nlp_analysis/drawing_semantic_tags_*.csv
 OUT_ROOT = PROJECT_ROOT / "Data" / "processed_data" / "wilmas_drawings_2019"
 
 # ── Conditions ────────────────────────────────────────────────────────────────
@@ -354,30 +361,25 @@ INSTRUCTIONS = (
 # the policy for using it. See SCENE HINT in the header for why it exists and what it risks.
 SCENE_HINT_BLOCK = (
     "WHAT THE PARTICIPANT WAS ASKED TO DRAW\n"
-    "You are told the kind of scene this participant was drawing. The people whose typed "
-    "descriptions these are compared against knew which scene they were describing, so "
-    "you are told it too.\n\n"
+    "You are told the kind of scene this participant was drawing. It helps you name what "
+    "is drawn. It never tells you what is there.\n\n"
 
-    "It is only a tie-breaker, and it applies to nothing else. Ask first what you would "
-    "call a thing if you had never been told the scene. If you can name it, that name "
-    "stands and the hint changes nothing: do not upgrade it, and never rename a thing "
-    "into something the named scene would contain. Only where you genuinely cannot "
-    "settle between two readings may you let the hint pick the one that belongs to that "
-    "scene. Where the page as a whole plainly shows that kind of place, you may call it "
-    "by that name.\n\n"
+    "Not everyone draws well. Where a shape is rough or ambiguous, you may read it as "
+    "what it would be in that kind of scene, so long as the marks bear that reading: its "
+    "form, its parts and where it sits must fit what you are calling it. Where they "
+    "cannot, the marks win and the hint is wrong for this page. Where the page as a whole "
+    "supports it, you may call the place by that name.\n\n"
 
-    "Writing on the page always outranks the hint. If the participant labelled a thing, "
-    "that is what the thing is, even when the named scene would suggest otherwise, and "
-    "even when they drew or remembered something other than what they were asked for. "
-    "Never move a label onto a different mark to make room for the named scene.\n\n"
+    "The hint puts nothing on the page. It adds no object, no part, no colour and no "
+    "surroundings, and it is never a reason to name a thing because such scenes usually "
+    "contain one. If the page holds one rough thing, work out what that thing is; the "
+    "description still contains exactly one thing. Often the hint will not apply, and "
+    "that is a correct outcome.\n\n"
 
-    "It licenses nothing by itself. It is not a list of what is on the page, and it is "
-    "never a reason to add anything: do not name a thing because that kind of scene "
-    "usually contains it, and do not report the scene as such unless the marks support "
-    "it. These were drawn from memory, so a page may hold very little, or something quite "
-    "different from what was asked for. When the page does not support the named scene, "
-    "describe what is actually on it and say nothing about the rest. A hint that goes "
-    "unused is a correct outcome, not a failure.\n\n"
+    "A written label is the same kind of aid and ranks the same way. Where a label and "
+    "the marks disagree about what a thing is, report what the marks show; the "
+    "participant's word is kept in written_text regardless. Never move a label onto a "
+    "different mark.\n\n"
 )
 
 
@@ -687,13 +689,14 @@ def _resolve_conditions(arg) -> list[str]:
 def main() -> None:
     args = _parse_args()
     scope = "all_scenes" if args.all_scenes else "gt_scenes"
-    # Blind runs keep the original filenames, so CSVs written before the hint existed stay
-    # valid (and resumable) as the no-hint arm of the comparison.
-    stamp = f"{scope}_{args.reasoning_effort}" + ("_hint" if args.scene_hint else "")
+    stamp = f"{scope}_{args.reasoning_effort}"
+    # The two arms of the hint comparison get a tree each, so an analysis can point at one
+    # arm and never touch the other. Everything below is otherwise identical between them.
+    arm = OUT_ROOT / ("with_hint" if args.scene_hint else "no_hint")
 
     for condition in _resolve_conditions(args.condition):
-        desc_path = OUT_ROOT / condition / f"drawing_descriptions_{stamp}.csv"
-        tags_path = (OUT_ROOT / condition / "nlp_analysis" /
+        desc_path = arm / condition / f"drawing_descriptions_{stamp}.csv"
+        tags_path = (arm / condition / "nlp_analysis" /
                      f"drawing_semantic_tags_{stamp}.csv")
 
         print(f"\n=== {condition} ===")
