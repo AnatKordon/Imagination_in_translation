@@ -65,12 +65,16 @@ def extract_objects_and_polygons(xml_path):
 
     return objects, polygons
 
-for gt in GT_NAMES:
+for gt in sorted(GT_NAMES):
     folder_name = gt.replace(".jpg", "")
     folder_path = os.path.join(MAIN_PATH, folder_name)
 
+    # LabelMe holds folders for images no longer chosen (e.g. tower_l), and a
+    # newly chosen image may not be annotated yet: warn and skip rather than
+    # abort the whole run.
     if not os.path.isdir(folder_path):
-        raise FileNotFoundError(f"Folder not found: {folder_path}")
+        print(f"WARNING: no LabelMe annotation for GT image {folder_name}, skipping")
+        continue
 
     # Output paths
     csv_path = os.path.join(folder_path, f"{folder_name}_object_counts.csv")
