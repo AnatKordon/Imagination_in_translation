@@ -12,105 +12,120 @@ short_description: An interactive experiment
 license: mit
 ---
 
-# Welcome to Streamlit!
-
-Edit `/src/streamlit_app.py` to customize this app to your heart's desire. :heart:
-
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
-### **Project README**
-
 # Imagination in translation
-An interactive experiment for studying the gap between semantic and visual representations in humans and AI.
 
-## Project Description
-The project investigates whether humans can accurately convey mental images to an AI solely through language. Participants are asked to describe verbally a ground-truth image to a Stable Diffusion model, which then generates an image based on the description. After each generation, a VGG16-based visual similarity score is displayed alongside the subjective similarity assessment by the participants, who can either accept the generation (if they believe the similarity is sufficient) or refine their description and generate a new image. The number of refinement trials is limited to five for each ground truth image. It is not possible to use the same description twice without changes.
+An interactive experiment studying the gap between semantic and visual
+representations in humans and AI.
 
-The data for all generation attempts (e.g., text descriptions, generated images, similarity scores) as well as the model parameters (e.g. seed) are logged for later analysis of language-to-vision alignment.
+## Project description
 
-## Core Components
-- Local Stable Diffusion 3.5 Large Turbo [model](https://platform.stability.ai/docs/api-reference#tag/Generate/paths/~1v2beta~1stable-image~1generate~1sd3/post) for image generation
-- [Streamlit](https://streamlit.io/)-based user interface
-- [VGG16](https://arxiv.org/abs/1409.1556)-based visual similarity analysis
-- Logging of all sessions, iterations and generated pictures
-- Data processing
+The project investigates whether people can convey a mental image to an AI
+through language alone. Participants describe a ground-truth image in words; an
+image model generates an image from that description. Depending on condition,
+participants then see feedback and refine their description across further
+attempts. All descriptions, generated images, similarity scores and model
+parameters are logged for later analysis of language-to-vision alignment.
 
-## Setup Instructions
-1. Open the terminal.
-2. Check your Python version. For certain packages (e.g. PyTorch) you need Python 3.11 or lower (but higher than Python 3.7).
-```bash
-# Windows
-python --version
-````  
-```bash
-# macOS
-python3 --version
-````
-3. If the version is correct, clone the repository.
+## Experimental design
+
+Nine conditions — 3 generation types × 3 memory tasks — declared in
+[`condition_maps.yaml`](condition_maps.yaml) and addressed by **slug**
+(`<gen>_<task>`, e.g. `aigen_perc`).
+
+| generation | feedback | attempts/session | saves images during session |
+|---|---|---|---|
+| `aigen` | generated image | 3 | yes |
+| `nogen` | text | 3 | no — generated post-hoc |
+| `plain` | none | 1 | no |
+
+| task | when the description is produced |
+|---|---|
+| `perc` | perception — image visible |
+| `imm` | immediate memory |
+| `del` | delayed memory (with digit-span distractor) |
+
+## Documentation
+
+| doc | covers |
+|---|---|
+| **[`PIPELINE.md`](PIPELINE.md)** | **start here** — run order, CSV catalogue, costs, the staleness hazard |
+| [`docs/data_log.md`](docs/data_log.md) | what has actually been run: dates, Ns, exclusions, spend |
+| [`analysis/README.md`](analysis/README.md) | map of the analysis scripts |
+| [`analysis/outlier_pipeline/README.md`](analysis/outlier_pipeline/README.md) | exclusion gates, AI-usage judges |
+| [`analysis/nlp_analysis/README.md`](analysis/nlp_analysis/README.md) | semantic tagging, ground-truth image validation |
+| [`similarity/README.md`](similarity/README.md) | CLIP / VGG16 / LPIPS similarity scores |
+
+Returning after a break, or new participant data has arrived? Go to the
+"new batch of participants arrived" runbook in [`PIPELINE.md`](PIPELINE.md).
+
+## Repository layout
+
+```
+app.py, src/            Streamlit experiment app
+config.py               condition slugs -> paths (paths_for, spec_for, load)
+condition_maps.yaml     what conditions exist + canonical filenames
+Data/
+  participants_data/    raw JATOS exports — source of truth, never written to
+  processed_data/       aggregated + analysis CSVs
+GT_images/              ground-truth stimuli
+analysis/               pipeline, NLP analysis, notebooks
+  outputs/              reports, panels, RDMs, figures
+similarity/             CLIP / VGG / LPIPS wrappers
+```
+
+## Setup
+
+Python 3.11 or 3.12.
+
 ```bash
 git clone https://github.com/AnatKordon/Imagination_in_translation.git
 cd Imagination_in_translation
-````
-4. Set up a Python virtual environment.
-```bash
-# Windows
-python -m venv venv
-venv\Scripts\Activate
-````
-```bash
-# macOS
 python3 -m venv .venv
-source .venv/bin/activate
-````
-5. Install the dependencies:
+source .venv/bin/activate          # Windows: .venv\Scripts\Activate
+pip install -r requirements.txt
+```
+
+Create a `.env` in the project root. The analysis pipeline's paid stages need:
+
 ```bash
-pip install -r requirements_dev.txt
-````
-6. Create manually a file called .env in the project root and add your Stability AI API key (do not share the key).
-```bash
-STABILITY_API_KEY=your_stability_ai_key_goes_here
-```` 
-7. Run the Streamlit app.
+OPENAI_API_KEY=...      # semantic tagging, object validation, one AI-usage judge
+GEMINI_API_KEY=...      # AI-usage judge
+ANTHROPIC_API_KEY=...   # AI-usage judge
+```
+
+Run the experiment app:
+
 ```bash
 streamlit run app.py
 ```
-8. After you are done testing, close the browser.
-   
 
-## Analysis pipelines:
-Analysis scripts are located in the `analysis` folder.
-*Organization:*
-*aggregate.py* aggregates all results across all ppts - then we should check for duplicates/missing values
-*gpt_image_desc_api.py* allows to receive gpt descriptions for all ground truth images - we can choose verbosity level. Currently 3 verbosity levels were used with gpt-5.
-*aggregate_gpt_desc_to_csv.py* transforms the 3 gpt description csvs to match the all_trials.csv format (you still need to concat the participant and gpt dataframes manually)
-*gpt_gen.py* generates images using gpt-image-1 for descriptions (either all or only gpt descriptions) saving time from running all experiment on our own for the gpt images
-*data_preparation.ipynb* aggregates ppt and gpt datarames
-*Analysis:*
-*Visualize per ppt.py* allows for a visual inspection of the results - all ground truth, generated images and description - per participant and per ground truth image.
-*add_similarity_scores.py* takes ppts and gpt csv and adds cosine distances scores for visual clip and vgg fc7 (similarity is 1 - cosine distance)
+## Analysis quick start
 
-## NLP analysis
-nlp_analysis/semantic_tagging.py - adds semantic tags to the descriptions (e.g. whether they include color, shape, etc.) using gpt-5. it outputs additions to the df where each column is a type of tag (objects, attribute color...)
-nlp_analysis/object_accuracy_detector.py - validated objects - seperates to errors by model and subject hallucinations
-## Comparing conditions
-nlp_analysis/nlp_notebook.ipynb is designed to make analyses per condition and is not fully developed yet
+```bash
+# 1-3: outlier pipeline (stage 2 is paid, and the rebuild after it is required)
+python -m analysis.outlier_pipeline.run
+python -m analysis.outlier_pipeline.ai_usage_suspicion.consensus --condition aigen_perc
+python -m analysis.outlier_pipeline.build_trials_final           --condition aigen_perc
 
+# 4-6: downstream (per condition)
+python analysis/generate_images_by_prompt.py nogen_perc     # nogen/plain only, paid
+python analysis/add_similarity_scores.py --condition aigen_perc
+python analysis/nlp_analysis/semantic_tagging.py         --condition all   # paid
+python analysis/nlp_analysis/object_accuracy_detector.py --condition all   # paid
+```
+
+Read [`PIPELINE.md`](PIPELINE.md) before running any of this — the ordering
+constraints and the silent-staleness problem are documented there.
 
 ## License
-MIT – see `LICENSE` for full text.
+
+MIT — see [`LICENSE`](LICENSE).
 
 ## Authors
-Anat Korol Gordon
 
-Itai Peleg
+Anat Korol Gordon, Itai Peleg, Maayan Shirizly, Nataliya Kalanova,
+Sivan Flomen, Yaniv Kopelman
 
-Maayan Shirizly
+## Contact
 
-Nataliya Kalanova
-
-Sivan Flomen
-
-Yaniv Kopelman
-
-## Contacts 
-If you have any questions, suggestions or bug reports, please feel free to reach out at **anat.korol@gmail.com** (Anat Korol Gordon).
+Questions, suggestions or bug reports: **anat.korol@gmail.com** (Anat Korol Gordon).
