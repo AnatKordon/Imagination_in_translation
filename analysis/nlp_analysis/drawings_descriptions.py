@@ -71,25 +71,36 @@
 # effect on object counts is itself an observable quantity. Measure it on a subset
 # before trusting hinted counts in a headline comparison.
 #
-# DATA CAVEAT — the perception folder is contaminated UPSTREAM, not locally
-# perception_drawings/ holds 1051 files: 444 with the `c` prefix and 607 with the `w`
-# prefix. Our copy is byte-identical to the published dataset (Bainbridge, Hall & Baker
-# 2019, "Image Drawings", doi:10.7910/DVN/1VRU1T), so the mix-up is in the release:
-#   - that dataset documents its own filenames as c[subnum]_[imnum]_[memorability]_[scene]
+# THE no_hint ARM IS STALE FOR draw_perc (2026-08-24): 33 rows there vs 61 in with_hint,
+# so the arms are no longer the same sample and must not be differenced on raw totals.
+# Full explanation and the one-line fix live next to the data, in
+#   Data/processed_data/wilmas_drawings_2019/no_hint/draw_perc/00_STALE_NOT_UPDATED.md
+#
+# DATA PROVENANCE — the perception folder was replaced on 2026-08-24
+# perception_drawings/ now holds 728 files, all `c`-prefixed, from the release folder
+# `wilma_2019_170826_not_certain/image_drawings_170826`. It previously held a contaminated
+# copy and the history matters, because published numbers from before that date differ:
+#   - the old copy held 1051 files: 444 `c` and 607 `w`. It was byte-identical to the
+#     published "Image Drawings" dataset (Bainbridge, Hall & Baker 2019,
+#     doi:10.7910/DVN/1VRU1T), so the mix-up was in that release, not local;
+#   - that dataset documents its filenames as c[subnum]_[imnum]_[memorability]_[scene]
 #     and states "the c indicates these were participants in the control experiments";
 #   - the `w` prefix is documented only in the immediate-recall release
 #     (doi:10.7910/DVN/FVMI5W): "the w indicates these were participants in the working
 #     memory (immediate recall) experiments";
-#   - all 607 `w` files here are byte-identical to files in immediate_memory_drawings/,
-#     and none of them is unique to the perception release.
-# So they are immediate-recall drawings misfiled into the perception dataset. Taking the
-# folder at face value would label 58% of "perception" as something it is not AND put the
-# same drawing in both arms of the comparison. This script therefore selects each
-# condition by filename prefix (c / w / none), leaving 444 genuine perception drawings.
-# Consequence for stats: perception is 16 subjects vs. 30 for immediate recall. That N
-# asymmetry is real and must be modelled, not repaired by re-admitting the duplicates.
+#   - all 607 `w` files were byte-identical to files in immediate_memory_drawings/, i.e.
+#     immediate-recall drawings misfiled into the perception dataset. Taking the folder at
+#     face value labelled 58% of "perception" as something it was not AND put the same
+#     drawing in both arms of the comparison.
+# Verified at swap time: all 444 old `c` files are present in the new folder byte-identical,
+# no `w` file survives, and no two files share content. The newer folder also renames two
+# categories (factory -> industrial, iceberg -> snowywater); neither is one of our five GT
+# scenes, so this is visible only under --all-scenes.
+# The prefix selection below is therefore now a no-op for perception (every file is `c`),
+# but it is KEPT: it is what makes the condition correct by construction rather than by
+# trusting a folder name, and it still does real work for draw_imm / draw_del.
 #
-# HOW MANY DRAWINGS EXIST FOR OUR 5 GT IMAGES (143) — AND WHY IT IS NOT 30 PER IMAGE
+# HOW MANY DRAWINGS EXIST FOR OUR 5 GT IMAGES (171) — AND WHY IT IS NOT 30 PER IMAGE
 # The intuition "N participants, so N drawings per image" does not hold: NO participant
 # ever saw all the images. The paper's design (Methods) is 30 scene categories x 2
 # memorability versions = 60 stimuli, and each participant was shown 30 of them, one per
@@ -103,21 +114,22 @@
 # drawings, and no participant drew both versions of a category.
 #
 # Per condition, for our five GT photographs:
-#     low_bedroom          perc  6  imm 15  del  6   = 27
-#     high_conferenceroom        7      15       6   = 28
-#     high_lighthouse            7      15       6   = 28
-#     high_livingroom            7      15      10   = 32
-#     high_playground            6      15       7   = 28
-#                                                     --- 143
+#     low_bedroom          perc 12  imm 15  del  6   = 33
+#     high_conferenceroom       12      15       6   = 33
+#     high_lighthouse           13      15       6   = 34
+#     high_livingroom           12      15      10   = 37
+#     high_playground           12      15       7   = 34
+#                                                     --- 171
 #   - immediate is at its designed ceiling of 15 per image.
 #   - delayed is free recall, so it is whatever people happened to remember; the paper
 #     notes "no images ... were recalled by >12 participants", consistent with our 2-11.
-#   - perception is SHORT. The paper specifies 24 participants, "twelve participants per
-#     image", each drawing 30 images -> 720 drawings, 12 per stimulus. This release holds
-#     only 444 c-files from 16 subjects (ids 1-6, 8-16, 18; missing 7, 17, 19-24), giving
-#     5-9 per stimulus. So roughly a third of the perception drawings are absent from the
-#     published data, on top of the duplicate problem described above. Treat perception's
-#     N as the binding constraint in any power calculation.
+#   - perception is now at its designed ceiling too. The paper specifies 24 participants,
+#     "twelve participants per image". The replacement folder holds 728 c-files from 25
+#     subjects (ids 1-6, 8-16, 18-27; missing only 7 and 17), and 53 of the 60 stimuli have
+#     exactly 12 drawings (6 have 13, one has 14). The earlier shortfall — 444 files, 16
+#     subjects, 5-9 per stimulus — was an artefact of the contaminated copy, NOT missing
+#     data, and any power calculation or N-asymmetry argument written against those numbers
+#     is obsolete.
 #
 # Taking the other memorability version (e.g. bedroom_h) would not raise N: that is a
 # different photograph and cannot join a comparison scored against our GT. Use
@@ -442,8 +454,9 @@ def parse_filename(path: Path) -> dict | None:
 def collect_drawings(condition: str, all_scenes: bool = False) -> list[dict]:
     """List the drawings that belong to `condition`, in a participant-row shape.
 
-    Only files carrying this condition's filename prefix are kept, which is what
-    excludes the immediate-memory copies sitting inside perception_drawings/.
+    Only files carrying this condition's filename prefix are kept, so a condition is
+    defined by the filename marker rather than by trusting the folder name (see DATA
+    PROVENANCE above for the misfiled copies this used to exclude).
     By default only the five scenes we have a GT for are returned.
     """
     spec = CONDITIONS[condition]

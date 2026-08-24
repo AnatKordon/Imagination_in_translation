@@ -13,6 +13,89 @@ condition's `processed_data/` and `outputs/.../outliers/` folder.
 
 ---
 
+## 2026-08-24 — Wilma 2019 perception folder replaced; with_hint/draw_perc topped up
+
+`Data/other_datasets/wilmas_drawings_2019/perception_drawings` was swapped for the
+complete release (`wilma_2019_170826_not_certain/image_drawings_170826`), then the newly
+available drawings were described and semantic-tagged **in the with_hint arm only**.
+Image validation (`object_accuracy_detector.py`) deliberately NOT run, and
+`combined/full_data/` NOT re-exported.
+
+### The folder swap
+
+|                    | before | after |
+|--------------------|--------|-------|
+| files              | 1051   | 728   |
+| genuine `c*`       | 444    | 728   |
+| `w*` contaminants  | 607    | 0     |
+| subjects           | 16     | 25    |
+| per stimulus       | 5–9    | 12 (53 of 60 stimuli exactly 12) |
+| GT-scene drawings  | 33     | 61    |
+
+The old folder was byte-identical to the published "Image Drawings" release
+(doi:10.7910/DVN/1VRU1T), whose 607 `w*` files are immediate-recall drawings misfiled
+upstream. Verified after the swap: all 444 old `c` files present byte-identical, zero `w`
+survivors, zero duplicate content, no `.DS_Store`, source folder untouched.
+
+**Perception is no longer short.** The old "only 444 of a designed 720, treat perception
+N as the binding constraint" note was an artefact of the contaminated copy, not missing
+data. Any perception N or power calculation from before this date is understated.
+
+Category renames in the new release (`factory`→`industrial`, `iceberg`→`snowywater`) were
+NOT reverted. Neither is a GT scene, so they surface only under `--all-scenes`.
+
+### Describe + tag (PAID)
+
+`drawings_descriptions.py -c draw_perc` — resumed on `original_name`, so **28 new rows,
+0 re-work**. 0 failures, 0 unparsable filenames, 0 empty prompts.
+
+| file | before | after |
+|---|---|---|
+| `with_hint/draw_perc/drawing_descriptions_gt_scenes_high.csv` | 33 | 61 |
+| `with_hint/draw_perc/nlp_analysis/drawing_semantic_tags_gt_scenes_high.csv` | 33 | 61 |
+
+- Descriptions: gpt-5.5, effort high, verbosity medium — 290k in / 116k out over 28 calls,
+  ~75 s/drawing (~35 min). The script does not print a cost for this stage.
+- Tagging: gpt-5.5, 28 calls, 58k in / 15k out, **est. $0.75**.
+- Certainty on the new rows: 27 medium, 1 low.
+
+### ⚠️ Watch: the 28 new rows tag richer than the old 33
+
+| per row | old 33 | new 28 |
+|---|---|---|
+| objects | 8.82 | 11.68 |
+| spatial_relations | 7.94 | 9.96 |
+| adjectives | 9.39 | 12.11 |
+| description output tokens | 2963 | 4149 |
+
+**This is confounded and unresolved.** 27 of the 28 new rows come from subjects 19–27,
+who appear only in the new folder — so "new participants" and "described in a later run"
+are perfectly aligned and cannot be separated from these data. It could be a real
+participant difference, or describer drift between 2026-08-19 and 2026-08-24. Do not
+treat the 61 rows as exchangeable on object counts without checking this first; a
+subject-level random effect is the minimum precaution.
+
+### no_hint left behind, on purpose
+
+Anat's decision: only the with_hint arm was topped up. `no_hint/draw_perc` stays at 33
+rows (16 subjects) against with_hint's 61 (25 subjects). `draw_imm` (75) and `draw_del`
+(35) are complete and correct in both arms — this is perception-only.
+
+The arms are therefore no longer the same sample, and differencing their perception
+totals would read the extra participants as a huge hint effect. Restrict any hint-effect
+analysis to the 33 `original_name`s present in both. Marked in place at
+`no_hint/draw_perc/00_STALE_NOT_UPDATED.md` and `no_hint/00_READ_ME_draw_perc_is_stale.md`.
+To un-freeze: `drawings_descriptions.py -c draw_perc --no-scene-hint` fills exactly the 28.
+
+### Staleness as of this entry
+
+- `combined/full_data/drawing_semantic_tag_image_validation_full_data_{with_hint,no_hint}.csv`
+  — both still 143 rows, not re-exported; with_hint is missing the 28 new drawings.
+- No image validation exists for the 28 new drawings in either arm.
+- Notebooks reporting perception at 16 subjects / 33 GT drawings predate the swap.
+
+---
+
 ## 2026-08-19 — downstream chain: image generation + similarity (steps 4–5)
 
 Collection complete (25 valid participants in every cell as of 2026-08-18), so
