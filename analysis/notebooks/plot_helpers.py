@@ -470,12 +470,20 @@ def load_labelme(config):
 def explode_items(d, meta=("generation", "task", "gt", "uid", "session", "attempt")):
     """One row per tagged item, from the `item_evaluations` JSON column.
 
-    Each element is {"id", "category", "item", "in_image"}, so this is the only source that
-    carries item text, its category and the judge's verdict together - which is why every
-    object-level analysis runs off it rather than off the list columns (whose raw/validated
-    halves are Python-repr and JSON respectively).
+    Each element carries item text, its category and the judge's verdict together - which is
+    why every object-level analysis runs off it rather than off the list columns (whose
+    raw/validated halves are Python-repr and JSON respectively).
 
-    Returns columns: <meta...>, category, item, in_image.
+    Validator v2 adds per-tag attribution, so `in_image` alone no longer tells you whose
+    error a rejection was: `error_type` splits it into participant_hallucination (the real
+    signal), model_hallucination (the extractor invented the tag) and category_misplacement
+    (the tag was filed under a category it does not belong to). Analyses of participant
+    accuracy should filter to error_type in {valid, participant_hallucination} - the other
+    two say nothing about the participant. Files written by validator v1 have no such
+    fields; those rows get error_type None and confidence None, so a `.notna()` guard
+    distinguishes them.
+
+    Returns columns: <meta...>, category, item, in_image, error_type, confidence.
     """
     rows = []
     for rec in d[list(meta) + ["item_evaluations"]].itertuples(index=False):
@@ -489,9 +497,19 @@ def explode_items(d, meta=("generation", "task", "gt", "uid", "session", "attemp
         head = rec[:-1]
         for e in evals:
             rows.append(head + (e.get("category"), str(e.get("item", "")).strip().lower(),
-                                bool(e.get("in_image"))))
-    out = pd.DataFrame(rows, columns=list(meta) + ["category", "item", "in_image"])
+                                bool(e.get("in_image")),
+                                e.get("error_type"), e.get("confidence")))
+    out = pd.DataFrame(
+        rows,
+        columns=list(meta) + ["category", "item", "in_image", "error_type", "confidence"],
+    )
+    n_attributed = int(out["error_type"].notna().sum())
     print(f"exploded items: {len(out)} rows, {out['item'].nunique()} distinct item strings")
+    if n_attributed:
+        counts = out["error_type"].value_counts().to_dict()
+        print(f"  attribution present for {n_attributed}/{len(out)}: {counts}")
+    else:
+        print("  no error_type field (validator v1 output) - in_image only")
     return out
 
 
