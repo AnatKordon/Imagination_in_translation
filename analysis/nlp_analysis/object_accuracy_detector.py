@@ -103,9 +103,14 @@ REASONING_EFFORT = "medium"
 VERBOSITY = "low"
 IMAGE_DETAIL = "original"
 
-# The visible JSON is very short, but reasoning tokens also count against this
-# limit. A generous cap avoids empty/incomplete responses when reasoning is on.
-MAX_OUTPUT_TOKENS = 10_000
+# Reasoning tokens count against this limit alongside the visible JSON, and both
+# scale with the number of tags in the row. Measured on pilot runs:
+#   medium  out ~=  513 +  66 * n_tags
+#   high    out ~= 1468 + 194 * n_tags
+# The largest real row carries 85 tags, so high effort needs ~25k at mean+3sd.
+# At 10k, high effort truncated 7 of 60 calls mid-JSON. This is a ceiling, not a
+# reservation: unused tokens are never billed, so it is set well clear of both.
+MAX_OUTPUT_TOKENS = 32_000
 
 # -----------------------------------------------------------------------------
 # Resumable full run
@@ -251,12 +256,18 @@ makes the description assert something it does not assert.
 defined to contain (definitions below)? Set false when the tag belongs to a
 different category. Set false also when it names no instance of any category:
 when it denotes an abstraction, a property of the image as an artefact rather
-than of the scene depicted, an unspecified portion or aspect of something, or a
-bare modifier with no entity attached. You do not need to say which category
-would be right; false simply rejects the assigned one.
+than of the scene depicted, or an unspecified portion or aspect of something.
+You do not need to say which category would be right; false simply rejects the
+assigned one.
 
-Decide this from the category definitions alone. That the content happens to be
-visible does not make the tag a member of its category.
+A tag that names a quality without naming what carries it is not rejected for
+that reason alone. Read the description to find what the tag refers to, and
+judge it against that referent. Only when the description supplies no referent
+either is there nothing for the category to hold.
+
+Otherwise decide this from the category definitions. That the content happens to
+be visible somewhere in the image does not by itself make the tag a member of
+its category.
 
 3. `grounded_in_description` - does the description assert the content of this
 tag? This is a reading question, not a visual one: compare the tag against the
@@ -268,14 +279,26 @@ fully; the description need not dwell on it or repeat it.
 
 Set false only when the description does not assert it: the content appears
 nowhere in the text, or the extractor turned an implication into a stated claim,
-or the description raises it only as uncertain or as one of several alternatives,
-or the description denies it.
+or the description treats the content as something that may not be there, or the
+description denies it.
+
+Offering alternative words for one thing is still an assertion. Being unsure what
+to call something is not being unsure that it is there, so every alternative
+named for a single thing counts as asserted. Set false for doubt about whether
+the content exists, never for doubt about which word fits it.
 
 Answer all three for every tag, even when one of them is already false.
 
 Set `confidence` to low or medium when the tag is ambiguous, the image evidence
 is marginal, or the description is unclear, and give a note of at most 15 words.
 When `confidence` is high, `note` must be an empty string.
+
+When a judgment will not settle after real consideration, favour the reading that
+keeps the tag - `in_image`, `category_correct` and `grounded_in_description` all
+true - and set `confidence` low. Do this only for a genuine toss-up, never to
+avoid deciding a case the evidence does settle. A tag wrongly kept stays visible
+through its low confidence and can be reviewed; a tag wrongly rejected is counted
+against the participant and never looked at again.
 
 Interpret the categories as follows:
 
@@ -305,8 +328,10 @@ Interpret the categories as follows:
   in the named region, and reject it when the content sits elsewhere, such as a
   centre term used for something set to one side.
 
-- `attr_color`: Check whether the stated color applies to the named entity.
-  Colour words are approximate: accept any term a reasonable viewer might apply
+- `attr_color`: Check whether the stated color applies to the entity it
+  describes. When the tag gives a colour with no entity, take the entity the
+  description attaches that colour to and check the colour against it. Colour
+  words are approximate: accept any term a reasonable viewer might apply
   to what is shown, including neutral and intermediate shades and colours shifted
   by lighting or reflection. Reject a colour naming a plainly different part of
   the spectrum than the entity shows.
@@ -340,11 +365,16 @@ ERROR_TYPES = (
 
 BASE_RESULT_COLS = [
     "item_evaluations",
-    "validated_tags",
-    "invalid_not_in_image",
+    "in_image_tags",
+    "not_in_image",
+    "valid_tags",
     "n_extracted",
-    "n_validated",
-    "n_invalid_not_in_image",
+    # n_in_image answers only "is it visible". n_valid is the stricter count that
+    # also requires the right category and that the description actually asserted
+    # it, so n_valid <= n_in_image and the gap is extraction artefacts.
+    "n_in_image",
+    "n_not_in_image",
+    "n_valid",
     # Attribution: which of the three sources each rejection came from.
     "n_category_misplacement",
     "n_model_hallucination",
@@ -361,11 +391,13 @@ CATEGORY_RESULT_COLS = []
 for _category in CATEGORIES:
     CATEGORY_RESULT_COLS.extend(
         [
-            f"validated_{_category}",
-            f"invalid_not_in_image_{_category}",
+            f"in_image_{_category}",
+            f"not_in_image_{_category}",
+            f"valid_{_category}",
             f"n_extracted_{_category}",
-            f"n_validated_{_category}",
-            f"n_invalid_not_in_image_{_category}",
+            f"n_in_image_{_category}",
+            f"n_not_in_image_{_category}",
+            f"n_valid_{_category}",
         ]
     )
     for _error_type in ERROR_TYPES:
@@ -381,8 +413,9 @@ RESULT_COLS = BASE_RESULT_COLS + CATEGORY_RESULT_COLS
 
 NUMERIC_COLS = [
     "n_extracted",
-    "n_validated",
-    "n_invalid_not_in_image",
+    "n_in_image",
+    "n_not_in_image",
+    "n_valid",
     "n_scored",
     "n_low_confidence",
 ]
@@ -392,8 +425,9 @@ for _category in CATEGORIES:
     NUMERIC_COLS.extend(
         [
             f"n_extracted_{_category}",
-            f"n_validated_{_category}",
-            f"n_invalid_not_in_image_{_category}",
+            f"n_in_image_{_category}",
+            f"n_not_in_image_{_category}",
+            f"n_valid_{_category}",
             f"n_scored_{_category}",
         ]
     )
@@ -624,12 +658,13 @@ def _derive_error_type(evaluation: dict) -> str:
 
 def _route_results(items: list[dict], answers_by_id: dict[str, dict]) -> dict:
     """Join model answers to source tags and derive every output deterministically."""
-    validated_by_category = {category: [] for category in CATEGORIES}
-    invalid_by_category = {category: [] for category in CATEGORIES}
+    in_image_by_category = {category: [] for category in CATEGORIES}
+    not_in_image_by_category = {category: [] for category in CATEGORIES}
     errors_by_category = {
         error_type: {category: [] for category in CATEGORIES}
         for error_type in ERROR_TYPES
     }
+    valid_by_category = {category: [] for category in CATEGORIES}
     item_evaluations = []
     n_low_confidence = 0
 
@@ -651,19 +686,21 @@ def _route_results(items: list[dict], answers_by_id: dict[str, dict]) -> dict:
         category = source["category"]
         # in_image routing is kept exactly as before so existing downstream
         # columns keep meaning the same thing.
-        destination = validated_by_category if evaluation["in_image"] else invalid_by_category
+        destination = in_image_by_category if evaluation["in_image"] else not_in_image_by_category
         destination[category].append(source["item"])
 
-        if evaluation["error_type"] != "valid":
+        if evaluation["error_type"] == "valid":
+            valid_by_category[category].append(source["item"])
+        else:
             errors_by_category[evaluation["error_type"]][category].append(source["item"])
         if evaluation["confidence"] != "high":
             n_low_confidence += 1
 
     n_extracted = len(items)
-    n_validated = sum(len(values) for values in validated_by_category.values())
-    n_invalid = sum(len(values) for values in invalid_by_category.values())
+    n_in_image = sum(len(values) for values in in_image_by_category.values())
+    n_not_in_image = sum(len(values) for values in not_in_image_by_category.values())
 
-    if n_validated + n_invalid != n_extracted:
+    if n_in_image + n_not_in_image != n_extracted:
         raise RuntimeError("Internal routing invariant failed")
 
     n_by_error_type = {
@@ -678,11 +715,13 @@ def _route_results(items: list[dict], answers_by_id: dict[str, dict]) -> dict:
 
     result = {
         "item_evaluations": json.dumps(item_evaluations, ensure_ascii=False),
-        "validated_tags": json.dumps(validated_by_category, ensure_ascii=False),
-        "invalid_not_in_image": json.dumps(invalid_by_category, ensure_ascii=False),
+        "in_image_tags": json.dumps(in_image_by_category, ensure_ascii=False),
+        "not_in_image": json.dumps(not_in_image_by_category, ensure_ascii=False),
+        "valid_tags": json.dumps(valid_by_category, ensure_ascii=False),
         "n_extracted": n_extracted,
-        "n_validated": n_validated,
-        "n_invalid_not_in_image": n_invalid,
+        "n_in_image": n_in_image,
+        "n_valid": sum(len(v) for v in valid_by_category.values()),
+        "n_not_in_image": n_not_in_image,
         "n_scored": n_scored,
         "corrected_hallucination_rate": (
             n_by_error_type["participant_hallucination"] / n_scored
@@ -696,16 +735,20 @@ def _route_results(items: list[dict], answers_by_id: dict[str, dict]) -> dict:
         result[f"n_{error_type}"] = n_by_error_type[error_type]
 
     for category in CATEGORIES:
-        validated = validated_by_category[category]
-        invalid = invalid_by_category[category]
-        result[f"validated_{category}"] = json.dumps(validated, ensure_ascii=False)
-        result[f"invalid_not_in_image_{category}"] = json.dumps(
+        validated = in_image_by_category[category]
+        invalid = not_in_image_by_category[category]
+        result[f"in_image_{category}"] = json.dumps(validated, ensure_ascii=False)
+        result[f"not_in_image_{category}"] = json.dumps(
             invalid,
             ensure_ascii=False,
         )
+        result[f"valid_{category}"] = json.dumps(
+            valid_by_category[category], ensure_ascii=False
+        )
+        result[f"n_valid_{category}"] = len(valid_by_category[category])
         result[f"n_extracted_{category}"] = len(validated) + len(invalid)
-        result[f"n_validated_{category}"] = len(validated)
-        result[f"n_invalid_not_in_image_{category}"] = len(invalid)
+        result[f"n_in_image_{category}"] = len(validated)
+        result[f"n_not_in_image_{category}"] = len(invalid)
 
         n_extraction_side = 0
         for error_type in ERROR_TYPES:
@@ -1049,8 +1092,8 @@ def executive_summary(final_df: pd.DataFrame, condition: str) -> dict:
     )
 
     total_extracted = summary_df["n_extracted"].sum(skipna=True)
-    total_validated = summary_df["n_validated"].sum(skipna=True)
-    total_invalid = summary_df["n_invalid_not_in_image"].sum(skipna=True)
+    total_in_image = summary_df["n_in_image"].sum(skipna=True)
+    total_not_in_image = summary_df["n_not_in_image"].sum(skipna=True)
 
     if condition == BASELINE_SLUG:
         generation, task = BASELINE_SLUG, "baseline"
@@ -1068,18 +1111,18 @@ def executive_summary(final_df: pd.DataFrame, condition: str) -> dict:
         "n_success_rows": int(n_rows - n_error_rows),
         "n_error_rows": int(n_error_rows),
         "total_extracted_tags": int(total_extracted),
-        "total_validated_tags": int(total_validated),
-        "total_invalid_not_in_image": int(total_invalid),
-        "invalid_not_in_image_pct_of_all_extracted_tags": round(
-            _pct(total_invalid, total_extracted),
+        "total_in_image_tags": int(total_in_image),
+        "total_not_in_image": int(total_not_in_image),
+        "not_in_image_pct_of_all_extracted_tags": round(
+            _pct(total_not_in_image, total_extracted),
             2,
         ),
-        "validated_pct_of_all_extracted_tags": round(
-            _pct(total_validated, total_extracted),
+        "in_image_pct_of_all_extracted_tags": round(
+            _pct(total_in_image, total_extracted),
             2,
         ),
-        "rows_with_at_least_one_invalid_not_in_image": int(
-            (summary_df["n_invalid_not_in_image"].fillna(0) > 0).sum()
+        "rows_with_at_least_one_not_in_image": int(
+            (summary_df["n_not_in_image"].fillna(0) > 0).sum()
         ),
         "avg_extracted_tags_per_row": round(
             summary_df["n_extracted"].mean(skipna=True),
@@ -1087,17 +1130,17 @@ def executive_summary(final_df: pd.DataFrame, condition: str) -> dict:
         )
         if summary_df["n_extracted"].notna().any()
         else None,
-        "avg_validated_tags_per_row": round(
-            summary_df["n_validated"].mean(skipna=True),
+        "avg_in_image_tags_per_row": round(
+            summary_df["n_in_image"].mean(skipna=True),
             3,
         )
-        if summary_df["n_validated"].notna().any()
+        if summary_df["n_in_image"].notna().any()
         else None,
-        "avg_invalid_not_in_image_per_row": round(
-            summary_df["n_invalid_not_in_image"].mean(skipna=True),
+        "avg_not_in_image_per_row": round(
+            summary_df["n_not_in_image"].mean(skipna=True),
             3,
         )
-        if summary_df["n_invalid_not_in_image"].notna().any()
+        if summary_df["n_not_in_image"].notna().any()
         else None,
     }
 
@@ -1127,18 +1170,18 @@ def executive_summary(final_df: pd.DataFrame, condition: str) -> dict:
 
     for category in CATEGORIES:
         extracted_col = f"n_extracted_{category}"
-        validated_col = f"n_validated_{category}"
-        invalid_col = f"n_invalid_not_in_image_{category}"
+        in_image_col = f"n_in_image_{category}"
+        not_in_image_col = f"n_not_in_image_{category}"
 
         category_extracted = summary_df[extracted_col].sum(skipna=True)
-        category_validated = summary_df[validated_col].sum(skipna=True)
-        category_invalid = summary_df[invalid_col].sum(skipna=True)
+        category_in_image = summary_df[in_image_col].sum(skipna=True)
+        category_not_in_image = summary_df[not_in_image_col].sum(skipna=True)
 
         summary[f"total_extracted_{category}"] = int(category_extracted)
-        summary[f"total_validated_{category}"] = int(category_validated)
-        summary[f"total_invalid_not_in_image_{category}"] = int(category_invalid)
-        summary[f"invalid_not_in_image_pct_{category}"] = round(
-            _pct(category_invalid, category_extracted),
+        summary[f"total_in_image_{category}"] = int(category_in_image)
+        summary[f"total_not_in_image_{category}"] = int(category_not_in_image)
+        summary[f"not_in_image_pct_{category}"] = round(
+            _pct(category_not_in_image, category_extracted),
             2,
         )
 

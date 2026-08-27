@@ -85,7 +85,7 @@ def load_drawings(arm: str = "with_hint") -> pd.DataFrame:
             f"{p} not found - run analysis/nlp_analysis/drawings_descriptions.py for the "
             f"{arm!r} arm, then object_accuracy_detector.py and export_full_data.py")
     d = pd.read_csv(p)
-    d["n_objects"] = pd.to_numeric(d.get("n_validated_objects"), errors="coerce")
+    d["n_objects"] = pd.to_numeric(d.get("n_in_image_objects"), errors="coerce")
     missing = [q for q in d["path"] if not Path(q).exists()]
     if missing:
         print(f"  !! {len(missing)} drawing file(s) listed in the CSV are missing on disk, "

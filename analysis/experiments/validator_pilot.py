@@ -10,6 +10,7 @@
 
 from pathlib import Path
 import argparse
+import glob
 import json
 import sys
 import time
@@ -38,7 +39,23 @@ OUT_DIR = PROJECT_ROOT / "analysis/outputs/experiments/validator"
 STRATA = ["generation", "delay"]
 
 
-def load_subset(n_participant: int, n_ceiling: int, seed: int) -> pd.DataFrame:
+def excluded_keys(tags: list[str]) -> set[tuple]:
+    """Row keys already used by earlier pilot runs, so a fresh set stays unseen.
+
+    Holding rows out matters because the prompt was revised while looking at the
+    earlier subset: measuring on those same rows would report how well the prompt
+    fits the cases it was written against.
+    """
+    keys = set()
+    for tag in tags:
+        for path in glob.glob(str(OUT_DIR / f"pilot_tags_*{tag}_*.csv")):
+            d = pd.read_csv(path, dtype={"uid": str, "session": str, "attempt": str})
+            keys |= set(map(tuple, d[["uid", "session", "attempt"]].drop_duplicates().values))
+    return keys
+
+
+def load_subset(n_participant: int, n_ceiling: int, seed: int,
+                exclude: set[tuple] | None = None) -> pd.DataFrame:
     """Spread the participant rows over conditions, feedback arms and images.
 
     With a handful of rows we cannot fill every cell, so sample one row per stratum
@@ -50,6 +67,9 @@ def load_subset(n_participant: int, n_ceiling: int, seed: int) -> pd.DataFrame:
     if n_participant:
         d = pd.read_csv(FULL_DATA_CSV)
         d = d[d["item_evaluations"].notna()].copy()
+        if exclude:
+            keys = list(map(tuple, d[["uid", "session", "attempt"]].astype(str).values))
+            d = d[[k not in exclude for k in keys]]
         d["has_feedback"] = d["feedback_id"].notna()
         shuffled = d.sample(frac=1.0, random_state=seed)
         spread = (
@@ -86,7 +106,10 @@ def previous_verdicts(row: pd.Series) -> dict[tuple[str, str], bool]:
 
 
 def run(args) -> None:
-    subset = load_subset(args.n_participant, args.n_ceiling, args.seed)
+    exclude = excluded_keys(args.exclude_runs) if args.exclude_runs else None
+    if exclude:
+        print(f"Holding out {len(exclude)} row(s) used by earlier runs {args.exclude_runs}")
+    subset = load_subset(args.n_participant, args.n_ceiling, args.seed, exclude)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     stamp = time.strftime("%Y%m%d_%H%M%S")
 
@@ -140,7 +163,7 @@ def run(args) -> None:
                 "gt": row["gt"],
                 "secs": round(elapsed, 1),
                 "n_extracted": result["n_extracted"],
-                "old_n_invalid": row.get("n_invalid_not_in_image"),
+                "old_n_invalid": row.get("n_not_in_image"),
                 "n_category_misplacement": result["n_category_misplacement"],
                 "n_model_hallucination": result["n_model_hallucination"],
                 "n_participant_hallucination": result["n_participant_hallucination"],
@@ -246,6 +269,8 @@ def main() -> None:
     parser.add_argument("-c", "--n-ceiling", type=int, default=1)
     parser.add_argument("--model", default=validator.DEFAULT_MODEL)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--exclude-runs", nargs="*", default=[],
+                        help="Run tags whose rows to exclude, e.g. _A _G")
     parser.add_argument(
         "--reasoning-effort",
         default=validator.REASONING_EFFORT,

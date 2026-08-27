@@ -194,8 +194,22 @@ def cat_label(category, mode="validated"):
 def prep_counts(d, name, mode="validated"):
     """Drop unjudged rows, add the task column, derive n_<cat> / h_<cat> per category.
 
-    n_<cat> is what gets plotted as the solid bar (validated count in "validated" mode, raw
-    tag count in "raw" mode); h_<cat> is the hollow hallucination cap stacked on top.
+    n_<cat> is the solid bar, h_<cat> the hollow hallucination cap stacked on top.
+
+    Validator v2 changed what those two should be. v1 answered only "is this tag in the
+    image", so solid + hollow necessarily summed to every extracted tag. v2 first removes
+    the tags that say nothing about the participant - ones the extractor invented
+    (model_hallucination) and ones filed under a category that cannot hold them
+    (category_misplacement) - and only then asks whether the participant was right. So the
+    bar now spans the scored tags rather than all of them:
+
+        n_extracted - model_hallucination - category_misplacement
+            = n_scored
+            = valid (solid) + participant_hallucination (hollow)
+
+    Using n_in_image here would overstate the solid bar, because a tag can be visible in
+    the image and still be an extraction artefact. v1 files lack the new columns and fall
+    back to the old definition, so older outputs keep plotting as they always did.
     """
     # Rows the judge could not score (API failure, missing image, ...) have NaN counts.
     # Dropping is safer than letting them average in as zeros - re-run the validator to fill.
@@ -210,8 +224,13 @@ def prep_counts(d, name, mode="validated"):
     for col in CATEGORIES:
         raw = d[col].apply(count_list)
         if is_validated(col, mode):
-            d[f"n_{col}"] = pd.to_numeric(d[f"n_validated_{col}"], errors="coerce")
-            d[f"h_{col}"] = pd.to_numeric(d[f"n_invalid_not_in_image_{col}"], errors="coerce")
+            if f"n_valid_{col}" in d.columns:           # validator v2
+                d[f"n_{col}"] = pd.to_numeric(d[f"n_valid_{col}"], errors="coerce")
+                d[f"h_{col}"] = pd.to_numeric(
+                    d[f"n_participant_hallucination_{col}"], errors="coerce")
+            else:                                       # validator v1 output
+                d[f"n_{col}"] = pd.to_numeric(d[f"n_in_image_{col}"], errors="coerce")
+                d[f"h_{col}"] = pd.to_numeric(d[f"n_not_in_image_{col}"], errors="coerce")
             # The judge must have seen exactly the tags the tagger produced.
             extracted = pd.to_numeric(d[f"n_extracted_{col}"], errors="coerce")
             n_off = int((extracted != raw).sum())
@@ -221,6 +240,84 @@ def prep_counts(d, name, mode="validated"):
             d[f"n_{col}"] = raw
             d[f"h_{col}"] = 0
     return d
+
+
+ERROR_TYPES = ("valid", "participant_hallucination",
+               "model_hallucination", "category_misplacement")
+
+# Solid for what survives, warm for the participant's own error, cool for the two
+# extraction faults - so the reader can see at a glance how much of a bar is the
+# instrument rather than the participant.
+ERROR_COLORS = {
+    "valid": "#3d7a5a",
+    "participant_hallucination": "#c8763a",
+    "model_hallucination": "#7a5aa8",
+    "category_misplacement": "#4a7fb5",
+}
+ERROR_LABELS = {
+    "valid": "valid",
+    "participant_hallucination": "participant hallucination",
+    "model_hallucination": "model hallucination",
+    "category_misplacement": "category misplacement",
+}
+
+
+def verdict_breakdown(frames, per="tags", category=None):
+    """Every tag split four ways per condition - the full picture behind the plotted bars.
+
+    The main figures deliberately show only valid + participant hallucination, because the
+    other two say nothing about the participant. This is the companion view that puts the
+    discarded tags back on screen, so the size of the correction stays visible.
+
+    `frames` maps a condition name to its validated dataframe. `per="tags"` counts tags,
+    `per="rows"` averages per trial. Pass `category` for one semantic category only.
+    """
+    suffix = f"_{category}" if category else ""
+    rows = []
+    for name, d in frames.items():
+        if "error" in d.columns:
+            d = d[d["error"].isna()]
+        get = lambda c: pd.to_numeric(d.get(f"{c}{suffix}"), errors="coerce").fillna(0)
+        extracted = get("n_extracted")
+        ppt, mod, cat = get("n_participant_hallucination"), get("n_model_hallucination"), get("n_category_misplacement")
+        counts = {"valid": get("n_valid") if f"n_valid{suffix}" in d.columns
+                           else extracted - ppt - mod - cat,
+                  "participant_hallucination": ppt,
+                  "model_hallucination": mod, "category_misplacement": cat}
+        total = float(extracted.sum())
+        rec = {"condition": name, "rows": len(d), "n_extracted": int(total)}
+        for k, v in counts.items():
+            rec[k] = float(v.mean()) if per == "rows" else int(v.sum())
+            rec[f"{k}_pct"] = round(100 * float(v.sum()) / total, 2) if total else 0.0
+        scored = total - float(mod.sum()) - float(cat.sum())
+        rec["n_scored"] = int(scored)
+        # The rate the analysis should quote: participant errors over the tags that
+        # actually test the participant.
+        rec["corrected_ppt_pct"] = round(100 * float(ppt.sum()) / scored, 2) if scored else None
+        rows.append(rec)
+    return pd.DataFrame(rows)
+
+
+def plot_verdict_breakdown(frames, per="tags", category=None, ax=None, order=None):
+    """Stacked bar of the four verdict types per condition."""
+    t = verdict_breakdown(frames, per=per, category=category)
+    if order:
+        t = t.set_index("condition").loc[[c for c in order if c in set(t.condition)]].reset_index()
+    if ax is None:
+        _, ax = plt.subplots(figsize=(max(6, 1.15 * len(t)), 4.2))
+    bottom = np.zeros(len(t))
+    for et in ERROR_TYPES:
+        vals = t[et].to_numpy(dtype=float)
+        ax.bar(t["condition"], vals, bottom=bottom, label=ERROR_LABELS[et],
+               color=ERROR_COLORS[et], edgecolor="white", linewidth=0.6)
+        bottom += vals
+    ax.set_ylabel("tags" if per == "tags" else "tags per trial")
+    ax.set_title(f"Verdict breakdown{' - ' + CATEGORIES.get(category, category) if category else ''}")
+    ax.legend(fontsize=8, frameon=False, ncol=2)
+    ax.tick_params(axis="x", rotation=45)
+    for lbl in ax.get_xticklabels():
+        lbl.set_ha("right")
+    return ax, t
 
 
 def ppt_means(data, keys, category):
@@ -438,8 +535,13 @@ def load_gpt_ceiling(config, mode="validated", verbosity="medium"):
         g = g[g["error"].isna()].copy()
     for col in CATEGORIES:
         if is_validated(col, mode):
-            g[f"n_{col}"] = pd.to_numeric(g[f"n_validated_{col}"], errors="coerce")
-            g[f"h_{col}"] = pd.to_numeric(g[f"n_invalid_not_in_image_{col}"], errors="coerce")
+            if f"n_valid_{col}" in g.columns:           # validator v2 - see prep_counts
+                g[f"n_{col}"] = pd.to_numeric(g[f"n_valid_{col}"], errors="coerce")
+                g[f"h_{col}"] = pd.to_numeric(
+                    g[f"n_participant_hallucination_{col}"], errors="coerce")
+            else:
+                g[f"n_{col}"] = pd.to_numeric(g[f"n_in_image_{col}"], errors="coerce")
+                g[f"h_{col}"] = pd.to_numeric(g[f"n_not_in_image_{col}"], errors="coerce")
         else:
             g[f"n_{col}"] = g[col].apply(count_list)
             g[f"h_{col}"] = 0
