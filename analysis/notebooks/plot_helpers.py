@@ -144,7 +144,10 @@ MEMORABILITY = {
 # generation's total, not an extra series, so it must not introduce a new color.
 CAP_FACE = "white"
 CAP_LW = 1.6
-CAP_LABEL = "Not in image (hallucinated)"
+# The cap is now participant hallucinations only - tags the extractor invented or
+# filed in the wrong category are removed from the bar entirely, so "not in image"
+# no longer describes what is drawn.
+CAP_LABEL = "Participant hallucination"
 UNVALIDATED_HATCH = "//"
 CI_COLOR = "#333333"
 
